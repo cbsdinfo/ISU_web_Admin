@@ -14,6 +14,8 @@ import roles from "./allApi/roles";
 import users from "./allApi/users";
 import syslogs from "./allApi/syslogs";
 import sysmessages from "./allApi/sysmessages";
+import newss from "./allApi/newss";
+import playerLeadsWayArticles from "./allApi/playerLeadsWayArticles";
 
 export default {
     accessobjs,
@@ -32,4 +34,6 @@ export default {
     users,
     syslogs,
     sysmessages,
+    newss,
+    playerLeadsWayArticles
 }
