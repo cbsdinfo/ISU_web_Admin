@@ -1,19 +1,10 @@
-<!--
- * @description: 通用按鈕控制
- * @author: liyubao | xufuxing
- * @version: 1.0
- * @updateDate:2021-09-01
-* @description: 用於渲染模塊的按鈕，簡單用法如下：
-*               <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
--->
-
 <template>
   <div class="filter-items">
     <template v-for="btn of buttons">
       <json-excel :key="btn.Id" v-if="btn.domId === 'btnExport'" :fetch="fetchData" :before-finish="finishDownload" class="export-excel-wrapper" :fields="excelInfo.json_fields" :name="excelInfo.excelName">
-        <el-button :type="btn.class || 'primary'" size="mini" style="margin-left: 10px;" :loading="excelLoading">導出EXCEL</el-button>
+        <el-button :type="btn.class || 'primary'" size="mini" style="margin-left: 10px" :loading="excelLoading">導出EXCEL</el-button>
       </json-excel>
-      <el-button v-else :type="btn.class" :size="size" v-bind:key="btn.Id" class="filter-item" @click="$emit('btn-event',btn.domId)"><i :class="`iconfont icon-${btn.icon}`"></i>{{btn.name}}</el-button>
+      <el-button v-else-if="btn.attr !== 'true'" :type="btn.class" :size="size" v-bind:key="btn.Id" class="filter-item" @click="$emit('btn-event', btn.domId)"><i :class="`iconfont icon-${btn.icon}`"></i>{{ btn.name }}</el-button>
     </template>
   </div>
 </template>
