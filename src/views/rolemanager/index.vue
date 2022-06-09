@@ -41,7 +41,7 @@
           <el-table-column align="center" :label="'操作'" width="230" class-name="small-padding fixed-width">
             <template slot-scope="scope">
               <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">編輯</el-button>
-              <el-button v-if="scope.row.status == 0" size="mini" type="danger" @click="handleModifyStatus(scope.row, 1)">停用</el-button>
+              <el-button v-if="scope.row.status == 0 && hasButton('btnEnable')" size="mini" type="danger" @click="handleModifyStatus(scope.row, 1)">停用</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -90,6 +90,7 @@
 </template>
 
 <script>
+import pbMixins from "@/mixins/permissionBtn.js";
 import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import RoleUsers from "@/components/RoleUsers";
@@ -115,6 +116,7 @@ export default {
     waves,
     elDragDialog,
   },
+  mixins: [pbMixins],
   data() {
     return {
       defaultProps: {
