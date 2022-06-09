@@ -34,32 +34,18 @@
             </div>
           </sticky>
 
-          <div class="app-container flex-item">
-            <div class="bg-white" style="height: 100%">
-              <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)" @row-click="rowClick" @selection-change="handleSelectionChange">
-                <el-table-column type="selection" align="center" width="55"> </el-table-column>
-                <el-table-column min-width="50px" label="標題" prop="name"></el-table-column>
-                <el-table-column min-width="50px" label="排序" prop="sort"></el-table-column>
-                <el-table-column min-width="50px" label="狀態" prop="isEnable">
-                  <template slot-scope="scope">
-                    <span>{{ scope.row.isEnable? "上架" : "下架" }}</span>
-                  </template>
-                </el-table-column>
-                <!-- <el-table-column min-width="200px" :label="'操作'">
-                  <template slot-scope="scope">
-                    <div class="buttonFlexBox">
-                      <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
-                      <el-button size="mini" @click="handleDelete([scope.row])" type="warning" v-if="hasButton('btnDel')">刪除</el-button>
-                    </div>
-                  </template>
-                </el-table-column> -->
-              </el-table>
-            </div>
-          </div>
-
-          <!-- <auth-table style="height: calc(100% - 60px)" ref="mainTable" :select-type="'checkbox'" :table-fields="headerList" :templates="['privilegeRules']" :data="list" :v-loading="listLoading" @row-click="rowClick" @selection-change="handleSelectionChange">
-            
-          </auth-table> -->
+          <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)" @row-click="rowClick" @selection-change="handleSelectionChange">
+            <el-table-column type="selection" align="center" width="55"> </el-table-column>
+            <el-table-column min-width="50px" label="名稱" prop="name"></el-table-column>
+            <el-table-column min-width="60px" label="值" prop="dtValue"></el-table-column>
+            <el-table-column width="80px" label="是否可用" prop="isEnable" align="center">
+              <template slot-scope="scope">
+                <span :class="scope.row.isEnable | statusFilter">{{ statusOptions.find((u) => u.key == scope.row.isEnable).display_name }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
+            <el-table-column width="200px" label="分類標誌" prop="typeId"></el-table-column>
+          </el-table>
           <pagination v-show="total > 0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleCurrentChange" />
         </el-main>
       </div>
@@ -95,18 +81,14 @@
             <el-input-number v-model="temp.sortNo" :min="0" :max="10"></el-input-number>
           </el-form-item>
 
-          <el-form-item size="small" :label="'是否可用'" prop="enable">
-            <el-select class="filter-item" v-model="temp.enable" placeholder="Please select">
+          <el-form-item size="small" :label="'是否可用'" prop="isEnable">
+            <el-select class="filter-item" v-model="temp.isEnable" placeholder="Please select">
               <el-option v-for="item in statusOptions" :key="item.key" :label="item.display_name" :value="item.key"> </el-option>
             </el-select>
           </el-form-item>
 
-          <!-- <el-form-item size="small" :label="'值'" prop="dtValue">
-            <el-input v-model="temp.dtValue"></el-input>
-          </el-form-item> -->
-
-          <el-form-item size="small" :label="'分類標識'" prop="dtCode">
-            <el-input v-model="temp.dtCode"></el-input>
+          <el-form-item size="small" :label="'排序號'">
+            <el-input-number v-model="temp.sort" :min="0" :max="10"></el-input-number>
           </el-form-item>
 
           <el-form-item size="small" :label="'分類描述'" prop="description">
@@ -136,8 +118,18 @@ import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
-// import AuthTable from "../../components/Base/AuthTable.vue";
-import { defaultVal } from "@/utils/index";
+
+const formTemplate = {
+  id: "", // 分類表ID（可作為分類的標識）
+  dtCode: "",
+  name: "", // 名稱
+  dtValue: "",
+  isEnable: true, // 是否可用
+  sort: 0, // 排序號
+  description: "", // 分類描述
+  typeId: "", // 分類類型ID
+  extendInfo: "", // 其他信息,防止最後加逗號，可以刪除
+};
 
 export default {
   name: "category",
@@ -166,35 +158,20 @@ export default {
         { key: true, display_name: "啟用" },
         { key: false, display_name: "停用" },
       ],
-      temp: {
-        id: "", // 分類表ID
-        dtCode: "", //分類標籤
-        name: "", // 類別名稱(使用者輸入)
-        dtValue: "", //類別的value(自己取)
-        enable: true, // 是否可用
-        sortNo: "", // 排序號(使用者輸入)
-        description: "", // 分類描述
-        typeId: "", // 類型ID（可作為分類的標識）,在其他頁面拿資料需用此ID
-        extendInfo: "", // 其他信息,防止最後加逗號，可以刪除
-      },
+      temp: JSON.parse(JSON.stringify(formTemplate)),
       dialogFormVisible: false,
       dialogStatus: "",
       textMap: {
         update: "編輯",
         create: "新增",
       },
-      dialogPvVisible: false,
-      pvData: [],
       rules: {
         appId: [{ required: true, message: "必須選擇一個應用", trigger: "change" }],
         name: [{ required: true, message: "名稱不能為空", trigger: "blur" }],
+        dtValue: [{ required: true, message: "值不能為空", trigger: "blur" }],
       },
-      downloadLoading: false,
-      headerList: [],
-      searchCategories: "", // 分類搜索
       addTypesDialog: false,
       categoryTypes: [],
-      searchCategoryType: "",
       categoryTypesInfo: {
         id: "",
         name: "",
@@ -217,8 +194,8 @@ export default {
   filters: {
     statusFilter(disable) {
       const statusMap = {
-        false: "color-success",
-        true: "color-danger",
+        true: "color-success",
+        false: "color-danger",
       };
       return statusMap[disable];
     },
@@ -252,17 +229,6 @@ export default {
           });
       return elements || [];
     },
-    isShowOperation() {
-      const route = this.$route;
-      const elements = route.meta.elements || [];
-      let flag = false;
-      elements.forEach((item) => {
-        if (item.domId === "btnEdit") {
-          flag = true;
-        }
-      });
-      return flag;
-    },
   },
   created() {
     this.getList();
@@ -282,7 +248,6 @@ export default {
       this.multipleSelection = val;
     },
     onBtnClicked: function (domId) {
-      console.log("you click:" + domId);
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -320,12 +285,6 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.categorys.getList(this.listQuery).then((response) => {
-        response.columnFields.forEach((item) => {
-          // 首字母小寫
-          item.columnName = item.columnName.substring(0, 1).toLowerCase() + item.columnName.substring(1);
-        });
-        this.headerList = response.columnFields;
-
         this.list = response.data;
         this.total = response.count;
         this.listLoading = false;
@@ -335,29 +294,44 @@ export default {
       this.listQuery.page = 1;
       this.getList();
     },
-    handleSizeChange(val) {
-      this.listQuery.limit = val;
-      this.getList();
-    },
     handleCurrentChange(val) {
       this.listQuery.page = val.page;
       this.listQuery.limit = val.limit;
       this.getList();
     },
     resetTemp() {
-      let obj = {};
-      this.headerList.forEach((item) => {
-        obj[item.columnName] = defaultVal(item.entityType);
-      });
-      this.temp = Object.assign({}, obj); // copy obj
+      this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
     },
     // 彈出新增框
     handleCreate() {
       this.resetTemp();
+
+      const getAllSort = this.list.map((i) => i.sort);
+      this.temp.sort = Math.max(...getAllSort) + 1 || 0;
+
       this.dialogStatus = "create";
       this.dialogFormVisible = true;
       this.$nextTick(() => {
         this.$refs["dataForm"].clearValidate();
+      });
+    },
+    // 保存提交
+    createData() {
+      this.$refs["dataForm"].validate((valid) => {
+        if (valid) {
+          this.temp.dtCode = this.temp.dtValue;
+
+          this.$api.categorys.add(this.temp).then(() => {
+            this.getList();
+            this.dialogFormVisible = false;
+            this.$swal.fire({
+              icon: "success",
+              title: "創建成功",
+              timer: 1500,
+              showConfirmButton: false,
+            });
+          });
+        }
       });
     },
     // 彈出編輯框
@@ -414,23 +388,23 @@ export default {
         }
       });
     },
-    // 新增類型下的第二層分類
-    createData() {
-      this.$refs["dataForm"].validate((valid) => {
-        if (valid) {
-          this.$api.categorys.add(this.temp).then(() => {
-            this.list.unshift(this.temp);
-            this.dialogFormVisible = false;
-            this.$swal.fire({
-              icon: "success",
-              title: "創建成功",
-              timer: 1500,
-              showConfirmButton: false,
-            });
-          });
-        }
-      });
-    },
+    // // 新增類型下的第二層分類
+    // createData() {
+    //   this.$refs["dataForm"].validate((valid) => {
+    //     if (valid) {
+    //       this.$api.categorys.add(this.temp).then(() => {
+    //         this.list.unshift(this.temp);
+    //         this.dialogFormVisible = false;
+    //         this.$swal.fire({
+    //           icon: "success",
+    //           title: "創建成功",
+    //           timer: 1500,
+    //           showConfirmButton: false,
+    //         });
+    //       });
+    //     }
+    //   });
+    // },
     // 刪除分類
     handleDeleteCategories() {
       if (!this.listQuery.TypeId) {
