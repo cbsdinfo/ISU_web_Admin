@@ -10,7 +10,9 @@ export default {
     getButtons() {
       this.$route.meta.elements.forEach((el) => {
         this.buttons.push(el.domId);
+
       });
+      console.log("獲取本路由下所有功能按鈕this.buttons",this.buttons);
     },
 
     /* 是否擁有按鈕功能權限 */
@@ -19,6 +21,7 @@ export default {
     },
   },
   mounted() {
+    
     this.getButtons();
   },
 };

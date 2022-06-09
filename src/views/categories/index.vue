@@ -34,11 +34,37 @@
             </div>
           </sticky>
 
-          <auth-table style="height: calc(100% - 60px)" ref="mainTable" :select-type="'checkbox'" :table-fields="headerList" :templates="['privilegeRules']" :data="list" :v-loading="listLoading" @row-click="rowClick" @selection-change="handleSelectionChange"></auth-table>
+          <div class="app-container flex-item">
+            <div class="bg-white" style="height: 100%">
+              <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)" @row-click="rowClick" @selection-change="handleSelectionChange">
+                <el-table-column type="selection" align="center" width="55"> </el-table-column>
+                <el-table-column min-width="50px" label="標題" prop="name"></el-table-column>
+                <el-table-column min-width="50px" label="排序" prop="sort"></el-table-column>
+                <el-table-column min-width="50px" label="狀態" prop="isEnable">
+                  <template slot-scope="scope">
+                    <span>{{ scope.row.isEnable? "上架" : "下架" }}</span>
+                  </template>
+                </el-table-column>
+                <!-- <el-table-column min-width="200px" :label="'操作'">
+                  <template slot-scope="scope">
+                    <div class="buttonFlexBox">
+                      <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
+                      <el-button size="mini" @click="handleDelete([scope.row])" type="warning" v-if="hasButton('btnDel')">刪除</el-button>
+                    </div>
+                  </template>
+                </el-table-column> -->
+              </el-table>
+            </div>
+          </div>
+
+          <!-- <auth-table style="height: calc(100% - 60px)" ref="mainTable" :select-type="'checkbox'" :table-fields="headerList" :templates="['privilegeRules']" :data="list" :v-loading="listLoading" @row-click="rowClick" @selection-change="handleSelectionChange">
+            
+          </auth-table> -->
           <pagination v-show="total > 0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleCurrentChange" />
         </el-main>
       </div>
 
+      <!-- 新增類別彈窗 -->
       <el-dialog :destroy-on-close="true" class="dialog-mini custom-dialog user-dialog" width="400px" title="新增分組" :visible.sync="addTypesDialog">
         <el-form ref="categoryTypeForm" :model="categoryTypesInfo" :rules="categoryRules" el="categorys-tayps-form" label-width="80px">
           <el-form-item prop="id" label="分類id">
@@ -54,22 +80,19 @@
         </div>
       </el-dialog>
 
+      <!--類別之下的次分類彈窗 -->
       <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
           <el-form-item size="small" :label="'Id'" prop="id">
             <el-input v-model="temp.id" :disabled="true" placeholder="系統自動處理"></el-input>
           </el-form-item>
 
-          <el-form-item size="small" :label="'分類標識'" prop="dtCode">
-            <el-input v-model="temp.dtCode"></el-input>
-          </el-form-item>
-
           <el-form-item size="small" :label="'名稱'" prop="name">
             <el-input v-model="temp.name"></el-input>
           </el-form-item>
 
-          <el-form-item size="small" :label="'值'" prop="dtValue">
-            <el-input v-model="temp.dtValue"></el-input>
+          <el-form-item size="small" :label="'排序號'">
+            <el-input-number v-model="temp.sortNo" :min="0" :max="10"></el-input-number>
           </el-form-item>
 
           <el-form-item size="small" :label="'是否可用'" prop="enable">
@@ -78,11 +101,15 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item size="small" :label="'排序號'">
-            <el-input-number v-model="temp.sortNo" :min="0" :max="10"></el-input-number>
+          <!-- <el-form-item size="small" :label="'值'" prop="dtValue">
+            <el-input v-model="temp.dtValue"></el-input>
+          </el-form-item> -->
+
+          <el-form-item size="small" :label="'分類標識'" prop="dtCode">
+            <el-input v-model="temp.dtCode"></el-input>
           </el-form-item>
 
-          <el-form-item size="small" :label="'描述'" prop="description">
+          <el-form-item size="small" :label="'分類描述'" prop="description">
             <el-input v-model="temp.description"></el-input>
           </el-form-item>
 
@@ -109,12 +136,12 @@ import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
-import AuthTable from "../../components/Base/AuthTable.vue";
+// import AuthTable from "../../components/Base/AuthTable.vue";
 import { defaultVal } from "@/utils/index";
 
 export default {
   name: "category",
-  components: { Sticky, Pagination, AuthTable },
+  components: { Sticky, Pagination },
   mixins: [extend],
   directives: {
     waves,
@@ -140,14 +167,14 @@ export default {
         { key: false, display_name: "停用" },
       ],
       temp: {
-        id: "", // 分類表ID（可作為分類的標識）
-        dtCode: "",
-        name: "", // 名稱
-        dtValue: "",
+        id: "", // 分類表ID
+        dtCode: "", //分類標籤
+        name: "", // 類別名稱(使用者輸入)
+        dtValue: "", //類別的value(自己取)
         enable: true, // 是否可用
-        sortNo: "", // 排序號
+        sortNo: "", // 排序號(使用者輸入)
         description: "", // 分類描述
-        typeId: "", // 分類類型ID
+        typeId: "", // 類型ID（可作為分類的標識）,在其他頁面拿資料需用此ID
         extendInfo: "", // 其他信息,防止最後加逗號，可以刪除
       },
       dialogFormVisible: false,
@@ -324,8 +351,8 @@ export default {
       });
       this.temp = Object.assign({}, obj); // copy obj
     },
+    // 彈出新增框
     handleCreate() {
-      // 彈出新增框
       this.resetTemp();
       this.dialogStatus = "create";
       this.dialogFormVisible = true;
@@ -333,25 +360,8 @@ export default {
         this.$refs["dataForm"].clearValidate();
       });
     },
-    createData() {
-      // 保存提交
-      this.$refs["dataForm"].validate((valid) => {
-        if (valid) {
-          this.$api.categorys.add(this.temp).then(() => {
-            this.list.unshift(this.temp);
-            this.dialogFormVisible = false;
-            this.$swal.fire({
-              icon: "success",
-              title: "創建成功",
-              timer: 1500,
-              showConfirmButton: false,
-            });
-          });
-        }
-      });
-    },
+    // 彈出編輯框
     handleUpdate(row) {
-      // 彈出編輯框
       this.temp = Object.assign({}, row); // copy obj
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
@@ -359,8 +369,8 @@ export default {
         this.$refs["dataForm"].clearValidate();
       });
     },
+    // 更新提交
     updateData() {
-      // 更新提交
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp);
@@ -383,11 +393,11 @@ export default {
         }
       });
     },
+    // 多行刪除
     handleDelete(rows) {
-      // 多行刪除
       this.delrows("categorys", rows);
     },
-    // 新增分類
+    // 新增第一層類型
     handleAddCategories() {
       this.$refs["categoryTypeForm"].validate((valid) => {
         if (valid) {
@@ -400,6 +410,23 @@ export default {
             });
             this.addTypesDialog = false;
             this.categoryTypes.push(this.categoryTypesInfo);
+          });
+        }
+      });
+    },
+    // 新增類型下的第二層分類
+    createData() {
+      this.$refs["dataForm"].validate((valid) => {
+        if (valid) {
+          this.$api.categorys.add(this.temp).then(() => {
+            this.list.unshift(this.temp);
+            this.dialogFormVisible = false;
+            this.$swal.fire({
+              icon: "success",
+              title: "創建成功",
+              timer: 1500,
+              showConfirmButton: false,
+            });
           });
         }
       });

@@ -18,13 +18,15 @@ import store from './store'
 import api from '@/api/index'
 import '@/permission'
 
+// import Vue2Editor from "vue2-editor";
+
 import '@/assets/public/css/comIconfont/iconfont.css'
 import '@/assets/public/css/comIconfont/iconfont.js'
 
 //工作流使用的圖標
 import '@/assets/public/css/workflowicon/iconfont.css'
 import '@/assets/public/css/workflowicon/iconfont.js'
-
+// Vue.use(Vue2Editor);
 Vue.prototype.$api = api
 Vue.use(ElementUI, { locale })
 Vue.use(VueContextMenu)
