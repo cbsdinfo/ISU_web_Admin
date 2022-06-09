@@ -25,7 +25,7 @@ service.interceptors.response.use(
     const { code, message } = response.data;
     if (code === 200) {
       return response.data;
-    } else if (code === 500) {
+    } else  {
       Vue.prototype.$swal.fire({
         icon: 'error',
         title: message,
