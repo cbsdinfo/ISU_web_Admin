@@ -46,7 +46,11 @@
           <el-col :span="24">
             <el-form-item label="類別" prop="categoryId">
               <el-select v-model="temp.categoryId" placeholder="請選擇類別" @blur="validateBlurSelect">
-                <el-option label="房間類型" value="SYS_ROOM"></el-option>
+                  <el-option v-for="item in selectLists"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -72,25 +76,22 @@
           </el-col>
           <el-col :span="24">
             <el-form-item label="列表圖片" prop="listImg">
-              <!-- <el-input type="textarea" :autosize="{ minRows: 3 }" v-model="temp.listImg" placeholder="請輸入列表圖片"></el-input> -->
-              <el-upload action="#" list-type="picture-card" :auto-upload="false">
+              <el-input v-show="false" type="text" v-model="temp.listImg" size="small" placeholder="請輸入摘要"></el-input>
+              <el-upload ref="upload" action="#" list-type="picture-card" :limit="1" :disabled="!!temp.listImg"
+                :on-success="fileSuccess"
+                :http-request="uploadFile"
+              >
                 <i slot="default" class="el-icon-plus"></i>
                 <div slot="file" slot-scope="{ file }">
-                  <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
+                  <img class="el-upload-list__item-thumbnail" :src="`${imgUrl}${file.path}`" alt="" />
                   <span class="el-upload-list__item-actions">
-                    <!-- <span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
-                      <i class="el-icon-zoom-in"></i>
-                    </span>
-                    <span v-if="!disabled" class="el-upload-list__item-delete" @click="handleDownload(file)">
-                      <i class="el-icon-download"></i>
-                    </span> -->
-                    <span v-if="!disabled" class="el-upload-list__item-delete" @click="handleRemove(file)">
-                      <i class="el-icon-delete"></i>
-                    </span>
+                    <span class="el-upload-list__item-delete" @click="handleRemove"><i class="el-icon-delete"></i></span>
                   </span>
                 </div>
               </el-upload>
             </el-form-item>
+
+            <!-- <input type="file" name="" id="" @change="inputFile"> -->
           </el-col>
           <el-col :span="24">
             <el-form-item label="內容" prop="contents">
@@ -165,6 +166,10 @@ export default {
     //   console.log(value);
     // };
     return {
+      selectLists:[],
+      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
+      filePath:"",
+      fileList:[],
       dynamicTags: [],
       tagInputVisible: false,
       tagInputValue: "",
@@ -195,15 +200,82 @@ export default {
         summury: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         // contents: [{ required: true, message: "必填欄位", trigger: "blur" }],
         sort: [{ required: true, message: "必填欄位", trigger: "blur" }],
+        listImg: [{ required: true, message: "圖片為必填" }],
         state: [{ required: true, message: "必填欄位", trigger: "blur" }],
       },
     };
   },
   mounted() {
-    this.getList();
     //TODO:取得類別下拉
+    this.getList();
+    this.selectData()
   },
   methods: {
+     getList() {
+      this.listLoading = true;
+      this.$api.newss.Load(this.listQuery).then((response) => {
+        const { data, count } = response;
+        this.list = data;
+        this.total = count;
+        this.listLoading = false;
+      });
+    },
+    selectData(){
+      let temp = {
+        page: 1,
+        limit: 999,
+        TypeId: "SYS_NEWS",
+      }
+      this.$api.categorys.Load(temp).then((res) => {
+        const {code,data} = res
+        if(code===200){
+          this.selectLists = data.map((item)=>({
+            label:item.name,
+            value:item.id
+          }))
+        }
+        console.log(this.selectLists);
+      });
+    //  this.$api.newss.Get({id:'SYS_NEWS'}).then((res) => {
+    //    console.log(res);
+    //   });
+    },
+    handleRemove(file){
+      console.log(file);
+      let fileList = this.$refs.upload.uploadFiles;
+      console.log(fileList);
+      let targetId = fileList[0].id
+      this.$api.files.Delete([targetId]).then((res)=>{
+        const { code } = res;
+        if (code === 200) {
+          fileList.forEach((item,index)=>{
+            if(item.id===targetId){
+              fileList.splice(index, 1)
+              this.temp.listImg = ""
+            }
+          })
+        }
+      })
+    },
+    fileSuccess(res,file,fileList) {
+      const {id,filePath} = res[0]
+      fileList[0].path = filePath
+      fileList[0].id = id
+    },
+    uploadFile(item){
+      let imgFile = item.file
+      if(imgFile){
+        const formData = new FormData();
+        formData.append('files',imgFile);
+        this.$api.files.Upload(formData).then((res)=>{
+            const { code,result } = res;
+            if (code === 200) {
+              this.temp.listImg = result[0].filePath;
+              item.onSuccess(result)
+            }
+        })
+      }
+    },
     handleClose(tag) {
       this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
     },
@@ -274,15 +346,6 @@ export default {
         default:
           break;
       }
-    },
-    getList() {
-      this.listLoading = true;
-      this.$api.newss.getList(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
-        this.listLoading = false;
-      });
     },
     handleFilter() {
       this.listQuery.page = 1;
