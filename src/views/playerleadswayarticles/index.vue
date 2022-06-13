@@ -122,7 +122,6 @@ import Sticky from "@/components/Sticky";
 import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
-
 import extend from "@/extensions/delRows.js";
 
 const formTemplate = {
