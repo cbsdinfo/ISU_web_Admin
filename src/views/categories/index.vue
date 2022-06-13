@@ -50,6 +50,7 @@
         </el-main>
       </div>
 
+      <!-- 新增類別彈窗 -->
       <el-dialog :destroy-on-close="true" class="dialog-mini custom-dialog user-dialog" width="400px" title="新增分組" :visible.sync="addTypesDialog">
         <el-form ref="categoryTypeForm" :model="categoryTypesInfo" :rules="categoryRules" el="categorys-tayps-form" label-width="80px">
           <el-form-item prop="id" label="分類id">
@@ -65,18 +66,19 @@
         </div>
       </el-dialog>
 
+      <!--類別之下的次分類彈窗 -->
       <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
-          <el-form-item size="small" :label="'Id'" prop="id">
+          <!-- <el-form-item size="small" :label="'Id'" prop="id">
             <el-input v-model="temp.id" :disabled="true" placeholder="系統自動處理"></el-input>
-          </el-form-item>
+          </el-form-item> -->
 
           <el-form-item size="small" :label="'名稱'" prop="name">
             <el-input v-model="temp.name"></el-input>
           </el-form-item>
 
-          <el-form-item size="small" :label="'值'" prop="dtValue">
-            <el-input v-model="temp.dtValue"></el-input>
+          <el-form-item size="small" :label="'排序號'">
+            <el-input-number v-model="temp.sort" :min="0" :max="10"></el-input-number>
           </el-form-item>
 
           <el-form-item size="small" :label="'是否可用'" prop="isEnable">
@@ -85,13 +87,9 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item size="small" :label="'排序號'">
-            <el-input-number v-model="temp.sort" :min="0" :max="10"></el-input-number>
-          </el-form-item>
-
-          <el-form-item size="small" :label="'描述'" prop="description">
+          <!-- <el-form-item size="small" :label="'分類描述'" prop="description">
             <el-input v-model="temp.description"></el-input>
-          </el-form-item>
+          </el-form-item> -->
 
           <el-form-item size="small" :label="'所屬分類ID'" prop="typeId">
             <el-select v-model="temp.typeId">
@@ -282,7 +280,7 @@ export default {
     },
     getList() {
       this.listLoading = true;
-      this.$api.categorys.getList(this.listQuery).then((response) => {
+      this.$api.categorys.Load(this.listQuery).then((response) => {
         this.list = response.data;
         this.total = response.count;
         this.listLoading = false;
@@ -369,7 +367,7 @@ export default {
     handleDelete(rows) {
       this.delrows("categorys", rows);
     },
-    // 新增分類
+    // 新增第一層類型
     handleAddCategories() {
       this.$refs["categoryTypeForm"].validate((valid) => {
         if (valid) {
@@ -386,6 +384,23 @@ export default {
         }
       });
     },
+    // // 新增類型下的第二層分類
+    // createData() {
+    //   this.$refs["dataForm"].validate((valid) => {
+    //     if (valid) {
+    //       this.$api.categorys.add(this.temp).then(() => {
+    //         this.list.unshift(this.temp);
+    //         this.dialogFormVisible = false;
+    //         this.$swal.fire({
+    //           icon: "success",
+    //           title: "創建成功",
+    //           timer: 1500,
+    //           showConfirmButton: false,
+    //         });
+    //       });
+    //     }
+    //   });
+    // },
     // 刪除分類
     handleDeleteCategories() {
       if (!this.listQuery.TypeId) {

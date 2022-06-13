@@ -1,7 +1,7 @@
 ﻿import request from '@/utils/request'
 
 const api = {
-  getList(params) {
+  Load(params) {
     return request({
       url: '/categorys/load',
       method: 'get',

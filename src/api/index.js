@@ -16,6 +16,7 @@ import syslogs from "./allApi/syslogs";
 import sysmessages from "./allApi/sysmessages";
 import newss from "./allApi/newss";
 import playerLeadsWayArticles from "./allApi/playerLeadsWayArticles";
+import files from "./allApi/files.js";
 
 export default {
     accessobjs,
@@ -35,5 +36,6 @@ export default {
     syslogs,
     sysmessages,
     newss,
-    playerLeadsWayArticles
+    playerLeadsWayArticles,
+    files
 }
