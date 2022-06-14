@@ -274,7 +274,6 @@ export default {
     this.selectData("SYS_PlayerLeads_Article")
     this.selectData("SYS_PlayerLeads_Area")
     // console.log(this.dayjs().format("YYYY-MM-DD"));
-    this.temp.releaseDate = this.dayjs().format("YYYY-MM-DD")
   },
   methods: {
     validateBlurSelect() {
@@ -388,7 +387,8 @@ export default {
     },
     // 彈出添加框
     handleCreate() {
-      this.resetTemp();
+      // this.resetTemp();
+      this.temp.releaseDate = this.$dayjs().format("YYYY-MM-DD")
       this.dialogStatus = "create";
       this.dialogFormVisible = true;
       this.$nextTick(() => {

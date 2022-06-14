@@ -206,7 +206,7 @@ export default {
   methods: {
     dateFormat(row){
       let date = row.releaseDate
-      return this.dayjs(date).format("YYYY-MM-DD")
+      return this.$dayjs(date).format("YYYY-MM-DD")
     },
     getList() {
       this.listLoading = true;
