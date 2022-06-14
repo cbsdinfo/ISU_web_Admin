@@ -1,14 +1,14 @@
 import request from '@/utils/request'
 
 const api = {
-  Load(params) {
+  load(params) {
     return request({
       url: '/news/load',
       method: 'get',
       params
     })
   },
-  Get(params) {
+  get(params) {
     return request({
       url: '/news/get',
       method: 'get',

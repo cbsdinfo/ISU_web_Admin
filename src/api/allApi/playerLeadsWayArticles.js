@@ -3,7 +3,7 @@ import request from '@/utils/request'
 const api = {
   getList(params) {
     return request({
-      url: '/playerLeadsWayArticles/load',
+      url: '/playerLeadsWayArticle/load',
       method: 'get',
       params
     })

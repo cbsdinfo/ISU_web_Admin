@@ -45,7 +45,92 @@
     <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form label-width="100px" :model="temp" :rules="rules" ref="ruleForm">
         <el-row :gutter="8">
+          <!-- 區域類別 -->
           <el-col :span="24">
+            <el-form-item label="區域類別" prop="categoryId">
+              <el-select v-model="temp.areaId" placeholder="請選擇區域類別" @blur="validateBlurSelect">
+                  <el-option v-for="item in selectListsRoad"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <!-- 文章類別 -->
+          <el-col :span="24">
+            <el-form-item label="文章類別" prop="categoryId">
+              <el-select v-model="temp.categoryId" placeholder="請選擇文章類別" @blur="validateBlurSelect">
+                  <el-option v-for="item in selectListsArticle"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <!-- 日期 -->
+          <el-col :span="24">
+            <el-form-item label="日期" prop="releaseDate">
+              <el-date-picker type="date" v-model="temp.releaseDate" value-format="yyyy-MM-dd" placeholder="請選擇日期"></el-date-picker>
+            </el-form-item>
+          </el-col>
+          <!-- 標題 -->
+          <!-- <el-col :span="24">
+            <el-form-item label="標題" prop="title">
+              <el-input type="text" v-model="temp.title" size="small" placeholder="請輸入標題"></el-input>
+            </el-form-item>
+          </el-col> -->
+          <!-- 摘要 -->
+          <!-- <el-col :span="24">
+            <el-form-item label="摘要" prop="summury">
+              <el-input type="text" v-model="temp.summury" size="small" placeholder="請輸入摘要"></el-input>
+            </el-form-item>
+          </el-col> -->
+          <!-- 圖片上傳 -->
+          <!-- <el-col :span="24">
+            <el-form-item label="列表圖片" prop="listImg">
+              <el-input v-show="false" type="text" v-model="temp.listImg"></el-input>
+              <el-upload ref="upload" action="#" list-type="picture-card" :limit="2"
+                :file-list="fileList"
+                :on-success="fileSuccess"
+                :http-request="uploadFile"
+              >
+                <i slot="default" class="el-icon-plus"></i>
+                <div slot="file" slot-scope="{ file }">
+                  <img class="el-upload-list__item-thumbnail" :src="`${imgUrl}${file.path}`" alt="" />
+                </div>
+              </el-upload>
+            </el-form-item>
+          </el-col> -->
+          <!-- 編輯器內容 -->
+          <!-- <el-col :span="24">
+            <el-form-item label="內容" prop="contents">
+              <VueEditor  v-model="temp.contents"></VueEditor>
+            </el-form-item>
+          </el-col> -->
+          <!-- TAG設定 -->
+          <!-- <el-col :span="24">
+            <el-form-item label="TAG設定">
+              <el-button v-if="!tagInputVisible" class="button-new-tag" size="small" @click="showInput">+ 新增TAG</el-button>
+              <el-input class="input-new-tag" v-if="tagInputVisible" v-model="tagInputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm"> </el-input>
+              <p class="tagError" v-if="isRepeatTag">請勿重覆TAG名稱</p>
+              <el-tag :key="tag" v-for="tag in dynamicTags" closable :disable-transitions="false" @close="tagClose(tag)">{{ tag }}</el-tag>
+            </el-form-item>
+          </el-col> -->
+          <!-- 排序 -->
+          <!-- <el-col :span="24">
+            <el-form-item label="排序" prop="sort">
+              <el-input-number v-model="temp.sort" placeholder="請輸入排序" size="small"></el-input-number>
+            </el-form-item>
+          </el-col> -->
+          <!-- 狀態(上架/下架) -->
+          <!-- <el-col :span="24">
+            <el-form-item label="狀態(上架/下架)" prop="state">
+              <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
+            </el-form-item>
+          </el-col> -->
+          <!-- <el-col :span="24">
             <el-form-item label="區域類別序號" prop="areaId">
               <el-select v-model="temp.areaId" placeholder="請選擇區域類別序號"><el-option label="請選擇" value="請選擇"></el-option></el-select>
             </el-form-item>
@@ -104,7 +189,7 @@
             <el-form-item label="狀態(上架/下架)" prop="state">
               <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
             </el-form-item>
-          </el-col>
+          </el-col> -->
         </el-row>
       </el-form>
       <div slot="footer">
@@ -126,18 +211,18 @@ import extend from "@/extensions/delRows.js";
 
 const formTemplate = {
   id: "",
-  areaId: "",
-  areaName: "",
-  categoryId: "",
-  categoryName: "",
-  releaseDate: "",
-  title: "",
-  summury: "",
-  contents: "",
-  tags: "",
-  listImg: "",
-  sort: 0,
-  state: false,
+  areaId: "",//區域被別ID
+  areaName: "",//區域類別名稱
+  categoryId: "",//文章類別ID
+  categoryName: "",//文章類別名稱
+  releaseDate: "",//發布日期
+  title: "",//標調
+  summury: "",//摘要
+  contents: "",//文章內容(編輯器)
+  tags: "",//TAG 設定
+  listImg: "",//照片路徑
+  sort: 0,//排序
+  state: false,//狀態(上/下架)
 };
 
 export default {
@@ -150,6 +235,8 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
+      selectListsArticle:[],
+      selectListsRoad:[],
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
@@ -184,8 +271,41 @@ export default {
   },
   mounted() {
     this.getList();
+    this.selectData("SYS_PlayerLeads_Article")
+    this.selectData("SYS_PlayerLeads_Area")
+    // console.log(this.dayjs().format("YYYY-MM-DD"));
+    this.temp.releaseDate = this.dayjs().format("YYYY-MM-DD")
   },
   methods: {
+    validateBlurSelect() {
+      this.$refs.ruleForm.validateField("categoryId");
+    },
+    // 取得下拉選單
+    selectData(typeId){
+      let temp = {
+        page: 1,
+        limit: 999,
+        TypeId: typeId,
+      }
+      this.$api.categorys.Load(temp).then((res) => {
+        const {code,data} = res
+        if(code===200){
+          if(typeId==='SYS_PlayerLeads_Article'){
+            this.selectListsArticle = data.map((item)=>({
+              label:item.name,
+              value:item.id
+            }))
+          } 
+          if(typeId==='SYS_PlayerLeads_Area'){
+            this.selectListsRoad = data.map((item)=>({
+              label:item.name,
+              value:item.id
+            }))
+          }
+        
+        }
+      });
+    },
     rowClick(row) {
       this.$refs.mainTable.clearSelection();
       this.$refs.mainTable.toggleRowSelection(row);

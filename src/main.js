@@ -8,6 +8,7 @@ import '@/assets/custom-theme/index.css'
 import locale from 'element-ui/lib/locale/lang/zh-TW'
 import VueContextMenu from 'vue-contextmenu'
 import Swal from 'sweetalert2'
+import dayjs from 'dayjs';
 
 import '@/styles/index.scss'
 
@@ -27,6 +28,7 @@ import '@/assets/public/css/comIconfont/iconfont.js'
 import '@/assets/public/css/workflowicon/iconfont.css'
 import '@/assets/public/css/workflowicon/iconfont.js'
 // Vue.use(Vue2Editor);
+Vue.prototype.dayjs = dayjs;
 Vue.prototype.$api = api
 Vue.use(ElementUI, { locale })
 Vue.use(VueContextMenu)
