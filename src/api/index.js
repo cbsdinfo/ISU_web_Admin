@@ -16,7 +16,11 @@ import syslogs from "./allApi/syslogs";
 import sysmessages from "./allApi/sysmessages";
 import newss from "./allApi/newss";
 import playerLeadsWayArticles from "./allApi/playerLeadsWayArticles";
-import files from "./allApi/files.js";
+import files from "./allApi/files";
+import banners from "./allApi/banners";
+import stampStoreProducts from "./allApi/stampStoreProducts";
+import products from "./allApi/products";
+import productCategorys from "./allApi/productCategorys";
 
 export default {
     accessobjs,
@@ -37,5 +41,9 @@ export default {
     sysmessages,
     newss,
     playerLeadsWayArticles,
-    files
+    files,
+    banners,
+    stampStoreProducts,
+    products,
+    productCategorys
 }

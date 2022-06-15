@@ -99,7 +99,7 @@
               <el-button v-if="!tagInputVisible" class="button-new-tag" size="small" @click="showInput">+ 新增TAG</el-button>
               <el-input class="input-new-tag" v-if="tagInputVisible" v-model="tagInputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm"> </el-input>
               <p class="tagError" v-if="isRepeatTag">請勿重覆TAG名稱</p>
-              <el-tag :key="tag" v-for="tag in dynamicTags" closable :disable-transitions="false" @close="tagClose(tag)">{{ tag }}</el-tag>
+              <el-tag :key="tag" v-for="tag in dynamicTags" closable :disable-transitions="false" @close="tagDelete(tag)">{{ tag }}</el-tag>
               <!-- <el-input type="textarea" :autosize="{ minRows: 3 }" v-model="temp.tags" placeholder="請輸入TAG設定"></el-input> -->
             </el-form-item>
           </el-col>
@@ -147,7 +147,7 @@ const formTemplate = {
   tags: "", //TAG 設定
   listImg: "", //列表圖片
   sort: 0, //排序
-  state: false, //狀態
+  state: true, //狀態
 };
 
 export default {
@@ -224,7 +224,7 @@ export default {
         limit: 999,
         TypeId: "SYS_NEWS",
       }
-      this.$api.categorys.Load(temp).then((res) => {
+      this.$api.categorys.load(temp).then((res) => {
         const {code,data} = res
         if(code===200){
           this.selectLists = data.map((item)=>({
@@ -263,7 +263,7 @@ export default {
         })
       }
     },
-    tagClose(tag) {
+    tagDelete(tag) {
       this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
     },
     showInput() {
@@ -275,9 +275,8 @@ export default {
     handleInputConfirm() {
       let tagInputValue = this.tagInputValue;
       this.isRepeatTag = this.dynamicTags.includes(tagInputValue);
-      console.log(this.isRepeatTag);
-      if (this.isRepeatTag) {
-        console.log("請勿重覆TAG");
+      if(!tagInputValue){
+        this.tagInputVisible = false;
       }
       if (tagInputValue && !this.isRepeatTag) {
         this.dynamicTags.push(tagInputValue);
@@ -340,19 +339,20 @@ export default {
       //this.$refs["ruleForm"].clearValidate();
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
-      this.fileList = [],
-      this.dynamicTags = [],
-      this.dialogStatus = ""
+      this.fileList = [];
+      this.dynamicTags = [];
+      this.dialogStatus = "";
+      this.isRepeatTag = false;
     },
     // 新增(談窗)
     handleCreate() {
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
+       this.temp.releaseDate = this.$dayjs().format("YYYY-MM-DD")
     },
     // 保存提交
     submit() {
-      console.log(this.dialogStatus);
-      let apiName
+      let apiName ="";
       switch(this.dialogStatus){
         case "add":
           apiName = "add"
@@ -392,7 +392,9 @@ export default {
         if(code===200){
           let {id,categoryId,categoryName,releaseDate,title,summury,contents,tags,listImg,sort,state} = result
           this.temp = {id,categoryId,categoryName,releaseDate,title,summury,contents,tags,listImg,sort,state}
-          this.dynamicTags = tags.split(',')
+          if(tags){
+            this.dynamicTags = tags.split(',')
+          }
           this.fileList.push({
             path:listImg
           })
@@ -400,9 +402,6 @@ export default {
       })
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
-      // this.$nextTick(() => {
-      //   this.$refs["ruleForm"].clearValidate();
-      // });
     },
     // 列表刪除
     handleDelete(rows) {
@@ -432,9 +431,6 @@ export default {
 @import '~quill/dist/quill.bubble.css';
 @import '~quill/dist/quill.snow.css';
 .newsPage{
-  .testLAbel{
-    width: 120px;
-  }
   .tagError {
     color: #d63737;
     font-size: 12px;

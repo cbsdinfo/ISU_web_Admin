@@ -28,7 +28,7 @@ import '@/assets/public/css/comIconfont/iconfont.js'
 import '@/assets/public/css/workflowicon/iconfont.css'
 import '@/assets/public/css/workflowicon/iconfont.js'
 // Vue.use(Vue2Editor);
-Vue.prototype.dayjs = dayjs;
+Vue.prototype.$dayjs = dayjs;
 Vue.prototype.$api = api
 Vue.use(ElementUI, { locale })
 Vue.use(VueContextMenu)

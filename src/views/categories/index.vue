@@ -69,10 +69,7 @@
       <!--類別之下的次分類彈窗 -->
       <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
-          <!-- <el-form-item size="small" :label="'Id'" prop="id">
-            <el-input v-model="temp.id" :disabled="true" placeholder="系統自動處理"></el-input>
-          </el-form-item> -->
-
+          
           <el-form-item size="small" :label="'名稱'" prop="name">
             <el-input v-model="temp.name"></el-input>
           </el-form-item>
@@ -86,10 +83,6 @@
               <el-option v-for="item in statusOptions" :key="item.key" :label="item.display_name" :value="item.key"> </el-option>
             </el-select>
           </el-form-item>
-
-          <!-- <el-form-item size="small" :label="'分類描述'" prop="description">
-            <el-input v-model="temp.description"></el-input>
-          </el-form-item> -->
 
           <el-form-item size="small" :label="'所屬分類ID'" prop="typeId">
             <el-select v-model="temp.typeId">
@@ -280,7 +273,7 @@ export default {
     },
     getList() {
       this.listLoading = true;
-      this.$api.categorys.Load(this.listQuery).then((response) => {
+      this.$api.categorys.load(this.listQuery).then((response) => {
         this.list = response.data;
         this.total = response.count;
         this.listLoading = false;

@@ -3,35 +3,35 @@ import request from '@/utils/request'
 const api = {
   getList(params) {
     return request({
-      url: '/playerLeadsWayArticle/load',
+      url: '/products/load',
       method: 'get',
       params
     })
   },
   get(params) {
     return request({
-      url: '/playerLeadsWayArticle/get',
+      url: '/products/get',
       method: 'get',
       params
     })
   },
   add(data) {
     return request({
-      url: '/playerLeadsWayArticle/add',
+      url: '/products/add',
       method: 'post',
       data
     })
   },
   update(data) {
     return request({
-      url: '/playerLeadsWayArticle/update',
+      url: '/products/update',
       method: 'post',
       data
     })
   },
   del(data) {
     return request({
-      url: '/playerLeadsWayArticle/delete',
+      url: '/products/delete',
       method: 'post',
       data
     })
