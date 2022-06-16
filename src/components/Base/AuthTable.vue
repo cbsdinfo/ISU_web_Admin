@@ -10,11 +10,11 @@
 -->
 
 <template>
-  <el-table ref="mainTable" border :data="data" v-loading="vLoading" tooltip-effect="dark" style="width: 100%;" height="100%" @row-click="rowClick" @selection-change="selectionChange">
+  <el-table ref="mainTable" border :data="data" v-loading="vLoading" tooltip-effect="dark" style="width: 100%" height="100%" @row-click="rowClick" @selection-change="selectionChange">
     <!--單選-->
     <el-table-column v-if="selectType == 'radio'" width="55" align="center">
       <template slot-scope="scope">
-        <el-radio :label="scope.row.id" v-model="currentSelected">{{ '' }}</el-radio>
+        <el-radio :label="scope.row.id" v-model="currentSelected">{{ "" }}</el-radio>
       </template>
     </el-table-column>
     <!--多選-->
@@ -46,7 +46,7 @@
       <!--日期選擇框處理-->
       <el-table-column v-else-if="headerItem.editType == 'date'" :prop="headerItem.columnName" :label="headerItem.comment" :key="index" show-overflow-tooltip>
         <template slot-scope="scope">
-          <el-date-picker @change="itemChange(scope.row)" v-if="editModel && headerItem.isEdit" v-model="scope.row[headerItem.columnName]" type="date" :placeholder="scope.row[headerItem.comment]" style="width: 130px;" value-format="yyyy-MM-dd" size="mini"> </el-date-picker>
+          <el-date-picker @change="itemChange(scope.row)" v-if="editModel && headerItem.isEdit" v-model="scope.row[headerItem.columnName]" type="date" :placeholder="scope.row[headerItem.comment]" style="width: 130px" value-format="yyyy-MM-dd" size="mini"> </el-date-picker>
           <span v-else>{{ scope.row[headerItem.columnName] }}</span>
         </template>
       </el-table-column>
@@ -54,7 +54,7 @@
       <!--時間選擇框處理-->
       <el-table-column v-else-if="headerItem.editType == 'datetime'" :prop="headerItem.columnName" :label="headerItem.comment" :key="index" show-overflow-tooltip>
         <template slot-scope="scope">
-          <el-date-picker @change="itemChange(scope.row)" v-if="editModel && headerItem.isEdit" v-model="scope.row[headerItem.columnName]" type="datetime" :placeholder="scope.row[headerItem.comment]" style="width: 130px;" size="mini"> </el-date-picker>
+          <el-date-picker @change="itemChange(scope.row)" v-if="editModel && headerItem.isEdit" v-model="scope.row[headerItem.columnName]" type="datetime" :placeholder="scope.row[headerItem.comment]" style="width: 130px" size="mini"> </el-date-picker>
           <span v-else>{{ scope.row[headerItem.columnName] }}</span>
         </template>
       </el-table-column>
@@ -136,7 +136,7 @@ export default {
   data() {
     return {
       searchKey: {
-        //動態下拉框搜索關鍵字
+        //動態下拉框搜尋關鍵字
         page: 1,
         limit: 9999,
         key: "",

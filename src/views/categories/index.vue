@@ -9,7 +9,7 @@
               <el-input placeholder="請輸入內容" v-model="typesListQuery.key" size="mini" style="margin-top: 10px; width: 130px">
                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
               </el-input>
-              <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleSearchCategoryTypes">搜索</el-button>
+              <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleSearchCategoryTypes">搜尋</el-button>
             </div>
           </div>
           <el-card shadow="never" class="body-small categories-menu-card">
@@ -29,7 +29,7 @@
             <div class="filter-container" style="white-space: nowrap; overflow-x: auto">
               <el-input @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入關鍵字'" v-model="listQuery.key"> </el-input>
 
-              <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜索</el-button>
+              <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜尋</el-button>
               <el-button :icon="`iconfont icon-${btn.icon}`" :type="btn.class" size="mini" v-for="btn of typesBtns" v-bind:key="btn.Id" class="filter-item" @click="onBtnClicked(btn.domId)">{{ btn.name }}</el-button>
             </div>
           </sticky>
@@ -69,7 +69,6 @@
       <!--類別之下的次分類彈窗 -->
       <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
-          
           <el-form-item size="small" :label="'名稱'" prop="name">
             <el-input v-model="temp.name"></el-input>
           </el-form-item>
@@ -417,7 +416,7 @@ export default {
           });
       });
     },
-    // 搜索分類
+    // 搜尋分類
     handleSearchCategoryTypes() {
       this.typesListQuery.page = 1;
       this.loadCategoryTypes();

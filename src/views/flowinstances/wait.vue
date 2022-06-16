@@ -4,59 +4,54 @@
   <div class="flex-column">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input @keyup.enter.native="handleFilter" size="mini" style="width: 200px;" class="filter-item" :placeholder="'名稱'" v-model="listQuery.key">
-        </el-input>
+        <el-input @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'名稱'" v-model="listQuery.key"> </el-input>
 
-        <el-button size="mini" class="filter-item" type="success" v-waves icon="el-icon-search" @click="handleFilter">搜索</el-button>
+        <el-button size="mini" class="filter-item" type="success" v-waves icon="el-icon-search" @click="handleFilter">搜尋</el-button>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
 
-        <el-checkbox class="filter-item" style='margin-left:15px;' @change='tableKey=tableKey+1' v-model="showDescription">描述</el-checkbox>
+        <el-checkbox class="filter-item" style="margin-left: 15px" @change="tableKey = tableKey + 1" v-model="showDescription">描述</el-checkbox>
       </div>
     </sticky>
     <div class="app-container flex-item">
-
-      <el-table ref="mainTable" :key='tableKey' :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%;" height="calc(100% - 52px)" @row-click="rowClick" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center">
-        </el-table-column>
+      <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 52px)" @row-click="rowClick" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" align="center"> </el-table-column>
 
         <el-table-column :label="'實例編碼'" min-width="120px">
           <template slot-scope="scope">
-            <span>{{scope.row.code}}</span>
+            <span>{{ scope.row.code }}</span>
           </template>
         </el-table-column>
 
         <el-table-column min-width="80px" :label="'名稱'">
           <template slot-scope="scope">
-            <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.customName}}</span>
+            <span class="link-type" @click="handleUpdate(scope.row)">{{ scope.row.customName }}</span>
           </template>
         </el-table-column>
 
         <el-table-column min-width="80px" :label="'當前活動節點'">
           <template slot-scope="scope">
-            <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.activityName}}</span>
+            <span class="link-type" @click="handleUpdate(scope.row)">{{ scope.row.activityName }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column min-width="150px" v-if='showDescription' :label="'描述'">
+        <el-table-column min-width="150px" v-if="showDescription" :label="'描述'">
           <template slot-scope="scope">
-            <span style='color:red;'>{{scope.row.description}}</span>
+            <span style="color: red">{{ scope.row.description }}</span>
           </template>
         </el-table-column>
 
         <el-table-column class-name="status-col" :label="'狀態'" width="100">
           <template slot-scope="scope">
-            <el-tag :type="scope.row.isFinish | statusFilter">{{statusOptions.find(u =>u.key == scope.row.isFinish).display_name}}</el-tag>
+            <el-tag :type="scope.row.isFinish | statusFilter">{{ statusOptions.find((u) => u.key == scope.row.isFinish).display_name }}</el-tag>
           </template>
         </el-table-column>
       </el-table>
 
       <div class="pagination-container">
-        <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.page" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit" layout="total, sizes, prev, pager, next, jumper" :total="total">
-        </el-pagination>
+        <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.page" :page-sizes="[10, 20, 30, 50]" :page-size="listQuery.limit" layout="total, sizes, prev, pager, next, jumper" :total="total"> </el-pagination>
       </div>
     </div>
   </div>
-
 </template>
 
 <script>
