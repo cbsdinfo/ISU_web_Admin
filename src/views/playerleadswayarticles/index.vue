@@ -2,7 +2,7 @@
   <div class="flex-column playLeaderPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input class="filter-item" size="mini" style="width: 200px" :placeholder="'請輸入標題'" @change="handleFilter()" v-model="listQuery.key"></el-input>
+        <el-input class="filter-item" prefix-icon="el-icon-search" size="mini" style="width: 200px" :placeholder="'請輸入標題'" @change="handleFilter()" v-model="listQuery.key"></el-input>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -44,7 +44,7 @@
     </div>
 
     <el-dialog v-el-drag-dialog class="dialog-mini" @close="closeDialog" top="10vh" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
-      <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm">
+      <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <!-- 區域類別 -->
           <el-col :span="24">
