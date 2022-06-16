@@ -121,11 +121,11 @@ export default {
       dialogStatus: "",
       textMap: {
         update: "編輯",
-        create: "添加",
+        create: "新增",
       },
       rules: {
-        name: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
-        picture: [{ required: true, message: "必填欄位" }],
+        name: [{ required: true, message: "必填欄位", trigger: "blur" }],
+        picture: [{ required: true, message: "必填欄位", trigger: "blur" }],
         sort: [{ required: true, message: "必填欄位", trigger: "blur" }],
         state: [{ required: true, message: "必填欄位", trigger: "blur" }],
       },

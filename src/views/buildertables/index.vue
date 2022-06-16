@@ -3,7 +3,7 @@
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
         <el-input @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'名稱'" v-model="firstQuery.key"> </el-input>
-        <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜索</el-button>
+        <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜尋</el-button>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -136,7 +136,7 @@ export default {
       // ------------------------明細列表數據-------------------------------------
       secondHeaderList: [], // 明細列表列定義
       secondList: [], // 明細列表值
-      secondQuery: {}, // 明細列表的過濾條件，如頁碼、每頁條數，搜索關鍵字等
+      secondQuery: {}, // 明細列表的過濾條件，如頁碼、每頁條數，搜尋關鍵字等
       secondTotal: 0, // 明細列表總條數
       multipleSelection: [], // 明細列表checkbox選中的值,
 

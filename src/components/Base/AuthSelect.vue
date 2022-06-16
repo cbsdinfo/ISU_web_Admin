@@ -37,8 +37,8 @@ export default {
     },
 
     /**
-     * 搜索關鍵字
-     * 當style為dynamic時，該值為傳入的搜索關鍵字
+     * 搜尋關鍵字
+     * 當style為dynamic時，該值為傳入的搜尋關鍵字
      */
     searchKey: {
       type: Object,
@@ -158,7 +158,7 @@ export default {
           params: this.searchKey,
         }).then((res) => {
           const obj = {
-            typeId: this.dataSource, //todo:暫時用url地址作為緩存的key，如果換了搜索關鍵字會有BUG
+            typeId: this.dataSource, //todo:暫時用url地址作為緩存的key，如果換了搜尋關鍵字會有BUG
             typeDatas: res.data.map((item) => {
               var o = {
                 label: item.name,

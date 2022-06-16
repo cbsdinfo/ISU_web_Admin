@@ -5,10 +5,10 @@
  * @updateDate:2021-07-04
 -->
 <template>
-  <div style="height: 100%;" class="select-users-wrap">
-    <div class="flex-row" style="height: 100%;">
+  <div style="height: 100%" class="select-users-wrap">
+    <div class="flex-row" style="height: 100%">
       <div class="part-box" v-if="loginKey === 'loginUser' && !orgId">
-        <el-card shadow="never" class="body-small custom-card" style="height: 100%;">
+        <el-card shadow="never" class="body-small custom-card" style="height: 100%">
           <div slot="header" class="clearfix">
             <el-button type="text" style="padding: 0 11px" @click="getAllUsers">全部用戶>></el-button>
           </div>
@@ -17,14 +17,14 @@
         </el-card>
       </div>
       <div class="flex-item table-box">
-        <div class="flex-row" style="align-items: center;" @keyup.13="handleSearch">
-          <el-input size="mini" style="margin: 10px;width: 200px;" placeholder="請輸入內容" v-model="searchKey">
+        <div class="flex-row" style="align-items: center" @keyup.13="handleSearch">
+          <el-input size="mini" style="margin: 10px; width: 200px" placeholder="請輸入內容" v-model="searchKey">
             <i slot="prefix" class="el-input__icon el-icon-search"></i>
           </el-input>
           <el-button type="primary" icon="el-icon-search" size="mini" @click="handleSearch">查詢</el-button>
-          <div style="text-align: right;padding: 5px 10px;" :title="names" v-if="names" class="flex-item ellipsis">當前選中：{{ names }}</div>
+          <div style="text-align: right; padding: 5px 10px" :title="names" v-if="names" class="flex-item ellipsis">當前選中：{{ names }}</div>
         </div>
-        <el-table ref="multipleTable" height="calc(100% - 52px - 36px)" v-if="loginKey === 'loginUser'" :data="tableData.datas" tooltip-effect="dark" v-loading="tableData.loading" style="width: 100%;border-top: 1px solid #e4e4e4;" @row-click="rowClick" @select="handleSelectionUser" @select-all="handleSelectionUser">
+        <el-table ref="multipleTable" height="calc(100% - 52px - 36px)" v-if="loginKey === 'loginUser'" :data="tableData.datas" tooltip-effect="dark" v-loading="tableData.loading" style="width: 100%; border-top: 1px solid #e4e4e4" @row-click="rowClick" @select="handleSelectionUser" @select-all="handleSelectionUser">
           <el-table-column align="center" type="selection" width="55"> </el-table-column>
 
           <el-table-column align="center" min-width="80px" :label="'帳號'">
@@ -53,7 +53,7 @@
         </el-table>
 
         <!--角色選擇-->
-        <el-table ref="multipleTable" height="calc(100% - 52px - 36px)" v-else :data="tableData.datas" tooltip-effect="dark" v-loading="tableData.loading" border style="width: 100%;" @row-click="rowClick" @select="handleSelectionUser" @select-all="handleSelectionUser">
+        <el-table ref="multipleTable" height="calc(100% - 52px - 36px)" v-else :data="tableData.datas" tooltip-effect="dark" v-loading="tableData.loading" border style="width: 100%" @row-click="rowClick" @select="handleSelectionUser" @select-all="handleSelectionUser">
           <el-table-column align="center" type="selection" width="55"> </el-table-column>
 
           <el-table-column align="center" min-width="50px" :label="'角色名稱'">
@@ -69,11 +69,10 @@
           </el-table-column>
         </el-table>
 
-        <el-pagination :background="false" layout="prev, pager, next" :total="tableData.total" :page-size="tableData.listQuery.limit" @current-change="handlePageSearch" style="margin-top: 3px;text-align: right;">
-        </el-pagination>
+        <el-pagination :background="false" layout="prev, pager, next" :total="tableData.total" :page-size="tableData.listQuery.limit" @current-change="handlePageSearch" style="margin-top: 3px; text-align: right"> </el-pagination>
       </div>
     </div>
-    <div style="text-align:right;margin-top: 10px;" v-if="!hiddenFooter">
+    <div style="text-align: right; margin-top: 10px" v-if="!hiddenFooter">
       <el-button size="small" type="cancel" @click="handleClose">取消</el-button>
       <el-button size="small" type="primary" @click="handleSaveUsers">確定</el-button>
     </div>
@@ -194,8 +193,7 @@ export default {
     loadData(page) {
       this.tableData.listQuery.page = page || 1;
       if (this.loginKey === "loginUser") {
-        (!this.leftTreeDatas || this.leftTreeDatas.length <= 0) &&
-          this.getLeftTree();
+        (!this.leftTreeDatas || this.leftTreeDatas.length <= 0) && this.getLeftTree();
         this.getUserList();
         return;
       }
@@ -207,7 +205,7 @@ export default {
       this.tableData.listQuery.page = 1;
       this.getUserList();
     },
-    // 搜索用戶/角色
+    // 搜尋用戶/角色
     handleSearch() {
       this.loadData();
     },
@@ -227,9 +225,7 @@ export default {
       this.tableData.loading = true;
       this.tableData.listQuery.key = this.searchKey;
 
-      let queryFn = this.ignoreAuth
-        ? this.$api.users.loadAll
-        : this.$api.users.getList;
+      let queryFn = this.ignoreAuth ? this.$api.users.loadAll : this.$api.users.getList;
 
       queryFn(this.tableData.listQuery).then((response) => {
         this.tableData.datas = response.data;
@@ -268,12 +264,8 @@ export default {
      * 用後端返回的當前列表數據計算當前頁面的選中項信息
      */
     initCurrentPageData() {
-      this.tableData.currentPageIds = [...this.tableData.datas]
-        .filter((x) => this.tableData.selectIds.indexOf(x.id) > -1)
-        .map((item) => item.id);
-      this.tableData.currentPageTexts = [...this.tableData.datas]
-        .filter((x) => this.tableData.selectTexts.indexOf(x.name) > -1)
-        .map((item) => item.name);
+      this.tableData.currentPageIds = [...this.tableData.datas].filter((x) => this.tableData.selectIds.indexOf(x.id) > -1).map((item) => item.id);
+      this.tableData.currentPageTexts = [...this.tableData.datas].filter((x) => this.tableData.selectTexts.indexOf(x.name) > -1).map((item) => item.name);
     },
 
     /**
@@ -281,9 +273,7 @@ export default {
      */
     setSelectTable() {
       this.$nextTick(() => {
-        const rows = [...this.tableData.datas].filter((x) =>
-          [...this.tableData.currentPageIds].some((y) => y === x.id)
-        );
+        const rows = [...this.tableData.datas].filter((x) => [...this.tableData.currentPageIds].some((y) => y === x.id));
         rows.forEach((row) => {
           this.$refs.multipleTable.toggleRowSelection(row);
         });
@@ -312,8 +302,7 @@ export default {
     },
     // 確認用戶選擇
     handleSaveUsers() {
-      const names =
-        this.tableData.selectTexts && this.tableData.selectTexts.join(",");
+      const names = this.tableData.selectTexts && this.tableData.selectTexts.join(",");
       this.$emit("update:userNames", names);
       this.$emit("update:users", this.tableData.selectIds);
       this.$emit("update:show", false);
@@ -321,47 +310,29 @@ export default {
     // 選擇用戶
     handleSelectionUser(val) {
       //先判定被刪除的
-      var delIds = this.tableData.currentPageIds.filter(
-        (x) => val.map((u) => u.id).indexOf(x) < 0
-      );
+      var delIds = this.tableData.currentPageIds.filter((x) => val.map((u) => u.id).indexOf(x) < 0);
       if (delIds.length > 0) {
-        this.tableData.selectIds = this.tableData.selectIds.filter(
-          (x) => delIds.indexOf(x) < 0
-        );
+        this.tableData.selectIds = this.tableData.selectIds.filter((x) => delIds.indexOf(x) < 0);
       }
 
-      var delTexts = this.tableData.currentPageTexts.filter(
-        (x) => val.map((u) => u.name).indexOf(x) < 0
-      );
+      var delTexts = this.tableData.currentPageTexts.filter((x) => val.map((u) => u.name).indexOf(x) < 0);
       if (delTexts.length > 0) {
-        this.tableData.selectTexts = this.tableData.selectTexts.filter(
-          (x) => delTexts.indexOf(x) < 0
-        );
+        this.tableData.selectTexts = this.tableData.selectTexts.filter((x) => delTexts.indexOf(x) < 0);
       }
 
       this.tableData.currentPageIds = val.map((item) => item.id);
       this.tableData.currentPageTexts = val.map((item) => item.name);
 
       //合併已選中的項和新增的項
-      this.tableData.selectIds = unique([
-        ...this.tableData.selectIds,
-        ...this.tableData.currentPageIds,
-      ]);
-      this.tableData.selectTexts = unique([
-        ...this.tableData.selectTexts,
-        ...this.tableData.currentPageTexts,
-      ]);
+      this.tableData.selectIds = unique([...this.tableData.selectIds, ...this.tableData.currentPageIds]);
+      this.tableData.selectTexts = unique([...this.tableData.selectTexts, ...this.tableData.currentPageTexts]);
     },
 
     rowClick(row) {
       this.$refs.multipleTable.clearSelection();
       this.$refs.multipleTable.toggleRowSelection(row);
-      this.tableData.selectTexts = [row].map(
-        (item) => item.name || item.account
-      );
-      this.tableData.currentPageTexts = [row].map(
-        (item) => item.name || item.account
-      );
+      this.tableData.selectTexts = [row].map((item) => item.name || item.account);
+      this.tableData.currentPageTexts = [row].map((item) => item.name || item.account);
       this.tableData.selectIds = [row].map((item) => item.id);
       this.tableData.currentPageIds = [row].map((item) => item.id);
     },

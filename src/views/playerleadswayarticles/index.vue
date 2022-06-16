@@ -4,7 +4,7 @@
       <div class="filter-container">
         <el-input class="filter-item" size="mini" style="width: 200px" :placeholder="'名稱'" @keyup.enter.native="handleFilter" v-model="listQuery.key"></el-input>
 
-        <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜索</el-button>
+        <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜尋</el-button>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -18,14 +18,14 @@
           <el-table-column min-width="50px" label="文章類別" prop="categoryName" align="center"></el-table-column>
           <el-table-column min-width="300px" label="列表圖片" prop="listImg" align="center">
             <template slot-scope="scope">
-              <div class="imgWrap"><img :src="`${imgUrl}${scope.row.listImg}`" alt=""></div>
+              <div class="imgWrap"><img :src="`${imgUrl}${scope.row.listImg}`" alt="" /></div>
             </template>
           </el-table-column>
           <el-table-column min-width="50px" label="標題" prop="title" align="center"></el-table-column>
           <el-table-column min-width="50px" label="排序" prop="sort" align="center"></el-table-column>
           <el-table-column min-width="50px" label="是否可用" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.state? "是" : "否" }}</span>
+              <span>{{ scope.row.state ? "是" : "否" }}</span>
             </template>
           </el-table-column>
           <el-table-column min-width="200px" :label="'操作'" align="center">
@@ -48,11 +48,7 @@
           <el-col :span="24">
             <el-form-item label="區域類別" prop="areaId">
               <el-select v-model="temp.areaId" placeholder="請選擇區域類別" @blur="validateBlurSelect('areaId')">
-                  <el-option v-for="item in selectListsRoad"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                  </el-option>
+                <el-option v-for="item in selectListsRoad" :key="item.value" :label="item.label" :value="item.value"> </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -60,11 +56,7 @@
           <el-col :span="24">
             <el-form-item label="文章類別" prop="categoryId">
               <el-select v-model="temp.categoryId" placeholder="請選擇文章類別" @blur="validateBlurSelect('categoryId')">
-                  <el-option v-for="item in selectListsArticle"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                  </el-option>
+                <el-option v-for="item in selectListsArticle" :key="item.value" :label="item.label" :value="item.value"> </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -90,11 +82,7 @@
           <el-col :span="24">
             <el-form-item label="列表圖片" prop="listImg">
               <el-input v-show="false" type="text" v-model="temp.listImg"></el-input>
-              <el-upload ref="upload" action="#" list-type="picture-card" :limit="2"
-                :file-list="fileList"
-                :on-success="fileSuccess"
-                :http-request="uploadFile"
-              >
+              <el-upload ref="upload" action="#" list-type="picture-card" :limit="2" :file-list="fileList" :on-success="fileSuccess" :http-request="uploadFile">
                 <i slot="default" class="el-icon-plus"></i>
                 <div slot="file" slot-scope="{ file }">
                   <img class="el-upload-list__item-thumbnail" :src="`${imgUrl}${file.path}`" alt="" />
@@ -105,7 +93,7 @@
           <!-- 編輯器內容 -->
           <el-col :span="24">
             <el-form-item label="內容">
-              <VueEditor  v-model="temp.contents"></VueEditor>
+              <VueEditor v-model="temp.contents"></VueEditor>
             </el-form-item>
           </el-col>
           <!-- TAG設定 -->
@@ -139,7 +127,7 @@
   </div>
 </template>
 <script>
-import { VueEditor } from "vue2-editor/dist/vue2-editor.core.js";//編輯器
+import { VueEditor } from "vue2-editor/dist/vue2-editor.core.js"; //編輯器
 import pbMixins from "@/mixins/permissionBtn.js";
 import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
@@ -150,23 +138,23 @@ import extend from "@/extensions/delRows.js";
 
 const formTemplate = {
   id: "",
-  areaId: "",//區域被別ID
-  areaName: "",//區域類別名稱
-  categoryId: "",//文章類別ID
-  categoryName: "",//文章類別名稱
-  releaseDate: "",//發布日期
-  title: "",//標調
-  summury: "",//摘要
-  contents: "",//文章內容(編輯器)
-  tags: "",//TAG 設定
-  listImg: "",//照片路徑
-  sort: 0,//排序
-  state: true,//狀態(上/下架)
+  areaId: "", //區域被別ID
+  areaName: "", //區域類別名稱
+  categoryId: "", //文章類別ID
+  categoryName: "", //文章類別名稱
+  releaseDate: "", //發布日期
+  title: "", //標調
+  summury: "", //摘要
+  contents: "", //文章內容(編輯器)
+  tags: "", //TAG 設定
+  listImg: "", //照片路徑
+  sort: 0, //排序
+  state: true, //狀態(上/下架)
 };
 
 export default {
   name: "playerLeadsWayArticle",
-  components: { Sticky, permissionBtn, Pagination,VueEditor },
+  components: { Sticky, permissionBtn, Pagination, VueEditor },
   directives: {
     waves,
     elDragDialog,
@@ -179,9 +167,9 @@ export default {
       tagInputValue: "",
       isRepeatTag: false,
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
-      fileList:[],
-      selectListsArticle:[],
-      selectListsRoad:[],
+      fileList: [],
+      selectListsArticle: [],
+      selectListsRoad: [],
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
@@ -198,10 +186,10 @@ export default {
       dialogStatus: "",
       textMap: {
         update: "編輯",
-        create: "添加",
+        create: "新增",
       },
       rules: {
-        areaId: [{ required: true, message: "必填欄位", trigger:["blur", "change"] }],
+        areaId: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         categoryId: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         releaseDate: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         title: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
@@ -214,18 +202,18 @@ export default {
   },
   mounted() {
     this.getList();
-    this.selectData("SYS_PlayerLeads_Article")
-    this.selectData("SYS_PlayerLeads_Area")
+    this.selectData("SYS_PlayerLeads_Article");
+    this.selectData("SYS_PlayerLeads_Area");
     // console.log(this.dayjs().format("YYYY-MM-DD"));
   },
   methods: {
-    dateFormat(row){
-      let date = row.releaseDate
-      return this.$dayjs(date).format("YYYY-MM-DD")
+    dateFormat(row) {
+      let date = row.releaseDate;
+      return this.$dayjs(date).format("YYYY-MM-DD");
     },
-    closeDialog(){
-      this.dialogFormVisible = false
-      this.resetTemp()
+    closeDialog() {
+      this.dialogFormVisible = false;
+      this.resetTemp();
     },
     resetTemp() {
       //this.$refs["ruleForm"].clearValidate();
@@ -248,7 +236,7 @@ export default {
     handleInputConfirm() {
       let tagInputValue = this.tagInputValue;
       this.isRepeatTag = this.dynamicTags.includes(tagInputValue);
-      if(!tagInputValue){
+      if (!tagInputValue) {
         this.tagInputVisible = false;
       }
       if (tagInputValue && !this.isRepeatTag) {
@@ -258,59 +246,58 @@ export default {
       }
     },
     //成功上傳圖片後的回調
-    fileSuccess(res,file,fileList) {
-        const {filePath} = res[0]
-        fileList.forEach((item,index)=>{
-          if(file.uid!==item.uid){
-            fileList.splice(index,1)
-          }
-        })
-        fileList.forEach((item,index)=>{
-          if(file.uid===item.uid){
-            fileList[index].path = filePath
-          }
-        })
+    fileSuccess(res, file, fileList) {
+      const { filePath } = res[0];
+      fileList.forEach((item, index) => {
+        if (file.uid !== item.uid) {
+          fileList.splice(index, 1);
+        }
+      });
+      fileList.forEach((item, index) => {
+        if (file.uid === item.uid) {
+          fileList[index].path = filePath;
+        }
+      });
     },
-    uploadFile(item){
-      let imgFile = item.file
-      if(imgFile){
+    uploadFile(item) {
+      let imgFile = item.file;
+      if (imgFile) {
         const formData = new FormData();
-        formData.append('files',imgFile);
-        this.$api.files.Upload(formData).then((res)=>{
-            const { code,result } = res;
-            if (code === 200) {
-              this.temp.listImg = result[0].filePath;
-              item.onSuccess(result)
-            }
-        })
+        formData.append("files", imgFile);
+        this.$api.files.Upload(formData).then((res) => {
+          const { code, result } = res;
+          if (code === 200) {
+            this.temp.listImg = result[0].filePath;
+            item.onSuccess(result);
+          }
+        });
       }
     },
     validateBlurSelect(id) {
       this.$refs.ruleForm.validateField(id);
     },
     // 取得下拉選單
-    selectData(typeId){
+    selectData(typeId) {
       let temp = {
         page: 1,
         limit: 999,
         TypeId: typeId,
-      }
+      };
       this.$api.categorys.load(temp).then((res) => {
-        const {code,data} = res
-        if(code===200){
-          if(typeId==='SYS_PlayerLeads_Article'){
-            this.selectListsArticle = data.map((item)=>({
-              label:item.name,
-              value:item.id
-            }))
-          } 
-          if(typeId==='SYS_PlayerLeads_Area'){
-            this.selectListsRoad = data.map((item)=>({
-              label:item.name,
-              value:item.id
-            }))
+        const { code, data } = res;
+        if (code === 200) {
+          if (typeId === "SYS_PlayerLeads_Article") {
+            this.selectListsArticle = data.map((item) => ({
+              label: item.name,
+              value: item.id,
+            }));
           }
-        
+          if (typeId === "SYS_PlayerLeads_Area") {
+            this.selectListsRoad = data.map((item) => ({
+              label: item.name,
+              value: item.id,
+            }));
+          }
         }
       });
     },
@@ -334,7 +321,7 @@ export default {
     },
     // 新增(談窗)
     handleCreate() {
-      this.temp.releaseDate = this.$dayjs().format("YYYY-MM-DD")
+      this.temp.releaseDate = this.$dayjs().format("YYYY-MM-DD");
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
     },
@@ -358,23 +345,23 @@ export default {
     // 保存提交
     submit() {
       let apiName = "";
-      switch(this.dialogStatus){
+      switch (this.dialogStatus) {
         case "add":
-          apiName = "add"
-          break
+          apiName = "add";
+          break;
         case "update":
-          apiName = "update"
-          break
+          apiName = "update";
+          break;
       }
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
           //處理TAG
-          this.temp.tags = this.dynamicTags.join(",")
+          this.temp.tags = this.dynamicTags.join(",");
 
           //取得文章類別名稱
-          this.temp.categoryName = this.selectListsArticle.filter((item)=>item.value===this.temp.categoryId)[0]?.label
+          this.temp.categoryName = this.selectListsArticle.filter((item) => item.value === this.temp.categoryId)[0]?.label;
           //取得區域類別名稱
-          this.temp.areaName = this.selectListsRoad.filter((item)=>item.value===this.temp.areaId)[0]?.label
+          this.temp.areaName = this.selectListsRoad.filter((item) => item.value === this.temp.areaId)[0]?.label;
 
           this.$api.playerLeadsWayArticles[apiName](this.temp).then(() => {
             this.$swal.fire({
@@ -383,32 +370,32 @@ export default {
               timer: 2000,
               showConfirmButton: false,
             });
-            this.closeDialog()
-            this.getList()
+            this.closeDialog();
+            this.getList();
           });
         }
       });
     },
     // 編輯彈窗
     handleUpdate(row) {
-      this.$api.playerLeadsWayArticles.get({id:row.id}).then((res)=>{
-        const{code,result} = res
-        if(code===200){
-          let {id,categoryId,categoryName,areaId,areaName,releaseDate,title,summury,contents,tags,listImg,sort,state} = result
-          this.temp = {id,categoryId,categoryName,areaId,areaName,releaseDate,title,summury,contents,tags,listImg,sort,state}
-          if(tags){
-            this.dynamicTags = tags.split(',')
+      this.$api.playerLeadsWayArticles.get({ id: row.id }).then((res) => {
+        const { code, result } = res;
+        if (code === 200) {
+          let { id, categoryId, categoryName, areaId, areaName, releaseDate, title, summury, contents, tags, listImg, sort, state } = result;
+          this.temp = { id, categoryId, categoryName, areaId, areaName, releaseDate, title, summury, contents, tags, listImg, sort, state };
+          if (tags) {
+            this.dynamicTags = tags.split(",");
           }
           this.fileList.push({
-            path:listImg
-          })
+            path: listImg,
+          });
         }
-      })
+      });
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
     },
     handleDelete(rows) {
-      this.delrows("playerLeadsWayArticles", rows,this.getList);
+      this.delrows("playerLeadsWayArticles", rows, this.getList);
     },
     onBtnClicked: function (domId, callback) {
       console.log("you click:" + domId);
@@ -463,15 +450,15 @@ export default {
 @import "~vue2-editor/dist/vue2-editor.css";
 
 /* Import the Quill styles you want */
-@import '~quill/dist/quill.core.css';
-@import '~quill/dist/quill.bubble.css';
-@import '~quill/dist/quill.snow.css';
-.playLeaderPage{
-  .dialogContent{
+@import "~quill/dist/quill.core.css";
+@import "~quill/dist/quill.bubble.css";
+@import "~quill/dist/quill.snow.css";
+.playLeaderPage {
+  .dialogContent {
     max-height: 70vh;
-    overflow-y: auto
+    overflow-y: auto;
   }
-  .tagItem{
+  .tagItem {
     .tagError {
       color: #d63737;
       font-size: 12px;
@@ -494,13 +481,13 @@ export default {
       // margin-left: 10px;
     }
   }
-  .imgWrap{
+  .imgWrap {
     margin: auto;
     width: 200px;
     height: 200px;
-    img{
+    img {
       width: 100%;
-      object-fit: cover
+      object-fit: cover;
     }
   }
 }

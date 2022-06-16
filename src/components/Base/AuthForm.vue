@@ -103,7 +103,7 @@ export default {
   data() {
     return {
       searchKey: {
-        //動態下拉框搜索關鍵字
+        //動態下拉框搜尋關鍵字
         page: 1,
         limit: 9999,
         key: "",

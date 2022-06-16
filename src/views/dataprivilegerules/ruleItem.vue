@@ -20,25 +20,25 @@
       <div class="rule-form flex-item">
         <template v-for="(rule, ruleIndex) in ruleForm.Filters">
           <el-form :key="createKey(rule.Key)">
-            <el-form-item style="display: inline-block;margin-bottom: 0;margin-right: 5px;">
+            <el-form-item style="display: inline-block; margin-bottom: 0; margin-right: 5px">
               <el-select size="mini" v-model="rule.Key" @change="handleChangeKey(rule)">
                 <el-option v-for="item in propertyData" :key="item.columnName" :label="item.comment" :value="item.columnName"></el-option>
               </el-select>
             </el-form-item>
-            <el-form-item style="display: inline-block;width:110px;margin-bottom: 0;margin-right: 5px;">
+            <el-form-item style="display: inline-block; width: 110px; margin-bottom: 0; margin-right: 5px">
               <el-select size="mini" v-model="rule.Contrast">
                 <el-option v-for="item in contrasts" :key="item.value" :label="item.label" :value="item.value"></el-option>
               </el-select>
             </el-form-item>
-            <el-form-item v-if="handleShowMore(rule.Key)" style="display: inline-block;margin-bottom: 0;width:260px;margin-right: 5px;">
-              <el-input :readonly="['CreateUserId', 'CreateUserName'].indexOf(rule.Key) >= 0 ? false : true" size="mini" style="text-overflow: ellipsis;padding-right: 30px;" v-model="rule.Text"></el-input>
-              <span style="position: absolute;right: 0;top:6px;bottom:7px;line-height: 28px;display:inline-block;background: #fff;border: 1px solid #DCDFE6;padding: 0 10px;border-radius: 0 4px 4px 0;cursor:pointer;" @click="handleSelectUser(ruleForm, ruleIndex)"><i class="el-icon-more"></i></span>
+            <el-form-item v-if="handleShowMore(rule.Key)" style="display: inline-block; margin-bottom: 0; width: 260px; margin-right: 5px">
+              <el-input :readonly="['CreateUserId', 'CreateUserName'].indexOf(rule.Key) >= 0 ? false : true" size="mini" style="text-overflow: ellipsis; padding-right: 30px" v-model="rule.Text"></el-input>
+              <span style="position: absolute; right: 0; top: 6px; bottom: 7px; line-height: 28px; display: inline-block; background: #fff; border: 1px solid #dcdfe6; padding: 0 10px; border-radius: 0 4px 4px 0; cursor: pointer" @click="handleSelectUser(ruleForm, ruleIndex)"><i class="el-icon-more"></i></span>
             </el-form-item>
-            <el-form-item v-else style="display: inline-block;margin-bottom: 0;width:260px;margin-right: 5px;">
+            <el-form-item v-else style="display: inline-block; margin-bottom: 0; width: 260px; margin-right: 5px">
               <el-popover ref="popover4" placement="bottom" width="250" trigger="focus">
                 <el-input slot="reference" size="mini" v-model="rule.Value"></el-input>
                 <div>
-                  <el-tag size="mini" style="margin: 0 10px 10px 0;cursor: pointer;" @click="handleSelectCurrentName(item.columnName, rule, ruleIndex)" v-for="(item, index) in keys" :key="index">{{ item.currentName }}</el-tag>
+                  <el-tag size="mini" style="margin: 0 10px 10px 0; cursor: pointer" @click="handleSelectCurrentName(item.columnName, rule, ruleIndex)" v-for="(item, index) in keys" :key="index">{{ item.currentName }}</el-tag>
                 </div>
               </el-popover>
             </el-form-item>
@@ -54,9 +54,9 @@
 
     <!-- 選擇角色/用戶 -->
     <el-dialog :destroy-on-close="true" class="dialog-mini custom-dialog user-dialog" width="850px" :title="loginKey === '{loginUser}' ? '選擇用戶' : '選擇角色'" :visible.sync="selectDialog">
-      <div v-if="selectDialog" class="flex-row" style="height: 100%;">
+      <div v-if="selectDialog" class="flex-row" style="height: 100%">
         <div class="part-box" v-if="loginKey === '{loginUser}'">
-          <el-card shadow="never" class="body-small custom-card" style="height: 100%;">
+          <el-card shadow="never" class="body-small custom-card" style="height: 100%">
             <div slot="header" class="clearfix">
               <el-button type="text" style="padding: 0 11px" @click="getAllUsers">全部用戶>></el-button>
             </div>
@@ -65,14 +65,14 @@
           </el-card>
         </div>
         <div class="flex-item table-box">
-          <div class="flex-row" style="align-items: center;" v-if="loginKey === '{loginUser}'" @keyup.13="handleSearchUser">
-            <el-input size="mini" style="margin: 10px;width: 200px;" placeholder="請輸入內容" v-model="searchKey">
+          <div class="flex-row" style="align-items: center" v-if="loginKey === '{loginUser}'" @keyup.13="handleSearchUser">
+            <el-input size="mini" style="margin: 10px; width: 200px" placeholder="請輸入內容" v-model="searchKey">
               <i slot="prefix" class="el-input__icon el-icon-search"></i>
             </el-input>
             <el-button type="primary" icon="el-icon-search" size="mini" @click="handleSearchUser">查詢</el-button>
-            <div style="text-align: right;padding: 5px 10px;" class="flex-item ellipsis" v-if="names">選中用戶：{{ names }}</div>
+            <div style="text-align: right; padding: 5px 10px" class="flex-item ellipsis" v-if="names">選中用戶：{{ names }}</div>
           </div>
-          <el-table ref="multipleTable" height="calc(100% - 60px - 45px)" v-if="loginKey === '{loginUser}'" :data="tableData.datas" tooltip-effect="dark" v-loading="tableData.loading" style="width: 100%;border-top: 1px solid #e4e4e4;" @select="handleSelectionUser" @select-all="handleSelectionUser">
+          <el-table ref="multipleTable" height="calc(100% - 60px - 45px)" v-if="loginKey === '{loginUser}'" :data="tableData.datas" tooltip-effect="dark" v-loading="tableData.loading" style="width: 100%; border-top: 1px solid #e4e4e4" @select="handleSelectionUser" @select-all="handleSelectionUser">
             <!-- @selection-change="handleSelectionUser"> -->
             <el-table-column align="center" type="selection" width="55"> </el-table-column>
 
@@ -100,7 +100,7 @@
               </template>
             </el-table-column>
           </el-table>
-          <el-table ref="multipleTable" height="calc(100%)" v-else :data="tableData.datas" tooltip-effect="dark" v-loading="tableData.loading" border style="width: 100%;" @select="handleSelectionUser" @select-all="handleSelectionUser">
+          <el-table ref="multipleTable" height="calc(100%)" v-else :data="tableData.datas" tooltip-effect="dark" v-loading="tableData.loading" border style="width: 100%" @select="handleSelectionUser" @select-all="handleSelectionUser">
             <!-- @selection-change="handleSelectionUser"> -->
             <el-table-column align="center" type="selection" width="55"> </el-table-column>
 
@@ -122,10 +122,10 @@
               </template>
             </el-table-column>
           </el-table>
-          <el-pagination background v-if="loginKey === '{loginUser}'" layout="prev, pager, next" :total="tableData.total" :page-size="tableData.listQuery.limit" @current-change="handlePageSearch" style="margin-top: 15px;text-align: right;"> </el-pagination>
+          <el-pagination background v-if="loginKey === '{loginUser}'" layout="prev, pager, next" :total="tableData.total" :page-size="tableData.listQuery.limit" @current-change="handlePageSearch" style="margin-top: 15px; text-align: right"> </el-pagination>
         </div>
       </div>
-      <div style="text-align:right;margin-top: 10px;">
+      <div style="text-align: right; margin-top: 10px">
         <el-button size="small" type="cancel" @click="selectDialog = false">取消</el-button>
         <el-button size="small" type="primary" @click="handleSaveUsers">確定</el-button>
       </div>
@@ -261,14 +261,8 @@ export default {
     },
     names() {
       let names = "";
-      if (
-        this.comonInfo.selectTexts.length > 0 ||
-        this.userInfo.selectTextsC.length > 0
-      ) {
-        names = [
-          ...this.comonInfo.selectTexts,
-          ...this.userInfo.selectTextsC,
-        ].join(",");
+      if (this.comonInfo.selectTexts.length > 0 || this.userInfo.selectTextsC.length > 0) {
+        names = [...this.comonInfo.selectTexts, ...this.userInfo.selectTextsC].join(",");
       }
       return names;
     },
@@ -291,9 +285,7 @@ export default {
       if (this.selectDialog) {
         const item = this.ruleIndexInfo.item;
         const index = this.ruleIndexInfo.index;
-        this.comonInfo.selectIds =
-          (item.Filters[index].Value && item.Filters[index].Value.split(",")) ||
-          [];
+        this.comonInfo.selectIds = (item.Filters[index].Value && item.Filters[index].Value.split(",")) || [];
       }
     },
   },
@@ -355,7 +347,7 @@ export default {
       this.groupData();
       this.getUserList();
     },
-    // 搜索用戶/角色
+    // 搜尋用戶/角色
     handleSearchUser() {
       this.loadData();
     },
@@ -378,35 +370,21 @@ export default {
         this.comonInfo.total = response.count;
         this.comonInfo.loading = false;
         if (this.comonInfo.datas.length > 0) {
-          this.userInfo.selectTextsC = [...this.comonInfo.datas]
-            .filter((x) => this.comonInfo.selectTexts.indexOf(x.name) > -1)
-            .map((item) => item.name);
-          this.userInfo.selectIdsC = [...this.comonInfo.datas]
-            .filter((x) => this.comonInfo.selectIds.indexOf(x.id) > -1)
-            .map((item) => item.id);
+          this.userInfo.selectTextsC = [...this.comonInfo.datas].filter((x) => this.comonInfo.selectTexts.indexOf(x.name) > -1).map((item) => item.name);
+          this.userInfo.selectIdsC = [...this.comonInfo.datas].filter((x) => this.comonInfo.selectIds.indexOf(x.id) > -1).map((item) => item.id);
           if (this.comonInfo.selectTexts.length > 0) {
-            this.comonInfo.selectTexts = this.comonInfo.selectTexts.filter(
-              (item) => !this.comonInfo.datas.some((x) => x.name === item)
-            );
+            this.comonInfo.selectTexts = this.comonInfo.selectTexts.filter((item) => !this.comonInfo.datas.some((x) => x.name === item));
           }
           if (this.comonInfo.selectIds.length > 0) {
-            this.comonInfo.selectIds = this.comonInfo.selectIds.filter(
-              (item) => !this.comonInfo.datas.some((x) => x.id === item)
-            );
+            this.comonInfo.selectIds = this.comonInfo.selectIds.filter((item) => !this.comonInfo.datas.some((x) => x.id === item));
           }
         }
         this.setSelectTable();
       });
     },
     groupData() {
-      this.comonInfo.selectTexts = [
-        ...this.comonInfo.selectTexts,
-        ...this.userInfo.selectTextsC,
-      ];
-      this.comonInfo.selectIds = [
-        ...this.comonInfo.selectIds,
-        ...this.userInfo.selectIdsC,
-      ];
+      this.comonInfo.selectTexts = [...this.comonInfo.selectTexts, ...this.userInfo.selectTextsC];
+      this.comonInfo.selectIds = [...this.comonInfo.selectIds, ...this.userInfo.selectIdsC];
     },
     // 獲取部門信息
     getPartData() {
@@ -438,14 +416,9 @@ export default {
     },
     // 預設選中
     setSelectTable() {
-      const selectIds =
-        this.loginKey === "{loginUser}"
-          ? this.userInfo.selectIdsC
-          : this.comonInfo.selectIds;
+      const selectIds = this.loginKey === "{loginUser}" ? this.userInfo.selectIdsC : this.comonInfo.selectIds;
       this.$nextTick(() => {
-        const rows = [...this.comonInfo.datas].filter((x) =>
-          [...selectIds].some((y) => y === x.id)
-        );
+        const rows = [...this.comonInfo.datas].filter((x) => [...selectIds].some((y) => y === x.id));
         rows.forEach((row) => {
           this.$refs.multipleTable.toggleRowSelection(row);
         });
@@ -467,10 +440,8 @@ export default {
     handleSaveUsers() {
       this.loginKey === "{loginUser}" && this.groupData();
       this.selectDialog = false;
-      this.ruleIndexInfo.item.Filters[this.ruleIndexInfo.index].Text =
-        this.comonInfo.selectTexts && this.comonInfo.selectTexts.join(",");
-      this.ruleIndexInfo.item.Filters[this.ruleIndexInfo.index].Value =
-        this.comonInfo.selectIds && this.comonInfo.selectIds.join(",");
+      this.ruleIndexInfo.item.Filters[this.ruleIndexInfo.index].Text = this.comonInfo.selectTexts && this.comonInfo.selectTexts.join(",");
+      this.ruleIndexInfo.item.Filters[this.ruleIndexInfo.index].Value = this.comonInfo.selectIds && this.comonInfo.selectIds.join(",");
     },
     // 選擇用戶
     handleSelectionUser(val) {
