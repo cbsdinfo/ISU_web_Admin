@@ -2,8 +2,7 @@
   <div class="flex-column newsPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入標題'" v-model="listQuery.key"> </el-input>
-        <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜索</el-button>
+        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入標題'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -15,7 +14,7 @@
           <!-- <el-table-column type="selection" align="center" width="55"> </el-table-column> -->
           <el-table-column width="150px" align="center" label="發佈日期" prop="releaseDate">
             <template slot-scope="scope">
-              <span>{{$dayjs(scope.row.releaseDate).format("YYYY-MM-DD")}}</span>
+              <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
             </template>
           </el-table-column>
           <el-table-column min-width="150px" align="center" label="類別名稱" prop="categoryName"></el-table-column>
@@ -383,8 +382,8 @@ export default {
       this.$api.newss.get({ id: row.id }).then((res) => {
         const { code, result } = res;
         if (code === 200) {
-          this.temp = JSON.parse(JSON.stringify(result))
-         
+          this.temp = JSON.parse(JSON.stringify(result));
+
           // let { id, categoryId, categoryName, releaseDate, title, summury, contents, tags, listImg, sort, state } = result;
           // this.temp = { id, categoryId, categoryName, releaseDate, title, summury, contents, tags, listImg, sort, state };
           if (this.temp.tags) {
@@ -450,8 +449,8 @@ export default {
       width: 90px;
       // margin-left: 10px;
     }
-    ::v-deep .quillWrapper{
-      .ql-container{
+    ::v-deep .quillWrapper {
+      .ql-container {
         height: 350px;
       }
     }
