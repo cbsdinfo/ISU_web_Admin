@@ -19,12 +19,12 @@
           </el-table-column>
           <el-table-column min-width="150px" align="center" label="類別名稱" prop="categoryName"></el-table-column>
           <el-table-column min-width="200px" align="center" label="標題" prop="title"></el-table-column>
-          <el-table-column min-width="100px" align="center" label="列表圖片" prop="listImg">
+          <el-table-column width="180px" align="center" label="列表圖片" prop="listImg">
             <template slot-scope="scope">
               <div class="imgWrap"><img :src="`${imgUrl}${scope.row.listImg}`" alt="" /></div>
             </template>
           </el-table-column>
-          <el-table-column width="60px" align="center" label="是否可用">
+          <el-table-column width="100px" align="center" label="是否可用">
             <template slot-scope="scope"
               ><span>{{ scope.row.state ? "是" : "否" }}</span></template
             >
@@ -383,9 +383,6 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
-
-          // let { id, categoryId, categoryName, releaseDate, title, summury, contents, tags, listImg, sort, state } = result;
-          // this.temp = { id, categoryId, categoryName, releaseDate, title, summury, contents, tags, listImg, sort, state };
           if (this.temp.tags) {
             this.dynamicTags = this.temp.tags.split(",");
           }
@@ -449,27 +446,8 @@ export default {
       width: 90px;
       // margin-left: 10px;
     }
-    ::v-deep .quillWrapper {
-      .ql-container {
-        height: 350px;
-      }
-    }
   }
-  .imgWrap {
-    margin: auto;
-    width: 100px;
-    // height: 100px;
-    // background-size: cover;
-    img {
-      width: 100%;
-      display: flex;
-      // height: 100px;
-      //background-size: cover
-      object-fit: cover;
-    }
-  }
-  .itemWidth {
-    width: 220px;
-  }
+  
+ 
 }
 </style>

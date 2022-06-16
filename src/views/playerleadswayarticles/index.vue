@@ -2,9 +2,7 @@
   <div class="flex-column playLeaderPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input class="filter-item" size="mini" style="width: 200px" :placeholder="'名稱'" @keyup.enter.native="handleFilter" v-model="listQuery.key"></el-input>
-
-        <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜尋</el-button>
+        <el-input class="filter-item" size="mini" style="width: 200px" :placeholder="'請輸入標題'" @change="handleFilter()" v-model="listQuery.key"></el-input>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -13,26 +11,30 @@
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
           <!-- <el-table-column type="selection" width="55" align="center"> </el-table-column> -->
-          <el-table-column min-width="50px" label="發佈日期" prop="releaseDate" align="center" :formatter="dateFormat"></el-table-column>
-          <el-table-column min-width="50px" label="區域類別" prop="areaName" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="文章類別" prop="categoryName" align="center"></el-table-column>
-          <el-table-column min-width="300px" label="列表圖片" prop="listImg" align="center">
+          <el-table-column width="150px" label="發佈日期" prop="releaseDate" align="center">
+            <template slot-scope="scope">
+              <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column width="100px" label="區域類別" prop="areaName" align="center"></el-table-column>
+          <el-table-column min-width="100px" label="文章類別" prop="categoryName" align="center"></el-table-column>
+          <el-table-column width="180px" label="列表圖片" prop="listImg" align="center">
             <template slot-scope="scope">
               <div class="imgWrap"><img :src="`${imgUrl}${scope.row.listImg}`" alt="" /></div>
             </template>
           </el-table-column>
-          <el-table-column min-width="50px" label="標題" prop="title" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="排序" prop="sort" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="是否可用" align="center">
+          <el-table-column min-width="100px" label="標題" prop="title" align="center"></el-table-column>
+          <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
+          <el-table-column width="100px" label="是否可用" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.state ? "是" : "否" }}</span>
             </template>
           </el-table-column>
-          <el-table-column min-width="200px" :label="'操作'" align="center">
+          <el-table-column width="200px" :label="'操作'" align="center">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
-                <el-button size="mini" @click="handleDelete([scope.row])" type="warning" v-if="hasButton('btnDel')">刪除</el-button>
+                <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -47,7 +49,7 @@
           <!-- 區域類別 -->
           <el-col :span="24">
             <el-form-item label="區域類別" prop="areaId">
-              <el-select v-model="temp.areaId" placeholder="請選擇區域類別" @blur="validateBlurSelect('areaId')">
+              <el-select class="itemWidth" v-model="temp.areaId" placeholder="請選擇區域類別" @blur="validateBlurSelect('areaId')">
                 <el-option v-for="item in selectListsRoad" :key="item.value" :label="item.label" :value="item.value"> </el-option>
               </el-select>
             </el-form-item>
@@ -55,7 +57,7 @@
           <!-- 文章類別 -->
           <el-col :span="24">
             <el-form-item label="文章類別" prop="categoryId">
-              <el-select v-model="temp.categoryId" placeholder="請選擇文章類別" @blur="validateBlurSelect('categoryId')">
+              <el-select class="itemWidth" v-model="temp.categoryId" placeholder="請選擇文章類別" @blur="validateBlurSelect('categoryId')">
                 <el-option v-for="item in selectListsArticle" :key="item.value" :label="item.label" :value="item.value"> </el-option>
               </el-select>
             </el-form-item>
@@ -63,7 +65,7 @@
           <!-- 日期 -->
           <el-col :span="24">
             <el-form-item label="日期" prop="releaseDate">
-              <el-date-picker type="date" v-model="temp.releaseDate" value-format="yyyy-MM-dd" placeholder="請選擇日期"></el-date-picker>
+              <el-date-picker class="itemWidth" type="date" v-model="temp.releaseDate" value-format="yyyy-MM-dd" placeholder="請選擇日期"></el-date-picker>
             </el-form-item>
           </el-col>
           <!-- 標題 -->
@@ -75,7 +77,7 @@
           <!-- 摘要 -->
           <el-col :span="24">
             <el-form-item label="摘要" prop="summury">
-              <el-input type="text" v-model="temp.summury" size="small" placeholder="請輸入摘要"></el-input>
+              <el-input type="textarea" v-model="temp.summury" size="small" placeholder="請輸入摘要"></el-input>
             </el-form-item>
           </el-col>
           <!-- 圖片上傳 -->
@@ -186,7 +188,7 @@ export default {
       dialogStatus: "",
       textMap: {
         update: "編輯",
-        create: "新增",
+        add: "新增",
       },
       rules: {
         areaId: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
@@ -207,10 +209,6 @@ export default {
     // console.log(this.dayjs().format("YYYY-MM-DD"));
   },
   methods: {
-    dateFormat(row) {
-      let date = row.releaseDate;
-      return this.$dayjs(date).format("YYYY-MM-DD");
-    },
     closeDialog() {
       this.dialogFormVisible = false;
       this.resetTemp();
@@ -381,13 +379,12 @@ export default {
       this.$api.playerLeadsWayArticles.get({ id: row.id }).then((res) => {
         const { code, result } = res;
         if (code === 200) {
-          let { id, categoryId, categoryName, areaId, areaName, releaseDate, title, summury, contents, tags, listImg, sort, state } = result;
-          this.temp = { id, categoryId, categoryName, areaId, areaName, releaseDate, title, summury, contents, tags, listImg, sort, state };
-          if (tags) {
-            this.dynamicTags = tags.split(",");
+          this.temp = JSON.parse(JSON.stringify(result));
+          if (this.temp.tags) {
+            this.dynamicTags = this.temp.tags.split(",");
           }
           this.fileList.push({
-            path: listImg,
+            path: this.temp.listImg,
           });
         }
       });
@@ -479,15 +476,6 @@ export default {
       display: block;
       width: 90px;
       // margin-left: 10px;
-    }
-  }
-  .imgWrap {
-    margin: auto;
-    width: 200px;
-    height: 200px;
-    img {
-      width: 100%;
-      object-fit: cover;
     }
   }
 }
