@@ -91,7 +91,7 @@
         </el-row>
       </el-form>
       <div slot="footer">
-        <el-button size="mini" @click="dialogFormVisible = false">取消</el-button>
+        <el-button size="mini" @click="closeDialog">取消</el-button>
         <el-button size="mini" type="primary" @click="submit">送出</el-button>
       </div>
     </el-dialog>
@@ -159,14 +159,6 @@ export default {
   mounted() {
     this.getList();
   },
-//   watch:{
-//     defaultTabName:{
-//         handler(bannerType){
-//             console.log(bannerType);
-//             this.getList(bannerType)
-//         }
-//     }
-//   },
   methods: {
     tabsClick(){
         console.log("tabsClick");
