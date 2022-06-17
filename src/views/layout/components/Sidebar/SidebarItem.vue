@@ -69,13 +69,35 @@ export default {
 };
 </script>
 <style lang="scss" scope>
-// .customColor{
-//   background-color: #050D34 !important;
-// }
-::v-deep .sidebar-container{
-  .el-scrollbar__view{
-    .el-submenu{
-       background-color: #050D34 !important;
+.el-menu{
+  background-color: #050D34 !important;
+  .customColor{//單層菜單
+    .el-menu-item{
+      background-color: #050D34 !important;
+      .iconfont{
+        margin-right: 5px;
+        color: rgba(255, 255, 255, 0.85) !important;
+      }
+      span{
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-weight: 400;
+      }
+    }
+    .el-submenu{//雙層菜單
+      .el-submenu__title{
+        background-color: #050D34 !important;
+          .iconfont,span, .el-submenu__icon-arrow{
+            color: rgba(255, 255, 255, 0.85) !important;
+          }
+          .iconfont{
+            margin-right: 5px;
+          }
+          span{
+            font-weight: 400;
+          }
+        
+        
+      }
     }
   }
 }
