@@ -372,7 +372,7 @@ export default {
     async uploadFile(item) {
       let imgFile = item.file;
       if (imgFile) {
-        const compressData = await this.$api.files.compressFile(imgFile, 150);
+        const compressData = await this.$api.files.compressFile(imgFile, 250);
         const formData = new FormData();
         formData.append("files", compressData);
         this.$api.files.Upload(formData).then((res) => {
