@@ -16,6 +16,7 @@
     "dayjs": "^1.11.3",
     "echarts": "3.8.5",
     "element-ui": "^2.10.1",
+    "image-conversion": "^2.1.1",
     "jquery": "^2.2.3",
     "js-cookie": "2.2.0",
     "jsplumb": "^2.12.8",

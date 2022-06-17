@@ -369,11 +369,12 @@ export default {
         }
       });
     },
-    uploadFile(item) {
+    async uploadFile(item) {
       let imgFile = item.file;
       if (imgFile) {
+        const compressData = await this.$api.files.compressFile(imgFile, 150);
         const formData = new FormData();
-        formData.append("files", imgFile);
+        formData.append("files", compressData);
         this.$api.files.Upload(formData).then((res) => {
           const { code, result } = res;
           if (code === 200) {
