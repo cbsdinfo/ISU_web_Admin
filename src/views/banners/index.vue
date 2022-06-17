@@ -2,8 +2,6 @@
   <div class="flex-column bannerPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'名稱'" v-model="listQuery.key"> </el-input>
-        <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜尋</el-button>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -13,23 +11,23 @@
       <div class="app-container flex-item">
         <div class="bg-white" style="height: 100%">
           <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%">
-            <el-table-column min-width="100px" label="圖片" prop="picture" align="center">
+            <el-table-column width="180px" label="圖片" prop="picture" align="center">
               <template slot-scope="scope">
                 <div class="imgWrap"><img :src="`${imgUrl}${scope.row.picture}`" alt="" /></div>
               </template>
             </el-table-column>
-            <el-table-column min-width="50px" label="連結網址" prop="url" align="center"></el-table-column>
-            <el-table-column min-width="50px" label="排序" prop="sort" align="center"></el-table-column>
-            <el-table-column min-width="50px" label="是否可用" align="center">
+            <el-table-column min-width="100px" label="連結網址" prop="url" align="center"></el-table-column>
+            <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
+            <el-table-column width="80px" label="是否可用" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.state ? "是" : "否" }}</span>
               </template>
             </el-table-column>
-            <el-table-column min-width="50px" :label="'操作'" align="center">
+            <el-table-column width="150px" :label="'操作'" align="center">
               <template slot-scope="scope">
                 <div class="buttonFlexBox">
                   <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
-                  <el-button size="mini" @click="handleDelete([scope.row])" type="warning" v-if="hasButton('btnDel')">刪除</el-button>
+                  <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
                 </div>
               </template>
             </el-table-column>
@@ -48,12 +46,19 @@
           <!-- banner顯示在前台的位置 -->
           <el-col :span="24">
             <el-form-item label="banner位置" prop="bannerType">
-              <el-select v-model="temp.bannerType" placeholder="請選擇Banner位置" @blur="validateBlurSelect">
+              <el-select class="itemWidth" v-model="temp.bannerType" placeholder="請選擇Banner位置" @blur="validateBlurSelect">
                 <el-option value="topBanner" label="上方"></el-option>
                 <el-option value="middleBanner" label="中間"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
+          <!-- 連結 -->
+          <el-col :span="24">
+            <el-form-item label="連結網址" prop="url">
+              <el-input class="itemWidth" type="text" v-model="temp.url" size="small" placeholder="請輸入連結網址"></el-input>
+            </el-form-item>
+          </el-col>
+
           <!-- 上傳圖片 -->
           <el-col :span="24">
             <el-form-item label="列表圖片" prop="picture">
@@ -66,12 +71,7 @@
               </el-upload>
             </el-form-item>
           </el-col>
-          <!-- 連結 -->
-          <el-col :span="24">
-            <el-form-item label="連結網址" prop="url">
-              <el-input type="text" v-model="temp.url" size="small" placeholder="請輸入連結網址"></el-input>
-            </el-form-item>
-          </el-col>
+         
           <!-- 排序 -->
           <el-col :span="24">
             <el-form-item label="排序" prop="sort">
@@ -141,7 +141,7 @@ export default {
       dialogStatus: "",
       textMap: {
         update: "編輯",
-        create: "新增",
+        add: "新增",
       },
       rules: {
         bannerType: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
@@ -316,15 +316,15 @@ export default {
 </script>
 <style lang="scss" scoped>
 .bannerPage {
-  .imgWrap {
-    margin: auto;
-    width: 200px;
-    height: 200px;
-    img {
-      width: 100%;
-      object-fit: cover;
-    }
-  }
+  // .imgWrap {
+  //   margin: auto;
+  //   width: 200px;
+  //   height: 200px;
+  //   img {
+  //     width: 100%;
+  //     object-fit: cover;
+  //   }
+  // }
   ::v-deep .el-tabs {
     .el-tabs__header {
       padding-left: 10px;

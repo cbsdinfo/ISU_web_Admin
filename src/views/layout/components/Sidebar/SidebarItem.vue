@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!item.hidden" class="menu-wrapper">
+  <div v-if="!item.hidden" class="customColor">
     <template v-if="!item.children || item.children.length <= 0 || item.alwaysShow">
       <el-menu-item :index="item.path" :class="{'submenu-title-noDropdown':!isNest}">
         <i :class="`iconfont icon-${item.meta.icon}`"></i>
@@ -68,7 +68,17 @@ export default {
   },
 };
 </script>
-<style lang="scss">
+<style lang="scss" scope>
+// .customColor{
+//   background-color: #050D34 !important;
+// }
+::v-deep .sidebar-container{
+  .el-scrollbar__view{
+    .el-submenu{
+       background-color: #050D34 !important;
+    }
+  }
+}
 .menu-wrapper .iconfont {
   margin-right: 5px;
   font-size: 16px;

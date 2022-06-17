@@ -9,7 +9,7 @@
 
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
-        <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%">
+        <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
           <!-- <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)"> -->
           <!-- <el-table-column type="selection" align="center" width="55"> </el-table-column> -->
           <el-table-column width="150px" align="center" label="發佈日期" prop="releaseDate">
@@ -159,7 +159,6 @@ export default {
     return {
       selectLists: [],
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
-      filePath: "",
       fileList: [],
       dynamicTags: [],
       tagInputVisible: false,
