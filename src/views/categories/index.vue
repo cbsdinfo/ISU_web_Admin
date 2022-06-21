@@ -109,9 +109,9 @@ import elDragDialog from "@/directive/el-dragDialog";
 
 const formTemplate = {
   id: "", // 分類表ID（可作為分類的標識）
-  dtCode: "",
+  dtCode: "",//店家的帳號(專門給集章類別/集章商品)
   name: "", // 名稱
-  dtValue: "",
+  dtValue: "",//店家的中文名稱(專門給集章類別/集章商品)
   isEnable: true, // 是否可用
   sort: 0, // 排序號
   description: "", // 分類描述

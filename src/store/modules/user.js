@@ -123,6 +123,11 @@ const user = {
         resolve()
       })
     }
+  },
+  getters: {
+    defaultorg: state => {
+      return state.defaultorg
+    },
   }
 }
 

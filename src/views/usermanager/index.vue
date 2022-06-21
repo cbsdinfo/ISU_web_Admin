@@ -72,7 +72,7 @@
           </div>
         </el-col>
       </el-row>
-
+      <!-- 彈窗(編輯帳號) -->
       <el-dialog class="dialog-mini" width="500px" v-el-drag-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
           <el-form-item size="small" :label="'Id'" prop="id" v-show="dialogStatus == 'update'">
@@ -105,7 +105,7 @@
           <el-button size="mini" v-else type="primary" @click="updateData">確認</el-button>
         </div>
       </el-dialog>
-
+      <!-- 第一層分配角色 -->
       <el-dialog width="516px" class="dialog-mini body-small" v-el-drag-dialog :title="'分配角色'" :visible.sync="dialogRoleVisible">
         <el-form ref="rolesForm" size="small" v-if="dialogRoleVisible" label-position="left">
           <el-form-item>
@@ -313,9 +313,8 @@ export default {
             });
             return;
           }
+          console.log("this.handleAccessRole(this.multipleSelection[0]);");
           this.handleAccessRole(this.multipleSelection[0]);
-          break;
-        default:
           break;
       }
     },
@@ -446,6 +445,7 @@ export default {
     },
     // 分配角色
     handleAccessRole(row) {
+      console.log(row);
       const _this = this;
       this.temp = Object.assign({}, row); // copy obj
       this.$api.roles.loadForUser(this.temp.id).then((response) => {
@@ -475,7 +475,8 @@ export default {
       this.selectRoles = val;
     },
     acceRole() {
-      this.$api.accsssobjs
+      console.log("acceRole");
+      this.$api.accessObjs
         .assign({
           type: "UserRole",
           firstId: this.temp.id,

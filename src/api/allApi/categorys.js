@@ -1,6 +1,13 @@
 ﻿import request from '@/utils/request'
 
 const api = {
+  get(params) {
+    return request({
+      url: '/categorys/get',
+      method: 'get',
+      params
+    })
+  },
   load(params) {
     return request({
       url: '/categorys/load',

@@ -2,7 +2,7 @@
   <div class="flex-column product">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸商品、店家名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
+        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入商品、店家名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
         <el-select size="mini" v-model="listQuery.State" placeholder="請選擇產品類別" @change="getList()">
           <el-option v-for="item in selectListState" :key="item.value" :label="item.label" :value="item.value"></el-option>
         </el-select>
@@ -317,7 +317,7 @@ export default {
   },
   mounted() {
     this.getList();
-    this.selectData('')
+    this.selectData()
   },
   computed:{
     formatImgData(){
@@ -504,14 +504,12 @@ export default {
       this.dialogFormVisible = true;
     },
     handleSubmit(imgPathAry){
-      console.log("handleSubmit");
       if(imgPathAry.length===0){
          this.temp.picture = ""
       }else{
         this.temp.picture = JSON.stringify(imgPathAry)
       }
       this.submitFlag = false;
-      console.log("");
       this.submit()
     },
     // 保存提交
@@ -547,12 +545,7 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
-          console.log(this.temp.picture);
           this.imagePathAry = JSON.parse(this.temp.picture)
-          console.log(this.imagePathAry);
-          // this.fileList.push({
-          //   path: this.temp.picture,
-          // });
         }
       });
       this.dialogStatus = "update";

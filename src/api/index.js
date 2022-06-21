@@ -1,4 +1,4 @@
-import accessobjs from "./allApi/accessObjs";
+import accessObjs from "./allApi/accessObjs";
 import applications from "./allApi/applications";
 import buildertables from "./allApi/builderTables";
 import categorys from "./allApi/categorys";
@@ -23,7 +23,7 @@ import products from "./allApi/products";
 import productCategorys from "./allApi/productCategorys";
 
 export default {
-    accessobjs,
+    accessObjs,
     applications,
     buildertables,
     categorys,
