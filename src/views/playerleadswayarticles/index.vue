@@ -110,7 +110,7 @@
           <!-- 排序 -->
           <el-col :span="24">
             <el-form-item label="排序" prop="sort">
-              <el-input-number v-model="temp.sort" placeholder="請輸入排序" size="small"></el-input-number>
+              <el-input-number v-model="temp.sort" placeholder="請輸入排序" size="small" :min="0"></el-input-number>
             </el-form-item>
           </el-col>
           <!-- 狀態(上架/下架) -->

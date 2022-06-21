@@ -9,7 +9,7 @@
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
-
+    
     <div class="app-container flex-item tableWrap">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
@@ -18,7 +18,8 @@
           <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center"></el-table-column>
           <el-table-column width="120px" label="產品縮圖" prop="picture" align="center">
             <template slot-scope="scope">
-              <div class="imgWrap"><img :src="`${imgUrl}${scope.row.picture}`" alt="" /></div>
+              <div class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
+              <!-- <div class="imgWrap"><img :src="`${imgUrl}${scope.row.picture}`" alt="" /></div> -->
             </template>
           </el-table-column>
           <el-table-column min-width="120px" label="供應商代碼" prop="vendorCode" align="center"></el-table-column>
@@ -42,7 +43,7 @@
           </el-table-column>
           <el-table-column width="150px" align="center" label="最後更新時間" prop="releaseDate">
             <template slot-scope="scope">
-              <span>{{ $dayjs(scope.row.modifyDate).format("YYYY-MM-DD") }}</span>
+              <span>{{ !!scope.row.modifyDate?$dayjs(scope.row.modifyDate).format("YYYY-MM-DD"):"-"}}</span>
             </template>
           </el-table-column>
           <!-- <el-table-column min-width="80px" label="產品類別ID" prop="categoryId" align="center"></el-table-column>
@@ -53,8 +54,7 @@
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handlePreview(scope.row)" type="primary" v-if="hasButton('preview')">查看</el-button>
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
-                <!-- <el-button size="mini" @click="updateState(scope.row,'agree')" type="primary" v-if="hasButton('agree')">上架</el-button>
-                <el-button size="mini" @click="updateState(scope.row,'reject')" type="danger" v-if="hasButton('reject')">未通過</el-button> -->
+                <!-- <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button> -->
               </div>
             </template>
           </el-table-column>
@@ -62,9 +62,9 @@
         <pagination v-show="total > 0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleCurrentChange" />
       </div>
     </div>
-
+     <!-- <upload-image/> -->
     <el-dialog class="dialog-mini preview-dialog" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
-      <el-form label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
+      <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <!-- 新增,編輯 -->
           <template v-if="dialogStatus==='add' || dialogStatus==='update'">   
@@ -95,13 +95,14 @@
             <!-- 圖片上傳 -->
             <el-col :span="24">
               <el-form-item label="產品圖片" prop="picture">
+                <upload-image :submitFlag="submitFlag" :imagePathAry="imagePathAry" @handleSubmit="handleSubmit"/>
                 <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input>
-                <el-upload ref="upload" action="#" list-type="picture-card" :limit="2" :file-list="fileList" :on-success="fileSuccess" :http-request="uploadFile">
+                <!-- <el-upload ref="upload" action="#" list-type="picture-card" :limit="2" :file-list="fileList" :on-success="fileSuccess" :http-request="uploadFile">
                   <i slot="default" class="el-icon-plus"></i>
                   <div slot="file" slot-scope="{ file }">
                     <img class="el-upload-list__item-thumbnail" :src="`${imgUrl}${file.path}`" alt="" />
                   </div>
-                </el-upload>
+                </el-upload> -->
               </el-form-item>
             </el-col>
             <!-- 價格 -->
@@ -114,6 +115,12 @@
             <el-col :span="24">
               <el-form-item label="產品前台連結" prop="url">
                 <el-input type="text" v-model.trim="temp.url" placeholder="請輸入產品連結"></el-input>
+              </el-form-item>
+            </el-col>
+            <!-- 編輯器 -->
+            <el-col :span="24">
+              <el-form-item label="內容">
+                <VueEditor v-model="temp.contents"></VueEditor>
               </el-form-item>
             </el-col>
             <!-- 是否為精選產品 -->
@@ -134,14 +141,18 @@
             <!-- 排序 -->
             <el-col :span="24">
               <el-form-item label="排序" prop="sort">
-                <el-input-number v-model="temp.sort" placeholder="請輸入排序" size="small"></el-input-number>
+                <el-input-number v-model="temp.sort" placeholder="請輸入排序" size="small" :min="0"></el-input-number>
               </el-form-item>
             </el-col>
             <!-- 產品狀態 -->
             <el-col :span="24">
               <el-form-item label="產品狀態" prop="state">
-                <el-input-number class="itemProduct" v-model.number="temp.state"  :max="4" :min="1" size="small"></el-input-number>
-                <span>{{statusText(temp.state)}}</span>
+                <el-radio v-model.number="temp.state" :label="1">未審核</el-radio>
+                <el-radio v-model.number="temp.state" :label="2">上架</el-radio>
+                <el-radio v-model.number="temp.state" :label="3">未通過</el-radio>
+                <el-radio v-model.number="temp.state" :label="4">補貨中</el-radio>
+                <!-- <el-input-number class="itemProduct" v-model.number="temp.state"  :max="4" :min="1" size="small"></el-input-number>
+                <span>{{statusText(temp.state)}}</span> -->
               </el-form-item>
             </el-col>
           </template>
@@ -158,9 +169,9 @@
               </div>
                <div class="previewItem">
                 <p class="title">產品縮圖</p>
-                <div class="item">
-                  <div class="imgWrap">
-                    <img :src="`${imgUrl}${temp.picture}`">
+                <div class="item imgContent">
+                  <div class="imgWrap" v-for="(item,index) in imagePathAry" :key="index">
+                    <img :src="`${imgUrl}${item.path}`">
                   </div>
                   <!-- {{temp.storeName}} -->
                 </div>
@@ -177,7 +188,7 @@
                 <p class="title">前台商品連結</p>
                 <p class="item">{{temp.url}}</p>
               </div>
-               <div class="previewItem">
+              <div class="previewItem">
                 <p class="title">是否為精選商品</p>
                 <p class="item">{{temp.featured?'是':'否'}}</p>
               </div>
@@ -204,7 +215,7 @@
       <div slot="footer">
         <template v-if="dialogStatus==='add' || dialogStatus==='update'">
           <el-button size="mini" @click="closeDialog">取消</el-button>
-          <el-button size="mini" type="primary" @click="submit">確認</el-button>
+          <el-button size="mini" type="primary" @click="submitFlag = true;">確認</el-button>
         </template>
         <template v-if="dialogStatus==='preview'">
           <el-button size="mini" @click="closeDialog">取消</el-button>
@@ -218,6 +229,7 @@
   </div>
 </template>
 <script>
+import { VueEditor } from "vue2-editor/dist/vue2-editor.core.js"; //編輯器
 import pbMixins from "@/mixins/permissionBtn.js";
 import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
@@ -225,6 +237,7 @@ import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
+import uploadImage from "@/components/UploadImage";
 
 const formTemplate = {
   id: "",
@@ -234,7 +247,7 @@ const formTemplate = {
   vendorCode: "",//供應商代碼(資料帶入)
   productId: "",//產品ID(資料帶入)
   productName: "",//產品名稱(資料帶入)
-  price: 0,//產品價格(資料帶入)
+  price:undefined ,//產品價格(資料帶入)
   picture: "",//產品圖片路徑(資料帶入)
   url: "",//前台產品連結(資料帶入)
   featured:undefined,//是否為精選商品(資料帶入)
@@ -244,7 +257,7 @@ const formTemplate = {
 
 export default {
   name: "product",
-  components: { Sticky, permissionBtn, Pagination },
+  components: { Sticky, permissionBtn, Pagination,uploadImage,VueEditor },
   directives: {
     waves,
     elDragDialog,
@@ -252,6 +265,8 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
+      imagePathAry:[],
+      submitFlag:false,
       selectListState:[
         {label:'全部',value:0},
         {label:'未審核',value:1},
@@ -305,6 +320,12 @@ export default {
     this.selectData('')
   },
   computed:{
+    formatImgData(){
+      return (imgJsonString)=>{
+        let firstImgPath =JSON.parse(imgJsonString)[0].path
+        return this.imgUrl+firstImgPath
+      }
+    },
     statusText(){
       return (state)=>{
         let statusText ="";
@@ -372,6 +393,7 @@ export default {
     async uploadFile(item) {
       let imgFile = item.file;
       if (imgFile) {
+        console.log(imgFile);
         const compressData = await this.$api.files.compressFile(imgFile, 250);
         const formData = new FormData();
         formData.append("files", compressData);
@@ -455,7 +477,8 @@ export default {
     resetTemp() {
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate));
-      this.fileList = [];
+      this.imagePathAry = []
+      // this.fileList = [];
     },
     closeDialog() {
       this.dialogFormVisible = false;
@@ -467,9 +490,10 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
-          this.fileList.push({
-            path: this.temp.picture,
-          });
+          this.imagePathAry = JSON.parse(this.temp.picture)
+          // this.fileList.push({
+          //   path: this.temp.picture,
+          // });
         }
       });
       this.dialogStatus = "preview";
@@ -479,8 +503,20 @@ export default {
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
     },
+    handleSubmit(imgPathAry){
+      console.log("handleSubmit");
+      if(imgPathAry.length===0){
+         this.temp.picture = ""
+      }else{
+        this.temp.picture = JSON.stringify(imgPathAry)
+      }
+      this.submitFlag = false;
+      console.log("");
+      this.submit()
+    },
     // 保存提交
     submit() {
+      // this.submitFlag = true;
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
           let apiName = "";
@@ -511,9 +547,12 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
-          this.fileList.push({
-            path: this.temp.picture,
-          });
+          console.log(this.temp.picture);
+          this.imagePathAry = JSON.parse(this.temp.picture)
+          console.log(this.imagePathAry);
+          // this.fileList.push({
+          //   path: this.temp.picture,
+          // });
         }
       });
       this.dialogStatus = "update";
@@ -527,6 +566,12 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+@import "~vue2-editor/dist/vue2-editor.css";
+
+/* Import the Quill styles you want */
+@import "~quill/dist/quill.core.css";
+@import "~quill/dist/quill.bubble.css";
+@import "~quill/dist/quill.snow.css";
 .product{
   .itemProduct{
     margin-right: 5px;
@@ -537,13 +582,15 @@ export default {
   .reject{
     color:red;
   }
-  .tableWrap{
-  }
   .preview-dialog{
+    .el-radio{
+      margin: 0px 15px 0px 0px;
+    }
     .previewItem{
       display: flex;
       border: 1px solid #EBEEF5;
       .title{
+        flex-shrink: 0;
         font-weight: 500;
         color: #606266;
         display: flex;
@@ -552,17 +599,26 @@ export default {
         padding: 8px 0px 8px 16px;
         border-right: 1px solid #EBEEF5;
       }
+      .imgContent{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
       .item{
         font-weight: 500;
         padding: 8px 0px 8px 16px;
-        .imgWrap{
-          width: 120px;
-          height: 120px;
-          img{
-            width: 100%;
-            object-fit: cover;
+          .imgWrap{
+            // margin-right: 5px;
+            // padding: 5px;
+            width: 120px;
+            height: 120px;
+            // margin: 0px 8px 0px 0px;
+            margin:5px;
+            img{
+              width: 100%;
+              object-fit: cover;
+            }
           }
-        }
       }
     }
   }
