@@ -122,7 +122,7 @@ export default {
     },
     submit() {
       // 提交結果
-      this.$api.accessobjs
+      this.$api.accessObjs
         .assign({
           type: "RoleResource",
           firstId: this.roleId,

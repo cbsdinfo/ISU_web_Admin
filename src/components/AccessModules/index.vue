@@ -136,6 +136,7 @@ export default {
     },
     acceRole() {
       var step = this.step * 1.0;
+      console.log(step);
       switch (step) {
         case 1:
           var checkNodes = this.$refs.tree.getCheckedNodes(false);
@@ -181,6 +182,7 @@ export default {
         if (!item.isSys && typeof item.isSys === "boolean" && !!item.code) {
           noSystem = true;
           this.$api.modules.getProperties(item.code).then((res) => {
+            console.log("getProperties", res);
             item.properties = res.result;
             this.$api.modules.loadPropertiesForRole(item.code, this.roleId).then((res) => {
               item.loadPropertiesForRole = res.result;
@@ -214,14 +216,14 @@ export default {
       const getCheckedElements = getCheckedItems.filter((i) => !!i.moduleId);
       const getCheckedMenus = getCheckedItems.filter((i) => !i.moduleId);
 
-      this.$api.accessobjs
+      this.$api.accessObjs
         .assign({
           type: "RoleModule",
           firstId: this.roleId,
           secIds: getCheckedMenus.map((i) => i.id),
         })
         .then(() => {
-          this.$api.accessobjs
+          this.$api.accessObjs
             .assign({
               type: "RoleElement",
               firstId: this.roleId,
