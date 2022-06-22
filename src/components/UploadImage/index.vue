@@ -26,7 +26,12 @@
             },
             imagePathAry:{
                 type:Array,
+            },
+            uploadLimit:{
+                type:Number,
+                default:99
             }
+
         },
         data(){
             return {
@@ -36,14 +41,15 @@
         },
         watch:{
             submitFlag(val){
-                console.log(val);
                 if(val){
                     this.emitFilePath()
                 }
             },
             imagePathAry(imgPath){
                 this.imageAry = JSON.parse(JSON.stringify(imgPath))
-                this.imageAry.push({path:""})
+                if(this.imageAry.length<this.uploadLimit){
+                    this.imageAry.push({path:""})
+                }
             }
         },
         methods: {
@@ -79,7 +85,9 @@
                                     })
                                 }
                             });
-                            this.imageAry.push({path:""})
+                            if(this.imageAry.length<this.uploadLimit){
+                                this.imageAry.push({path:""})
+                            }
                          
                         }
                     });
@@ -87,18 +95,17 @@
             },
             deleteImg(index){
                 this.imageAry.splice(index,1)
-                // setTimeout(function(scope) {
-                //     console.log(index);
-                //     scope.imageAry.splice(index,1)
-                // }, 0, this);
+                if(this.imageAry.length<this.uploadLimit){
+                    this.imageAry.push({path:""})
+                }
             },
             emitFilePath(){
                 console.log("emitFilePath");
                 let imgPathAry = JSON.parse(JSON.stringify(this.imageAry))
                 if(imgPathAry[imgPathAry.length-1].path===''){
                     imgPathAry.splice(imgPathAry.length-1,1)
-                    this.$emit("handleSubmit",imgPathAry)
                 }
+                this.$emit("handleSubmit",imgPathAry)
             }
 
         },

@@ -3,8 +3,8 @@
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
         <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入商家名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
-        <el-select v-model.trim="temp.categoryId" placeholder="請選擇集章類別" size="mini">
-          <el-option v-for="item in selectListCategories" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+        <el-select v-model.trim="listQuery.CategoryId" placeholder="請選擇集章類別" size="mini" @change="handleFilter">
+          <el-option v-for="item in selectListCategoriesFilter" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
         <!-- <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜尋</el-button> -->
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
@@ -14,19 +14,23 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <!-- <el-table-column type="selection" align="center" width="55"> </el-table-column> -->
-          <!-- <el-table-column min-width="50px" label="類別序號" prop="categoryId"></el-table-column> -->
-          <el-table-column min-width="50px" label="類別名稱" prop="categoryName"></el-table-column>
-          <el-table-column min-width="50px" label="商家名稱" prop="storeName"></el-table-column>
-          <el-table-column min-width="50px" label="集章商品名稱" prop="productName"></el-table-column>
-          <el-table-column min-width="50px" label="兌換點數" prop="points"></el-table-column>
-          <el-table-column min-width="50px" label="庫存量" prop="inventory"></el-table-column>
-          <el-table-column min-width="50px" label="狀態">
+         
+          <el-table-column min-width="60px" label="集章類別名稱" prop="categoryName" align="center"></el-table-column>
+          <el-table-column min-width="100px" label="商家名稱" prop="storeName" align="center"></el-table-column>
+          <el-table-column min-width="100px" label="集章商品名稱" prop="productName" align="center"></el-table-column>
+          <el-table-column width="150px" label="兌換章數" prop="points" align="center"></el-table-column>
+          <!-- <el-table-column min-width="50px" label="庫存量" prop="inventory" align="center"></el-table-column> -->
+          <el-table-column width="100px" label="狀態" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.state? "是" : "否" }}</span>
             </template>
           </el-table-column>
-          <el-table-column min-width="200px" :label="'操作'">
+          <el-table-column width="120px" label="建立日期" align="center">
+            <template slot-scope="scope">
+              <span>{{$dayjs(scope.row.createDate).format("YYYY-MM-DD")}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="!userHasHighestAuthorityRole" width="200px" :label="'操作'" align="center">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
@@ -43,12 +47,6 @@
     <!-- <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible"> -->
       <el-form label-width="120px" :model="temp" :rules="rules" ref="ruleForm">
         <el-row :gutter="8">
-          <!-- <el-col :span="24">
-            <el-form-item label="類別名稱" prop="categoryName">
-               <el-input type="text" v-model="temp.categoryName" size="small" placeholder="請輸入類別名稱"></el-input>
-            </el-form-item>
-          </el-col> -->
-
           <!-- 集章類別 -->
           <el-col :span="24">
             <el-form-item label="集章類別" prop="categoryId">
@@ -60,7 +58,7 @@
           <!-- 商家名稱 -->
           <el-col :span="24">
             <el-form-item label="商家名稱" prop="storeName">
-              <el-input type="text" v-model="temp.storeName" size="small" placeholder="請輸入商家名稱"></el-input>
+              <el-input type="text" v-model="temp.storeName" size="small" placeholder="請輸入商家名稱" :disabled="true"></el-input>
             </el-form-item>
           </el-col>
           <!-- 集章商品名稱 -->
@@ -69,10 +67,10 @@
               <el-input type="text" v-model="temp.productName" size="small" placeholder="請輸入集章商品名稱"></el-input>
             </el-form-item>
           </el-col>
-          <!-- 兌換點數 -->
+          <!-- 兌換章數 -->
           <el-col :span="24">
-            <el-form-item label="兌換點數" prop="points">
-              <el-input-number v-model="temp.points" placeholder="請輸入兌換點數" size="small"></el-input-number>
+            <el-form-item label="兌換章數" prop="points">
+              <el-input v-model.number="temp.points" placeholder="請輸入兌換點數" size="small"></el-input>
             </el-form-item>
           </el-col>
           <!-- 庫存量 -->
@@ -107,11 +105,12 @@ import extend from "@/extensions/delRows.js";
 
 const formTemplate = {
   id: "",
+  storeId: "",//一般角色權限給登入帳號所屬的機構id;最高權限角色給固定"highestAuthorityRole"
   categoryId: "",//集章類別ID
   categoryName: "",//集章類別名稱
   storeName: "",//店家名稱
   productName: "",//產品名稱
-  points: 0,//點數章數
+  points: undefined,//點數章數
   inventory: 0,//庫存
   state: false,//上(下)價狀態
 };
@@ -126,7 +125,15 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
+      userHasHighestAuthorityRole:undefined,
+      selectDataQuery:{
+        page: 1,
+        limit: 999,
+        TypeId: "SYS_stampstorecategorys",
+        StoreId:"",
+      },
       selectListCategories:[],
+      selectListCategoriesFilter:[],
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
@@ -136,6 +143,7 @@ export default {
         // 查詢條件
         page: 1,
         limit: 10,
+        StoreId:"",//必給
         key: undefined,//商家名稱,
         CategoryId:""//類別ID
       },
@@ -151,15 +159,33 @@ export default {
         categoryName: [{ required: true, message: "必填欄位", trigger: "blur" }],
         storeName: [{ required: true, message: "必填欄位", trigger: "blur" }],
         productName: [{ required: true, message: "必填欄位", trigger: "blur" }],
-        points: [{ required: true, message: "必填欄位", trigger: "blur" }],
+        points: [
+          { required: true, message: "必填欄位", trigger: "blur" },
+          { type:'number',message:"必須是數字"}
+        ],
         inventory: [{ required: true, message: "必填欄位", trigger: "blur" }],
         state: [{ required: true, message: "必填欄位", trigger: "blur" }],
       },
     };
   },
-  mounted() {
-    this.getList();
-    this.selectData()
+  async mounted() {
+    
+    this.userHasHighestAuthorityRole = await this.getUserPermissionRoles()
+    if(this.userHasHighestAuthorityRole){
+      this.listQuery.StoreId = ""
+      //有最高權限,可以取得所有機構新增的集章類別
+      this.selectDataQuery.StoreId = ""
+      this.selectData()
+      this.getList();
+    }else{
+      // this.listLoading.StoreId = this.$store.state.user.defaultorg.id
+      //一般權限,只能取得該機構新增過的集章類別
+      await this.getOrgs()
+      this.selectData()
+      this.getList();
+    }
+    // this.selectData()
+    // this.getList();
   },
   methods: {
     validateBlurSelect(type) {
@@ -170,19 +196,47 @@ export default {
       this.listQuery.limit = val.limit;
       this.getList();
     },
+    //取得登帳號擁有的全部角色
+    getUserPermissionRoles(){
+      return new Promise((resolve)=>{
+        this.$api.login.getPermissionRoles().then((res)=>{
+          const { result, code } = res;
+          if(code===200){
+            let userPermissionRolesId = result.map((item)=>item.id)
+            let userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
+            // this.userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
+            resolve(userHasHighestAuthorityRole)
+          }
+        })
+      })
+    },
+    //取得該商店,機構,公司的id
+    getOrgs(){
+      return new Promise((resolve)=>{
+        this.$api.login.getOrgs(this.$store.state.user.token).then((res)=>{
+            const {code,result} = res;
+            if(code===200){
+                let rootParentId = result.filter(item=>!item.parentId)[0]?.id
+                this.selectDataQuery.StoreId = rootParentId;
+                this.listQuery.StoreId = rootParentId;
+                resolve()
+            }
+        })
+      })
+    },
     selectData() {
-      let temp = {
-        page: 1,
-        limit: 999,
-        TypeId: "SYS_stampStoreProducts",
-      };
-      this.$api.categorys.load(temp).then((res) => {
+      this.$api.categorys.load(this.selectDataQuery).then((res) => {
         const { code, data } = res;
         if (code === 200) {
           this.selectListCategories = data.map((item) => ({
             label: item.name,
             value: item.id,
           }));
+          this.selectListCategoriesFilter = JSON.parse(JSON.stringify(this.selectListCategories))
+          this.selectListCategoriesFilter.unshift({
+            label: '全部',
+            value: "",
+          })
         }
       });
     },
@@ -241,6 +295,7 @@ export default {
     },
     // 彈出新增框
     handleCreate() {
+      this.temp.storeName = this.$store.state.user.defaultorg.name
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
       // this.resetTemp();
@@ -258,12 +313,19 @@ export default {
           switch (this.dialogStatus) {
             case "add":
               apiName = "add";
+              this.temp.storeId = this.$store.state.user.defaultorg.id
+              // if(this.userHasHighestAuthorityRole){
+              //   this.temp.storeId = "highestAuthorityRole"
+              // }else{
+              //   this.temp.storeId = this.$store.state.user.defaultorg.id
+              // }
               break;
             case "update":
               apiName = "update";
               break;
           }
-          // this.temp.categoryName = this.selectListCategories.filter((item) => item.value === this.temp.categoryId)[0]?.label;
+          this.temp.categoryName = this.selectListCategories.filter((item) => item.value === this.temp.categoryId)[0]?.label;
+          console.log(apiName,this.temp);
           this.$api.stampStoreProducts[apiName](this.temp).then(() => {
             this.$swal.fire({
               title: "成功",
@@ -306,30 +368,6 @@ export default {
     handleDelete(rows) {
       this.delrows("stampStoreProducts", rows,this.getList);
     },
-    // updateData() {
-    //   // 更新提交
-    //   this.$refs["ruleForm"].validate((valid) => {
-    //     if (valid) {
-    //       const tempData = Object.assign({}, this.temp);
-    //       this.$api.stampStoreProducts.update(tempData).then(() => {
-    //         for (const v of this.list) {
-    //           if (v.id === this.temp.id) {
-    //             const index = this.list.indexOf(v);
-    //             this.list.splice(index, 1, this.temp);
-    //             break;
-    //           }
-    //         }
-    //         this.dialogFormVisible = false;
-    //         this.$swal.fire({
-    //           title: "成功",
-    //           icon: "success",
-    //           timer: 2000,
-    //           showConfirmButton: false,
-    //         });
-    //       });
-    //     }
-    //   });
-    // },
   },
 };
 </script>

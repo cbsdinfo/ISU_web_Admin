@@ -21,6 +21,10 @@ import banners from "./allApi/banners";
 import stampStoreProducts from "./allApi/stampStoreProducts";
 import products from "./allApi/products";
 import productCategorys from "./allApi/productCategorys";
+import coupons from "./allApi/coupons";
+import membershipBenefitss from "./allApi/membershipBenefitss";
+import partnerStoreCategorys from "./allApi/partnerStoreCategorys";
+import partnerStores from "./allApi/partnerStores";
 
 export default {
     accessObjs,
@@ -45,5 +49,9 @@ export default {
     banners,
     stampStoreProducts,
     products,
-    productCategorys
+    productCategorys,
+    coupons,
+    membershipBenefitss,
+    partnerStoreCategorys,
+    partnerStores
 }

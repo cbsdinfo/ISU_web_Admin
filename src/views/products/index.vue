@@ -215,7 +215,7 @@
       <div slot="footer">
         <template v-if="dialogStatus==='add' || dialogStatus==='update'">
           <el-button size="mini" @click="closeDialog">取消</el-button>
-          <el-button size="mini" type="primary" @click="submitFlag = true;">確認</el-button>
+          <el-button size="mini" type="primary" @click="submitFlag = true">確認</el-button>
         </template>
         <template v-if="dialogStatus==='preview'">
           <el-button size="mini" @click="closeDialog">取消</el-button>

@@ -2,6 +2,15 @@ import request from '@/utils/request'
 import { getToken } from '@/utils/auth'
 
 const api = {
+  getPermissionRoles() {
+    return request({
+      url: '/check/GetRoles',
+      method: 'get',
+      params: {
+        token: getToken()
+      }
+    })
+  },
   login(username, password, appkey) {
     return request({
       url: '/check/login',
