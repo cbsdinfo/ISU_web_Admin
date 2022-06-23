@@ -10,20 +10,11 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <!-- <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)"> -->
-          <!-- <el-table-column type="selection" align="center" width="55"> </el-table-column> -->
-          <el-table-column width="150px" align="center" label="發佈日期" prop="releaseDate">
-            <template slot-scope="scope">
-              <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
-            </template>
-          </el-table-column>
           <el-table-column min-width="150px" align="center" label="類別名稱" prop="categoryName"></el-table-column>
-          <el-table-column min-width="200px" align="center" label="標題" prop="title"></el-table-column>
-          <el-table-column width="180px" align="center" label="列表圖片" prop="listImg">
-            <template slot-scope="scope">
-              <div class="imgWrap"><img :src="`${imgUrl}${scope.row.listImg}`" alt="" /></div>
-            </template>
-          </el-table-column>
+          <el-table-column min-width="200px" align="center" label="店家名稱" prop="name"></el-table-column>
+          <el-table-column min-width="200px" align="center" label="經度" prop="long"></el-table-column>
+          <el-table-column min-width="200px" align="center" label="緯度" prop="lat"></el-table-column>
+           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
           <el-table-column width="100px" align="center" label="是否可用">
             <template slot-scope="scope"
               ><span>{{ scope.row.state ? "是" : "否" }}</span></template
@@ -160,25 +151,31 @@ export default {
   },
   mixins: [pbMixins, extend],
   data() {
-    // 自定驗證電話號碼
-    var checkNum = (rule, value, callback) => {
-        console.log("rule",rule);
-         console.log("value",value);
+    //驗證電話號碼
+    const checkNum = (rule, value, callback) => {
       const isNum = this.temp[rule.field].match(/^[0-9]+$/);
       if (isNum) {
-        callback();
-      } else {
-        callback(new Error("請輸入數字"));
+        return callback();
       }
+      return callback(new Error("電話格式不正確"));
+    };
+    // 驗證緯度
+    const checkLat = (rule,value,callback) => {
+      const lngRex = /^(\-|\+)?([0-8]?\d{1}\.\d{0,7}|90\.0{0,7}|[0-8]?\d{1}|90)$/; // eslint-disable-line
+      if (lngRex.test(this.temp[rule.field])) {
+        return callback();
+      }
+      return callback(new Error("緯度整數為0-90,小數為0到7位"));
+    };
+    // 驗證經度
+    const checkLong = (rule,value,callback) => {
+      const lngRex = /^(\-|\+)?(((\d|[1-9]\d|1[0-7]\d|0{1,3})\.\d{0,7})|(\d|[1-9]\d|1[0-7]\d|0{1,3})|180\.0{0,7}|180)$/; // eslint-disable-line
+      if (lngRex.test(this.temp[rule.field])) {
+        return callback();
+      }
+      return callback(new Error("經數整數為0-180,小數為0到7位"));
     };
     return {
-    //   timePlacement:"選擇時間",
-    //   startTime:"08:00",
-    //   endTime:"18:00",
-    //   coordinate: {
-    //     longitude: "", //經度
-    //     latitude: "", //緯度
-    //   },
       selectLists: [],
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       fileList: [],
@@ -215,14 +212,14 @@ export default {
           { min: 9, message: "號碼至少9碼", trigger: ["blur", "change"] },
         ],
         address: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
-        long: [
+        long: [//經度
             { required: true, message: "必填欄位", trigger: ["blur", "change"] },
-            { validator: checkNum, trigger: ["blur", "change"] },
+            { validator: checkLong, trigger: ["blur", "change"] },
             // { type: "number", message: "請輸入數字", trigger: ["blur", "change"] }
         ],
-        lat: [
+        lat: [//緯度
             { required: true, message: "必填欄位", trigger: ["blur", "change"] },
-            { validator: checkNum, trigger: ["blur", "change"] },
+            { validator: checkLat, trigger: ["blur", "change"] },
             // { type: "number", message: "請輸入數字", trigger: ["blur", "change"] }
         ],
         startBusinessHours: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
@@ -255,7 +252,6 @@ export default {
       let temp = {
         page: 1,
         limit: 999,
-        TypeId: "SYS_NEWS",
       };
       this.$api.partnerStoreCategorys.getList(temp).then((res) => {
         const { code, data } = res;
@@ -331,31 +327,33 @@ export default {
     },
     // 保存提交
     submit() {
-    //   let apiName = "";
-    //   switch (this.dialogStatus) {
-    //     case "add":
-    //       apiName = "add";
-    //       break;
-    //     case "update":
-    //       apiName = "update";
-    //       break;
-    //   }
+      let apiName = "";
+      switch (this.dialogStatus) {
+        case "add":
+          apiName = "add";
+          break;
+        case "update":
+          apiName = "update";
+          break;
+      }
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
           //取得類別名稱
           this.temp.categoryName = this.selectLists.filter((item) => item.value === this.temp.categoryId)[0]?.label;
-          console.log(this.temp);
+          this.temp.long = Number(this.temp.long) 
+          this.temp.lat = Number(this.temp.lat)    
+          console.log(this.temp,apiName);
 
-        //   this.$api.partnerStores[apiName](this.temp).then(() => {
-        //     this.$swal.fire({
-        //       title: "成功",
-        //       icon: "success",
-        //       timer: 2000,
-        //       showConfirmButton: false,
-        //     });
-        //     this.closeDialog();
-        //     this.getList();
-        //   });
+          this.$api.partnerStores[apiName](this.temp).then(() => {
+            this.$swal.fire({
+              title: "成功",
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            this.closeDialog();
+            this.getList();
+          });
         }
       });
     },
@@ -365,12 +363,8 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
-          if (this.temp.tags) {
-            this.dynamicTags = this.temp.tags.split(",");
-          }
-          this.fileList.push({
-            path: this.temp.listImg,
-          });
+          this.temp.long = String(this.temp.long) 
+          this.temp.lat = String(this.temp.lat)    
         }
       });
       this.dialogStatus = "update";
