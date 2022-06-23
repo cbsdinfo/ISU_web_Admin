@@ -2,7 +2,7 @@
   <div class="flex-column stampstorecategorysPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入標題'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
+        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入類別名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -11,14 +11,14 @@
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
           <el-table-column min-width="50px" label="類別名稱" prop="name" align="center"></el-table-column>
-          <el-table-column width="120px" label="產品縮圖" prop="picture" align="center">
+          <el-table-column width="150px" label="產品縮圖" prop="picture" align="center">
             <template slot-scope="scope">
                 <div class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
             </template>
           </el-table-column>
-          <el-table-column width="80px" label="是否可用" prop="isEnable" align="center">
+          <el-table-column width="100px" label="是否可用" prop="isEnable" align="center">
             <template slot-scope="scope">
-              <span>{{scope.row.isEnable?'是':'否' }}</span>
+              <span>{{scope.row.state?'是':'否' }}</span>
             </template>
           </el-table-column>
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
@@ -53,7 +53,7 @@
           </el-form-item>
 
           <el-form-item size="small" :label="'是否可用'" prop="isEnable">
-            <el-switch v-model="temp.isEnable" active-text="是" inactive-text="否"></el-switch>
+            <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
           </el-form-item>
         </el-row>
       </el-form>
@@ -143,33 +143,6 @@ export default {
     },
   },
   methods: {
-    //取得該商店,機構,公司的id
-    // getOrgs(){
-    //   return new Promise((resolve)=>{
-    //     this.$api.login.getOrgs(this.$store.state.user.token).then((res)=>{
-    //         const {code,result} = res;
-    //         if(code===200){
-    //             let rootParentId = result.filter(item=>!item.parentId)[0]?.id
-    //             this.listQuery.StoreId = rootParentId
-    //             resolve()
-    //         }
-    //     })
-    //   })
-    // },
-    //取得登帳號擁有的全部角色
-    // getUserPermissionRoles(){
-    //   return new Promise((resolve)=>{
-    //     this.$api.login.getPermissionRoles().then((res)=>{
-    //       const { result, code } = res;
-    //       if(code===200){
-    //         let userPermissionRolesId = result.map((item)=>item.id)
-    //         let userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
-    //         // this.userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
-    //         resolve(userHasHighestAuthorityRole)
-    //       }
-    //     })
-    //   })
-    // },
     handleSubmit(imgPathAry){
       if(imgPathAry.length===0){
         this.temp.picture = ""
@@ -189,7 +162,6 @@ export default {
       });
     },
     onBtnClicked: function (domId) {
-      console.log("you click:" + domId);
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -214,7 +186,6 @@ export default {
               timer: 2000,
               showConfirmButton: false,
             });
-
             return;
           }
           this.handleDelete(this.multipleSelection);
@@ -231,7 +202,6 @@ export default {
       this.getList();
     },
     resetTemp() {
-      //this.$refs["ruleForm"].clearValidate();
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
       this.imagePathAry = []
@@ -241,7 +211,6 @@ export default {
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
     },
-    // 保存提交
     submit() {
         let apiName = "";
         switch (this.dialogStatus) {
@@ -292,6 +261,12 @@ export default {
 </script>
 <style lang="scss" scoped>
 .stampstorecategorysPage {
+  .app-container{
+    .imgWrap{
+      width: 30px;
+      height: 30px;
+    }
+  }
   .dialogContent {
     max-height: 70vh;
     overflow-y: auto;
