@@ -79,32 +79,28 @@
           </el-col>
           <!-- 商店經度 -->
           <el-col :span="24">
-            <el-form-item label="商店位置經度" prop="longitude">
-              <el-input class="itemWidth" type="text" v-model="coordinate.longitude" size="small" placeholder="請輸入商店位置經度"></el-input>
+            <el-form-item label="商店位置經度" prop="long">
+              <el-input class="itemWidth" type="text" v-model="temp.long" size="small" placeholder="請輸入商店位置經度"></el-input>
             </el-form-item>
           </el-col>
           <!-- 商店緯度 -->
           <el-col :span="24">
-            <el-form-item label="商店位置緯度" prop="latitude">
-              <el-input class="itemWidth" type="text" v-model="coordinate.latitude" size="small" placeholder="請輸入商店位置緯度"></el-input>
+            <el-form-item label="商店位置緯度" prop="lat">
+              <el-input class="itemWidth" type="text" v-model="temp.lat" size="small" placeholder="請輸入商店位置緯度"></el-input>
             </el-form-item>
           </el-col>
-          <!-- 商店營業開始時間 -->
+          <!-- 開始營業時間 -->
           <el-col :span="24">
-            <el-form-item label="營業開始時間">
-                <el-time-picker v-model="startTime" size="small"  placeholder="任意时间点"> </el-time-picker>
-                <!-- :arrowControl="data.options.arrowControl" :value-format="data.options.format" -->
+            <el-form-item label="開始營業時間" prop="startBusinessHours">
+                <el-time-picker v-model="temp.startBusinessHours" size="small"  placeholder="請選擇開始營業時間" value-format='HH:mm' format='HH:mm'> </el-time-picker>
             </el-form-item>
           </el-col>
-          <!-- 商店結束營業時間 -->
-          <!-- <el-col :span="24">
-            <el-form-item label="營業結束時間">
-           
-              <el-time-picker v-model="endTime" value-format='HH:mm' format='HH:mm'>
-              </el-time-picker>
-             
+          <!-- 結束營業時間 -->
+          <el-col :span="24">
+            <el-form-item label="結束營業時間" prop="endBusinessHours">
+                <el-time-picker v-model="temp.endBusinessHours" size="small"  placeholder="請選擇結束營業時間" value-format='HH:mm' format='HH:mm'> </el-time-picker>
             </el-form-item>
-          </el-col> -->
+          </el-col>
           <!-- 排序 -->
           <el-col :span="24">
             <el-form-item label="排序" prop="sort">
@@ -144,10 +140,13 @@ const formTemplate = {
   name: "", //商店名稱
   contents: "", //商店簡介
   telephone: "", //商店電話
-
   address: "", //商店地址
-  longLat: "", //商店經緯度
-  businessHours: "", //商店營業時間
+//   longLat: "", //商店經緯度
+//   businessHours: "", //商店營業時間
+  long: "",//經度
+  lat: "",//緯度
+  startBusinessHours: "08:00",//開始營業時間
+  endBusinessHours: "18:00",//結束營業時間
   sort: 0, //排序
   state: true, //預設為上架,狀態上架/下架
 };
@@ -162,34 +161,24 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     // 自定驗證電話號碼
-    var checkPhone = (rule, value, callback) => {
-      console.log(typeof value, "\\\\/");
-      //   const phoneReg = /(\d{2,3}-?|\(\d{2,3}\))\d{3,4}-?\d{4}|09\d{2}(\d{6}|-\d{3}-\d{3})/g;
-      const phoneReg = this.temp.telephone.match(/^[0-9]+$/);
-      console.log(phoneReg);
-      if (phoneReg) {
+    var checkNum = (rule, value, callback) => {
+        console.log("rule",rule);
+         console.log("value",value);
+      const isNum = this.temp[rule.field].match(/^[0-9]+$/);
+      if (isNum) {
         callback();
       } else {
         callback(new Error("請輸入數字"));
       }
-      //   if (!Number.isInteger(+value)) {
-      //     callback(new Error("請輸入數字"));
-      //   } else {
-      //     if (phoneReg.test(value)) {
-      //       callback();
-      //     } else {
-      //       callback(new Error("電話號碼格式不正確"));
-      //     }
-      //   }
     };
     return {
-      timePlacement:"選擇時間",
-      startTime:"",
-      endTime:"",
-      coordinate: {
-        longitude: "", //經度
-        latitude: "", //緯度
-      },
+    //   timePlacement:"選擇時間",
+    //   startTime:"08:00",
+    //   endTime:"18:00",
+    //   coordinate: {
+    //     longitude: "", //經度
+    //     latitude: "", //緯度
+    //   },
       selectLists: [],
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       fileList: [],
@@ -222,12 +211,22 @@ export default {
         contents: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         telephone: [
           { required: true, message: "必填欄位", trigger: ["blur", "change"] },
-          { validator: checkPhone, trigger: ["blur", "change"] },
+          { validator: checkNum, trigger: ["blur", "change"] },
           { min: 9, message: "號碼至少9碼", trigger: ["blur", "change"] },
         ],
         address: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
-        longitude: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
-        latitude: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
+        long: [
+            { required: true, message: "必填欄位", trigger: ["blur", "change"] },
+            { validator: checkNum, trigger: ["blur", "change"] },
+            // { type: "number", message: "請輸入數字", trigger: ["blur", "change"] }
+        ],
+        lat: [
+            { required: true, message: "必填欄位", trigger: ["blur", "change"] },
+            { validator: checkNum, trigger: ["blur", "change"] },
+            // { type: "number", message: "請輸入數字", trigger: ["blur", "change"] }
+        ],
+        startBusinessHours: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
+        endBusinessHours: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         sort: [{ required: true, message: "必填欄位", trigger: "blur" }],
         state: [{ required: true, message: "必填欄位", trigger: "blur" }],
       },
@@ -244,6 +243,7 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.partnerStores.getList(this.listQuery).then((response) => {
+        console.log(response);
         const { data, count } = response;
         this.list = data;
         this.total = count;
@@ -266,56 +266,6 @@ export default {
           }));
         }
       });
-    },
-    fileSuccess(res, file, fileList) {
-      const { filePath } = res[0];
-      console.log(file);
-      console.log("fileList", fileList);
-      fileList.forEach((item, index) => {
-        if (file.uid !== item.uid) {
-          fileList.splice(index, 1);
-        }
-      });
-      fileList.forEach((item, index) => {
-        if (file.uid === item.uid) {
-          fileList[index].path = filePath;
-        }
-      });
-    },
-    uploadFile(item) {
-      let imgFile = item.file;
-      if (imgFile) {
-        const formData = new FormData();
-        formData.append("files", imgFile);
-        this.$api.files.Upload(formData).then((res) => {
-          const { code, result } = res;
-          if (code === 200) {
-            this.temp.listImg = result[0].filePath;
-            item.onSuccess(result);
-          }
-        });
-      }
-    },
-    tagDelete(tag) {
-      this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
-    },
-    showInput() {
-      this.tagInputVisible = true;
-      this.$nextTick(() => {
-        this.$refs.saveTagInput.$refs.input.focus();
-      });
-    },
-    handleInputConfirm() {
-      let tagInputValue = this.tagInputValue;
-      this.isRepeatTag = this.dynamicTags.includes(tagInputValue);
-      if (!tagInputValue) {
-        this.tagInputVisible = false;
-      }
-      if (tagInputValue && !this.isRepeatTag) {
-        this.dynamicTags.push(tagInputValue);
-        this.tagInputVisible = false;
-        this.tagInputValue = "";
-      }
     },
     onBtnClicked: function (domId, callback) {
       console.log("you click:" + domId);
@@ -381,35 +331,31 @@ export default {
     },
     // 保存提交
     submit() {
-      let apiName = "";
-      switch (this.dialogStatus) {
-        case "add":
-          apiName = "add";
-          break;
-        case "update":
-          apiName = "update";
-          break;
-      }
+    //   let apiName = "";
+    //   switch (this.dialogStatus) {
+    //     case "add":
+    //       apiName = "add";
+    //       break;
+    //     case "update":
+    //       apiName = "update";
+    //       break;
+    //   }
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
-          //處理TAG
-          this.temp.tags = this.dynamicTags.join(",");
-
           //取得類別名稱
           this.temp.categoryName = this.selectLists.filter((item) => item.value === this.temp.categoryId)[0]?.label;
+          console.log(this.temp);
 
-          this.$api.partnerStores[apiName](this.temp).then(() => {
-            // this.list.unshift(this.temp);
-            // this.dialogFormVisible = false;
-            this.$swal.fire({
-              title: "成功",
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-            this.closeDialog();
-            this.getList();
-          });
+        //   this.$api.partnerStores[apiName](this.temp).then(() => {
+        //     this.$swal.fire({
+        //       title: "成功",
+        //       icon: "success",
+        //       timer: 2000,
+        //       showConfirmButton: false,
+        //     });
+        //     this.closeDialog();
+        //     this.getList();
+        //   });
         }
       });
     },
@@ -438,15 +384,6 @@ export default {
       this.dialogFormVisible = false;
       this.resetTemp();
     },
-    // 列表表格操作
-    // rowClick(row) {
-    //   this.$refs.mainTable.clearSelection();
-    //   this.$refs.mainTable.toggleRowSelection(row);
-    // },
-    //列表表格操作
-    // handleSelectionChange(val) {
-    //   this.multipleSelection = val;
-    // },
   },
 };
 </script>

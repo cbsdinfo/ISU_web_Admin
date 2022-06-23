@@ -358,7 +358,7 @@ export default {
       this.$api.stampStoreProducts.get({ id: row.id }).then((res) => {
         const { code, result } = res;
         if (code === 200) {
-          console.log(result);
+          this.temp = JSON.parse(JSON.stringify(result));
         }
       });
       this.dialogStatus = "update";

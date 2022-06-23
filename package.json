@@ -15,7 +15,7 @@
     "core-js": "^3.6.4",
     "dayjs": "^1.11.3",
     "echarts": "3.8.5",
-    "element-ui": "^2.10.1",
+    "element-ui": "^2.15.7",
     "image-conversion": "^2.1.1",
     "jquery": "^2.2.3",
     "js-cookie": "2.2.0",
