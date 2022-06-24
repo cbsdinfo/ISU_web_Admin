@@ -458,7 +458,8 @@ export default {
       this.$api.productCategorys.getList(temp).then((res) => {
         const { code, data } = res;
         if (code === 200) {
-          this.selectListCategories = data.map((item) => ({
+          this.selectListCategories = data.filter(item=>item.state)
+          this.selectListCategories = this.selectListCategories.map((item) => ({
             label: item.name,
             value: item.id,
           }));

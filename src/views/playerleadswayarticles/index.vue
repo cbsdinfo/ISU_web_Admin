@@ -285,13 +285,15 @@ export default {
         const { code, data } = res;
         if (code === 200) {
           if (typeId === "SYS_PlayerLeads_Article") {
-            this.selectListsArticle = data.map((item) => ({
+            this.selectListsArticle = data.filter(item=>item.isEnable)
+            this.selectListsArticle = this.selectListsArticle.map((item) => ({
               label: item.name,
               value: item.id,
             }));
           }
           if (typeId === "SYS_PlayerLeads_Area") {
-            this.selectListsRoad = data.map((item) => ({
+            this.selectListsRoad = data.filter(item=>item.isEnable)
+            this.selectListsRoad = this.selectListsRoad.map((item) => ({
               label: item.name,
               value: item.id,
             }));

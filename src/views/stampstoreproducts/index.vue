@@ -170,22 +170,19 @@ export default {
   },
   async mounted() {
     
-    this.userHasHighestAuthorityRole = await this.getUserPermissionRoles()
-    if(this.userHasHighestAuthorityRole){
+   
+    if(this.hasButton("highestAuthorityRole")){//判斷此帳號
       this.listQuery.StoreId = ""
       //有最高權限,可以取得所有機構新增的集章類別
       this.selectDataQuery.StoreId = ""
       this.selectData()
       this.getList();
     }else{
-      // this.listLoading.StoreId = this.$store.state.user.defaultorg.id
       //一般權限,只能取得該機構新增過的集章類別
       await this.getOrgs()
       this.selectData()
       this.getList();
     }
-    // this.selectData()
-    // this.getList();
   },
   methods: {
     validateBlurSelect(type) {
@@ -195,20 +192,6 @@ export default {
       this.listQuery.page = val.page;
       this.listQuery.limit = val.limit;
       this.getList();
-    },
-    //取得登帳號擁有的全部角色
-    getUserPermissionRoles(){
-      return new Promise((resolve)=>{
-        this.$api.login.getPermissionRoles().then((res)=>{
-          const { result, code } = res;
-          if(code===200){
-            let userPermissionRolesId = result.map((item)=>item.id)
-            let userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
-            // this.userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
-            resolve(userHasHighestAuthorityRole)
-          }
-        })
-      })
     },
     //取得該商店,機構,公司的id
     getOrgs(){
@@ -228,11 +211,19 @@ export default {
       this.$api.categorys.load(this.selectDataQuery).then((res) => {
         const { code, data } = res;
         if (code === 200) {
-          this.selectListCategories = data.map((item) => ({
+         
+          // this.selectListFilter = data
+          this.selectListCategories = data.filter(item=>item.isEnable)
+          this.selectListCategories = this.selectListCategories.map((item) => ({
             label: item.name,
             value: item.id,
           }));
-          this.selectListCategoriesFilter = JSON.parse(JSON.stringify(this.selectListCategories))
+         
+          this.selectListCategoriesFilter = JSON.parse(JSON.stringify(data))
+          this.selectListCategoriesFilter = this.selectListCategoriesFilter.map((item) => ({
+            label: item.name,
+            value: item.id,
+          }));
           this.selectListCategoriesFilter.unshift({
             label: '全部',
             value: "",

@@ -440,6 +440,7 @@ export default {
             });
             return;
           }
+          console.log("btnDel");
           this.handleDelete(this.currentModule);
           break;
         case "btnAddMenu":
@@ -636,6 +637,7 @@ export default {
       });
     },
     handleDelete(row) {
+      console.log("handleDelete");
       var _this = this;
       _this.delrows("modules", [row], () => {
         _this.getModulesTree();

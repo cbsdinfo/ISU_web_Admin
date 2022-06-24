@@ -219,7 +219,8 @@ export default {
       this.$api.categorys.load(temp).then((res) => {
         const { code, data } = res;
         if (code === 200) {
-          this.selectLists = data.map((item) => ({
+          this.selectLists = data.filter(item=>item.isEnable)
+          this.selectLists = this.selectLists.map((item) => ({
             label: item.name,
             value: item.id,
           }));

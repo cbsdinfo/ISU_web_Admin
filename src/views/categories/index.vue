@@ -425,6 +425,11 @@ export default {
     loadCategoryTypes() {
       this.$api.categorys.loadType(this.typesListQuery).then((res) => {
         this.categoryTypes = [...res.data];
+        
+        //因需求只能讓該商店看見自己商店新增的集章類別,所以不能在此頁顯示,必須獨立頁面出去做
+        //;但集章類別新增API又是和最新消息類別等等是同一支,導致兩個地方都會顯示集章類別,所以此頁要篩選掉不顯示
+        this.categoryTypes = this.categoryTypes.filter(item=>item.id !=='SYS_stampstorecategorys')
+        
       });
     },
     handleNodeClick(val) {

@@ -256,7 +256,8 @@ export default {
       this.$api.partnerStoreCategorys.getList(temp).then((res) => {
         const { code, data } = res;
         if (code === 200) {
-          this.selectLists = data.map((item) => ({
+          this.selectLists = data.filter(item=>item.state)
+          this.selectLists = this.selectLists.map((item) => ({
             label: item.name,
             value: item.id,
           }));

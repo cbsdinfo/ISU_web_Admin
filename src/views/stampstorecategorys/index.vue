@@ -114,8 +114,9 @@ export default {
     };
   },
   async mounted() {
-    this.userHasHighestAuthorityRole = await this.getUserPermissionRoles()
-    if(this.userHasHighestAuthorityRole){
+    console.log(this.hasButton("highestAuthorityRole"));
+    // this.userHasHighestAuthorityRole = await this.getUserPermissionRoles()
+    if(this.hasButton("highestAuthorityRole")){
       //有最高權限,可以取得所有機構新增的集章類別
       this.listQuery.StoreId = ""
       this.getList()
@@ -140,19 +141,19 @@ export default {
       })
     },
     //取得登帳號擁有的全部角色
-    getUserPermissionRoles(){
-      return new Promise((resolve)=>{
-        this.$api.login.getPermissionRoles().then((res)=>{
-          const { result, code } = res;
-          if(code===200){
-            let userPermissionRolesId = result.map((item)=>item.id)
-            let userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
-            // this.userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
-            resolve(userHasHighestAuthorityRole)
-          }
-        })
-      })
-    },
+    // getUserPermissionRoles(){
+    //   return new Promise((resolve)=>{
+    //     this.$api.login.getPermissionRoles().then((res)=>{
+    //       const { result, code } = res;
+    //       if(code===200){
+    //         let userPermissionRolesId = result.map((item)=>item.id)
+    //         let userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
+    //         // this.userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
+    //         resolve(userHasHighestAuthorityRole)
+    //       }
+    //     })
+    //   })
+    // },
     getList(){
       this.listLoading = true;
       this.$api.categorys.load(this.listQuery).then((response) => {
