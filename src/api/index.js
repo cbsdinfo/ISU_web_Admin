@@ -25,6 +25,7 @@ import coupons from "./allApi/coupons";
 import membershipBenefitss from "./allApi/membershipBenefitss";
 import partnerStoreCategorys from "./allApi/partnerStoreCategorys";
 import partnerStores from "./allApi/partnerStores";
+import members from "./allApi/members";
 
 export default {
     accessObjs,
@@ -53,5 +54,6 @@ export default {
     coupons,
     membershipBenefitss,
     partnerStoreCategorys,
-    partnerStores
+    partnerStores,
+    members
 }
