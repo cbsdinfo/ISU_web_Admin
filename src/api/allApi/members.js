@@ -22,6 +22,20 @@ const api = {
       data
     })
   },
+  addPoints(data) {
+    return request({
+      url: '/member/MemberPointsAdd',
+      method: 'post',
+      data
+    })
+  },
+  loadPoints(params) {
+    return request({
+      url: '/member/MemberPointsLoad',
+      method: 'get',
+      params
+    })
+  },
   update(data) {
     return request({
       url: '/member/update',

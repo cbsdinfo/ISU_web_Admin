@@ -10,37 +10,37 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <el-table-column min-width="50px" label="姓名" prop="name" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="電話號碼" prop="telephone" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="性別" prop="gender" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="Email" prop="email" align="center"></el-table-column>
+          <el-table-column min-width="150px" label="姓名" prop="name" align="center"></el-table-column>
+          <el-table-column width="120px" label="電話號碼" prop="telephone" align="center"></el-table-column>
+          <el-table-column width="80px" label="性別" prop="gender" align="center"></el-table-column>
+          <el-table-column width="300px" label="Email" prop="email" align="center"></el-table-column>
           <el-table-column width="80px" label="是否可用" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.state? "是" : "否" }}</span>
             </template>
           </el-table-column>
-          <el-table-column min-width="50px" label="入會日期" prop="createDate" align="center">
+          <el-table-column width="100px" label="入會日期" prop="createDate" align="center">
             <template slot-scope="scope">
               <span>{{ $dayjs(scope.row.createDate).format("YYYY-MM-DD") }}</span>
             </template>
           </el-table-column>
-          <el-table-column min-width="50px" label="開卡日期" prop="openCardDate" align="center">
+          <el-table-column width="100px" label="開卡日期" prop="openCardDate" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.openCardDate?$dayjs(scope.row.openCardDate).format("YYYY-MM-DD"):'-'}}</span>
             </template>
           </el-table-column>
-          <el-table-column min-width="50px" label="剩餘點數" prop="points" align="center"></el-table-column>
+          <el-table-column width="150px" label="剩餘點數" prop="points" align="center"></el-table-column>
 
-          <el-table-column min-width="150px" :label="'操作'" align="center">
+          <el-table-column min-width="350px" :label="'操作'" align="center">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
-                <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
-                <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
-                <el-button size="mini" type="white" v-if="hasButton('pointsAdd')">給點</el-button>
-                <el-button size="mini" type="white" v-if="hasButton('pointsAcquireRecord')">點數取得紀錄</el-button>
-                <el-button size="mini" type="white" v-if="hasButton('pointsConvertRecord')">點數兌換紀錄</el-button>
-                <el-button size="mini" type="white" v-if="hasButton('couponAcquireRecord')">優惠券取得紀錄</el-button>
-                <el-button size="mini" type="white" v-if="hasButton('couponUsageRecord')">優惠券使用紀錄</el-button>
+                <el-button v-if="hasButton('btnEdit')" @click="handleUpdate(scope.row)" type="primary"  size="mini">編輯</el-button>
+                <el-button v-if="hasButton('btnDel')"  @click="handleDelete([scope.row])" size="mini" type="danger" >刪除</el-button>
+                <el-button v-if="hasButton('pointsAdd')" @click="openPointsDialog(scope.row)" size="mini" type="white" >給點</el-button>
+                <el-button v-if="hasButton('pointsAcquireRecord')" @click="openRecord(scope.row,'pointsAcquireRecord')" size="mini" type="white">點數取得紀錄</el-button>
+                <el-button v-if="hasButton('pointsConvertRecord')" size="mini" type="white" >點數兌換紀錄</el-button>
+                <el-button v-if="hasButton('couponAcquireRecord')" size="mini" type="white" >優惠券取得紀錄</el-button>
+                <el-button v-if="hasButton('couponUsageRecord')" size="mini" type="white" >優惠券使用紀錄</el-button>
               </div>
             </template>
           </el-table-column>
@@ -49,7 +49,7 @@
       </div>
     </div>
 
-    <el-dialog class="dialog-mini" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" top="10vh" @close="closeDialog('addForm')" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm">
         <el-row :gutter="8">
             <!-- 姓名 -->
@@ -154,9 +154,34 @@
         </el-row>
       </el-form>
       <div slot="footer">
-        <el-button size="mini" @click="closeDialog">取消</el-button>
+        <el-button size="mini" @click="closeDialog('addForm')">取消</el-button>
         <el-button size="mini" type="primary" @click="submit">確認</el-button>
       </div>
+    </el-dialog>
+
+    <!-- 會員給點彈窗 -->
+    <el-dialog class="dialog-mini" top="10vh" @close="closeDialog('pointAddForm')" width="600px" :title="textMap[dialogStatus]" :visible.sync="memberPointVisible" :close-on-click-modal="false" :lock-scroll="true">
+      <el-form class="dialogContent" label-width="80px" :model="pointsTemp" :rules="pointRules" ref="pointsRuleForm">
+        <el-row :gutter="8">
+          <el-col :span="24">
+            <el-form-item label="加點點數" prop="pointNumber">
+              <el-input v-model.number="pointsTemp.pointNumber" size="small" placeholder="請輸入點數"></el-input>
+            </el-form-item>
+          </el-col>
+          <!-- <el-form-item label="加點點數" prop="points">
+            <el-input v-model="pointsTemp.pointNumber" size="small" placeholder="請輸入點數"></el-input>
+          </el-form-item> -->
+        </el-row>
+      </el-form>
+
+      <div slot="footer">
+        <el-button @close="closeDialog('pointAddForm')" size="mini">取消</el-button>
+        <el-button @click="pointsSubmit" size="mini" type="primary">送出</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 紀錄彈窗 -->
+    <el-dialog @close="closeRecordDialog" class="dialog-mini" top="10vh" width="600px" :title="textMap[dialogStatus]" :visible.sync="recordPointVisible" :close-on-click-modal="false" :lock-scroll="true">
     </el-dialog>
   </div>
 </template>
@@ -168,7 +193,6 @@ import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
-
 const formTemplate = {
   id: "",
   name: "",//姓名
@@ -187,6 +211,12 @@ const formTemplate = {
   //openCardHotel: "",//開卡飯店
   //sendBirthdayDate: "",//發送生日禮時間
   //cardLevel: "VIP",//卡別
+};
+const pointsFormTemplate = {
+  memberId: "",
+  pointType: "",
+  pointNumber: "",
+  storeName: ""//愛嬉遊後台加點,給空值即可,只有飯店自己的後台加點才需要帶
 };
 
 export default {
@@ -217,6 +247,8 @@ export default {
       return callback(new Error("信箱格式不正確"));
     };
     return {
+      memberPointVisible:false,
+      recordPointVisible:false,
       isValidateEmail:"",
       rules: {//驗證
         name: [{ required: true, message: "必填欄位", trigger: "blur" }],
@@ -238,6 +270,12 @@ export default {
 
         state: [{ required: true, message: "必填欄位", trigger: "blur" }],
         openCard: [{ required: true, message: "必填欄位", trigger: "blur" }],
+      },
+      pointRules:{
+        pointNumber: [
+          { required: true, message: "必填欄位", trigger: ["blur","change"] },
+          { type:'number', message: "必填是數字"}
+        ]
       },
       sexySelectLists:[
         {
@@ -264,34 +302,49 @@ export default {
         limit: 20,
         key: undefined,
       },
+      pointsTemp:JSON.parse(JSON.stringify(pointsFormTemplate)),
       temp: JSON.parse(JSON.stringify(formTemplate)),
       dialogFormVisible: false,
       dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
+        pointsAdd:"新增會員點數",
+        pointsAcquireRecord:"點數取得紀錄"
       },
     };
   },
-  // computed:{
-  //   isValidateEmail(){
-  //       let isValidateEmail = ""
-  //       if(this.temp.citizenship==='外國籍'){
-  //           isValidateEmail = 'email';
-  //           this.rules.email[0].required = false
-  //           // this.$refs.ruleForm.validateField("email");
-
-  //       }else{
-  //         this.rules.email[0].required = true
-  //       }
-  //       console.log(isValidateEmail);
-  //       return isValidateEmail
-  //   }
-  // },
   mounted() {
     this.getList();
   },
   methods: {
+    closeRecordDialog(){
+      this.recordPointVisible = false;
+    },
+    openRecord(row,type){
+      console.log(row,type);
+      this.recordPointVisible = true;
+      this.dialogStatus = type;
+      this.recordLoad(row.id,type)
+    },
+    recordLoad(memberId,type){
+      console.log(type);
+      const requestData = {
+        MemberId:memberId,
+        page:1,
+        limit:999,
+        key:""
+      }
+      this.$api.members.loadPoints(requestData).then((res)=>{
+        console.log(res);
+      })
+    },
+    openPointsDialog(row){
+     this.pointsTemp.memberId = row.id;
+     this.pointsTemp.pointType = "後台加點"
+     this.memberPointVisible = true;
+     this.dialogStatus = "pointsAdd";
+    },
     changeCitizenship(){
         this.$refs.ruleForm.validateField("citizenship");
         if(this.temp.citizenship==='外國籍'){
@@ -376,21 +429,46 @@ export default {
       });
       row.disable = disable;
     },
-    closeDialog() {
-      this.dialogFormVisible = false;
-      this.resetTemp();
+    closeDialog(formType) {
+      if(formType==='pointAddForm'){
+        this.memberPointVisible = false;
+      }
+      if(formType==='addForm'){
+        this.dialogFormVisible = false;
+      }
+      this.resetTemp(formType);
     },
-    resetTemp() {
-      //this.$refs["ruleForm"].clearValidate();
-      this.$refs["ruleForm"].resetFields();
-      this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
+    resetTemp(formType) {
+      if(formType==='pointAddForm'){
+        this.$refs["pointsRuleForm"].resetFields();
+        this.pointsTemp = JSON.parse(JSON.stringify(pointsFormTemplate));
+      }
+      if(formType==='addForm'){
+        this.$refs["ruleForm"].resetFields();
+        this.temp = JSON.parse(JSON.stringify(formTemplate));
+      }
     },
     // 新增(談窗)
     handleCreate() {
-      //this.temp = JSON.parse(JSON.stringify(formTemplate))
-      // this.$refs["ruleForm"].resetFields();
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
+    },
+    //點數送出
+    pointsSubmit(){
+      this.$refs["pointsRuleForm"].validate((valid) => {
+        if (valid) {
+          this.$api.members.addPoints(this.pointsTemp).then(() => {
+            this.$swal.fire({
+              title: "成功",
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            this.closeDialog("pointAddForm");
+            this.getList();
+          });
+        }
+      });
     },
     // 保存提交
     submit() {
@@ -412,7 +490,7 @@ export default {
               timer: 2000,
               showConfirmButton: false,
             });
-            this.closeDialog();
+            this.closeDialog("addForm");
             this.getList();
           });
         }
@@ -424,12 +502,6 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
-          if (this.temp.tags) {
-            this.dynamicTags = this.temp.tags.split(",");
-          }
-          this.fileList.push({
-            path: this.temp.listImg,
-          });
         }
       });
       this.dialogStatus = "update";
@@ -447,14 +519,13 @@ export default {
   .app-container{
     .el-table__body-wrapper{
       .buttonFlexBox{
-        height: 100px;
+        min-height: 100px;
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-start;
         align-content: space-evenly;
         .el-button{
-          margin-left: 0px;
-          margin-right: 10px;
+          margin: 0px 10px 0px 0px;
         }
       }
     }
