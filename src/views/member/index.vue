@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-column">
+  <div class="flex-column memberPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
         <el-input @keyup.enter.native="handleFilter" @change="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入姓名'" v-model="listQuery.key"> </el-input>
@@ -61,13 +61,15 @@
             <!-- 電話(帳號) -->
             <el-col :span="24">
                 <el-form-item label="電話(帳號)" prop="telephone">
-                  <el-input type="text" v-model.trim="temp.telephone" size="small" placeholder="請輸入電話(帳號)"></el-input>
+                  <el-input type="text" autocomplete='off' v-model.trim="temp.telephone" size="small" placeholder="請輸入電話(帳號)"></el-input>
                 </el-form-item>
             </el-col>
             <!-- 密碼 -->
             <el-col :span="24">
               <el-form-item label="密碼" prop="password">
-                <el-input type="password" v-model.trim="temp.password" size="small" placeholder="請輸入密碼"></el-input>
+                <!-- 多一個隱藏的input是為了避免瀏覽器自動帶入帳號密碼 -->
+                <input type="password" name="txtPassword" style="display:none">
+                <el-input v-model.trim="temp.password" type="password" name="txtPassword" autocomplete="new-password" size="small" placeholder="請輸入密碼"></el-input>
               </el-form-item>
             </el-col>
             <!-- 性別 -->
@@ -81,21 +83,16 @@
             <!-- 國籍 -->
             <el-col :span="24">
                 <el-form-item label="國籍" prop="citizenship">
-                <el-radio v-model="temp.citizenship" label="L" @change="changeCitizenship">本國籍</el-radio>
-                <el-radio v-model="temp.citizenship" label="F" @change="changeCitizenship">外國籍</el-radio>
+                  <el-radio v-model="temp.citizenship" label="本國籍" @change="changeCitizenship">本國籍</el-radio>
+                  <el-radio v-model="temp.citizenship" label="外國籍" @change="changeCitizenship">外國籍</el-radio>
                 </el-form-item>
             </el-col>
             <!-- 信箱 -->
             <el-col :span="24">
-                <el-form-item label="Email" prop="email" >
-                <el-input type="text" v-model="temp.email" size="small" placeholder="請輸入Email"></el-input>
+                <!-- :rule="[{required:temp.citizenship === '外國籍'? true:false, message: '必填欄位',trigger:['blur', 'change']}]" -->
+                <el-form-item label="Email" prop="email">
+                  <el-input type="text" v-model="temp.email" size="small" placeholder="請輸入Email"></el-input>
                 </el-form-item>
-                <!-- <el-form-item v-if="temp.citizenship==='F'" label="Email" ref="email" prop="email" >
-                <el-input type="text" v-model="temp.email" size="small" placeholder="請輸入Email"></el-input>
-                </el-form-item>
-                <el-form-item v-if="temp.citizenship==='L'" label="Email">
-                <el-input type="text" v-model="temp.email" size="small" placeholder="請輸入Email"></el-input>
-                </el-form-item> -->
             </el-col>
             <!-- 生日 -->
             <el-col :span="24">
@@ -210,17 +207,17 @@ export default {
       return callback(new Error("電話格式不正確"));
     };
     const emailValidate = (rule,value,callback) => {
-      // console.log(value);
-      // console.log("[rule",rule);
+      console.log("value",value);
+      // || !this.rules.email[0].required
       const emailRule = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;// eslint-disable-line
       const isEmail = this.temp[rule.field].match(emailRule);
-      // console.log(isEmail);
-      if (isEmail) {
+      if (isEmail || (!this.rules.email[0].require && !value)) {
         return callback();
       }
       return callback(new Error("信箱格式不正確"));
     };
     return {
+      isValidateEmail:"",
       rules: {//驗證
         name: [{ required: true, message: "必填欄位", trigger: "blur" }],
         telephone: [
@@ -232,8 +229,8 @@ export default {
         gender: [{ required: true, message: "必填欄位", trigger: "change" }],
         citizenship: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         email: [
-          { required: true, message: "必填欄位", trigger:  ["blur", "change"] },
-          { validator: emailValidate, trigger: ["blur", "change"] },
+          { required: false, message: '必填欄位'},
+          { validator: emailValidate, trigger: ["blur"]},
         ],
         birthday: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         // emailL: [{ required: false, trigger:  ["blur", "change"]}],
@@ -276,36 +273,32 @@ export default {
       },
     };
   },
-//   computed:{
-//     emailValidate(){
-//         let emailValidate = ""
-//         // if(this.temp.citizenship==='F'){
-//         //     emailValidate = 'emailF';
-//         //     this.$refs["emailF"].resetField()
-//         // }else{
-//         //     emailValidate = 'emailL';
-//         //     this.$refs["emailL"].resetField()
-//         // }
-//         if(this.temp.citizenship==='F'){
-//             emailValidate = 'emailF';
-//         }
-//         console.log(emailValidate);
-//         return emailValidate
-//     }
-//   },
+  // computed:{
+  //   isValidateEmail(){
+  //       let isValidateEmail = ""
+  //       if(this.temp.citizenship==='外國籍'){
+  //           isValidateEmail = 'email';
+  //           this.rules.email[0].required = false
+  //           // this.$refs.ruleForm.validateField("email");
+
+  //       }else{
+  //         this.rules.email[0].required = true
+  //       }
+  //       console.log(isValidateEmail);
+  //       return isValidateEmail
+  //   }
+  // },
   mounted() {
     this.getList();
   },
   methods: {
     changeCitizenship(){
-        console.log(this.temp.citizenship);
-        // this.$refs["email"].resetFields();
-        // if(this.temp.citizenship==='F'){
-        //     console.log("觸發驗證");
-        // //   this.$refs.ruleForm.validateField('email');
-        //   this.$refs["email"].clearValidate();
-        // }
-        // this.$refs["email"].clearValidate();
+        this.$refs.ruleForm.validateField("citizenship");
+        if(this.temp.citizenship==='外國籍'){
+          this.rules.email[0].required = true
+        }else{
+          this.rules.email[0].required = false
+        }
     },
     // rowClick(row) {
     //   this.$refs.mainTable.clearSelection();
@@ -315,7 +308,7 @@ export default {
     //   this.multipleSelection = val;
     // },
     validateBlurSelect(id) {
-        this.$refs.ruleForm.validateField(id);
+      this.$refs.ruleForm.validateField(id);
     },
     onBtnClicked: function (domId, callback) {
       console.log("you click:" + domId);
@@ -394,7 +387,8 @@ export default {
     },
     // 新增(談窗)
     handleCreate() {
-    //   this.temp = JSON.parse(JSON.stringify(formTemplate))
+      //this.temp = JSON.parse(JSON.stringify(formTemplate))
+      // this.$refs["ruleForm"].resetFields();
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
     },
@@ -448,3 +442,22 @@ export default {
   },
 };
 </script>
+<style lang="scss" scoped>
+.memberPage{
+  .app-container{
+    .el-table__body-wrapper{
+      .buttonFlexBox{
+        height: 100px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-content: space-evenly;
+        .el-button{
+          margin-left: 0px;
+          margin-right: 10px;
+        }
+      }
+    }
+  }
+}
+</style>
