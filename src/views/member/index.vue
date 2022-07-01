@@ -12,13 +12,13 @@
         </el-select>
         <el-date-picker v-model="filterDateRange" type="daterange" value-format = "yyyy-MM-dd" size="mini" @change="changeDateRange"
           range-separator="至"
-          start-placeholder="開始日期"
-          end-placeholder="結束日期"
+          start-placeholder="入會開始日期"
+          end-placeholder="入會結束日期"
         ></el-date-picker>
         <!-- 功能按鈕 -->
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
         <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
-          <i class="iconfont el-icon-download"></i>
+          <!-- <i class="iconfont el-icon-download"></i> -->
           <json-excel :fetch="fetchData" :fields="json_fields" name="愛嬉遊會員資料">
             匯出excel
           </json-excel>
@@ -33,7 +33,11 @@
           <el-table-column min-width="150px" label="姓名" prop="name" align="center"></el-table-column>
           <el-table-column width="120px" label="電話號碼" prop="telephone" align="center"></el-table-column>
           <el-table-column width="80px" label="性別" prop="gender" align="center"></el-table-column>
-          <el-table-column min-width="300px" label="Email" prop="email" align="center"></el-table-column>
+          <el-table-column min-width="300px" label="Email" prop="email" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.email?scope.row.email:'-'}}</span>
+            </template>
+          </el-table-column>
           <el-table-column width="80px" label="狀態" align="center">
             <template slot-scope="scope">
               <span :class="memberState(scope.row.state)">{{ scope.row.state? "啟用" : "停用" }}</span>
