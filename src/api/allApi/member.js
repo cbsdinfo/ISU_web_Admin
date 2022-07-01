@@ -22,34 +22,6 @@ const api = {
       data
     })
   },
-  addPoints(data) {
-    return request({
-      url: '/member/MemberPointsAdd',
-      method: 'post',
-      data
-    })
-  },
-  cancelPoints(data) {
-    return request({
-      url: '/member/MemberPointsCancel',
-      method: 'post',
-      data
-    })
-  },
-  memberCouponLoad(params) {
-    return request({
-      url: '/member/MemberCouponLoad',
-      method: 'get',
-      params
-    })
-  },
-  memberPointsLoad(params) {
-    return request({
-      url: '/member/MemberPointsLoad',
-      method: 'get',
-      params
-    })
-  },
   update(data) {
     return request({
       url: '/member/update',
@@ -59,7 +31,7 @@ const api = {
   },
   del(data) {
     return request({
-      url: '/members/delete',
+      url: '/member/delete',
       method: 'post',
       data
     })

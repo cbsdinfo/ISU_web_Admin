@@ -205,7 +205,7 @@ table thead th {
 
         .el-dialog__title {
             line-height: 34px;
-            font-size: 14px;
+            font-size: 18px;
             color: #333;
         }
 
@@ -252,7 +252,6 @@ table thead th {
 
 .compent-dialog-body {
     margin: -10px;
-
     .table {
         margin-top: 10px;
         border: 1px solid #ebeef5;
@@ -411,8 +410,15 @@ table thead th {
       object-fit: cover;
     }
 }
+// .el-dialog__wrapper{
+//     .el-dialog__header{
+//         .el-dialog__title{
+//             font-size: 18px;
+//         }
+//     }
+// }
 .dialogContent{
-    max-height: 70vh;
+    max-height: 65vh;
     overflow-y: auto;
     .quillWrapper {
        .ql-container {

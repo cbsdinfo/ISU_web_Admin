@@ -10,8 +10,6 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <!-- <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)"> -->
-          <!-- <el-table-column type="selection" align="center" width="55"> </el-table-column> -->
           <el-table-column width="150px" align="center" label="發佈日期" prop="releaseDate">
             <template slot-scope="scope">
               <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
@@ -42,7 +40,7 @@
       </div>
     </div>
 
-    <el-dialog class="dialog-mini" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" v-loading="newsFormLoading" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <!-- 類別 -->
@@ -168,6 +166,7 @@ export default {
       tableKey: 0,
       list: null,
       total: 0,
+      newsFormLoading:null,
       listLoading: true,
       listQuery: {
         // 查詢條件
@@ -345,6 +344,7 @@ export default {
     },
     // 保存提交
     submit() {
+      this.newsFormLoading = true;
       let apiName = "";
       switch (this.dialogStatus) {
         case "add":
@@ -363,8 +363,7 @@ export default {
           this.temp.categoryName = this.selectLists.filter((item) => item.value === this.temp.categoryId)[0]?.label;
 
           this.$api.newss[apiName](this.temp).then(() => {
-            // this.list.unshift(this.temp);
-            // this.dialogFormVisible = false;
+            this.newsFormLoading = false; 
             this.$swal.fire({
               title: "成功",
               icon: "success",
