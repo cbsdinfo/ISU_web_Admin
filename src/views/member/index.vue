@@ -2,8 +2,28 @@
   <div class="flex-column memberPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input @keyup.enter.native="handleFilter" @change="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入姓名'" v-model="listQuery.key"> </el-input>
+        <!-- 列表篩選 -->
+        <el-input v-model="listQuery.key" @keyup.enter.native="handleFilter" @change="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入姓名'"> </el-input>
+        <el-select v-model="listQuery.Gender" @change="handleFilter" placeholder="請選擇性別" size="mini">
+          <el-option v-for="item in sexyFilterSelectLists" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+        </el-select>
+        <el-select v-model="listQuery.State" @change="handleFilter" placeholder="請選擇起停用" size="mini">
+          <el-option v-for="item in stateFilterSelectLists" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+        </el-select>
+        <el-date-picker v-model="filterDateRange" type="daterange" value-format = "yyyy-MM-dd" size="mini" @change="changeDateRange"
+          range-separator="至"
+          start-placeholder="開始日期"
+          end-placeholder="結束日期"
+        ></el-date-picker>
+        <!-- 功能按鈕 -->
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
+        <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
+          <i class="iconfont el-icon-download"></i>
+          <json-excel :fetch="fetchData" :fields="json_fields" name="愛嬉遊會員資料">
+            匯出excel
+          </json-excel>
+          <!-- 匯出excel -->
+        </el-button>
       </div>
     </sticky>
     <!-- 列表 -->
@@ -13,10 +33,10 @@
           <el-table-column min-width="150px" label="姓名" prop="name" align="center"></el-table-column>
           <el-table-column width="120px" label="電話號碼" prop="telephone" align="center"></el-table-column>
           <el-table-column width="80px" label="性別" prop="gender" align="center"></el-table-column>
-          <el-table-column width="300px" label="Email" prop="email" align="center"></el-table-column>
-          <el-table-column width="80px" label="是否可用" align="center">
+          <el-table-column min-width="300px" label="Email" prop="email" align="center"></el-table-column>
+          <el-table-column width="80px" label="狀態" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.state? "是" : "否" }}</span>
+              <span :class="memberState(scope.row.state)">{{ scope.row.state? "啟用" : "停用" }}</span>
             </template>
           </el-table-column>
           <el-table-column width="100px" label="入會日期" prop="createDate" align="center">
@@ -31,11 +51,10 @@
           </el-table-column>
           <el-table-column width="120px" label="剩餘點數" prop="points" align="center"></el-table-column>
 
-          <el-table-column min-width="350px" :label="'操作'" align="center">
+          <el-table-column width="300px" :label="'操作'" align="center">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button v-if="hasButton('btnEdit')" @click="handleUpdate(scope.row)" type="primary"  size="mini">編輯</el-button>
-                <el-button v-if="hasButton('btnDel')"  @click="handleDelete([scope.row])" size="mini" type="danger" >刪除</el-button>
                 <el-button v-if="hasButton('pointsAddOrCancel')" @click="openPointsDialog(scope.row)" size="mini" type="white" >加/扣點</el-button>
                 <el-button v-if="hasButton('pointsRecord')" @click="openRecord(scope.row,'pointsRecord')" size="mini" type="white">點數紀錄</el-button>
                 <el-button v-if="hasButton('couponRecord')" @click="openRecord(scope.row,'couponRecord')" size="mini" type="white">優惠券紀錄</el-button>
@@ -53,9 +72,9 @@
         <el-row :gutter="8">
             <!-- 姓名 -->
             <el-col :span="24">
-                <el-form-item label="姓名" prop="name">
-                  <el-input type="text" v-model.trim="temp.name" size="small" placeholder="請輸入姓名"></el-input>
-                </el-form-item>
+              <el-form-item label="姓名" prop="name">
+                <el-input type="text" v-model.trim="temp.name" size="small" placeholder="請輸入姓名"></el-input>
+              </el-form-item>
             </el-col>
             <!-- 電話(帳號) -->
             <el-col :span="24">
@@ -88,40 +107,39 @@
             </el-col>
             <!-- 信箱 -->
             <el-col :span="24">
-                <!-- :rule="[{required:temp.citizenship === '外國籍'? true:false, message: '必填欄位',trigger:['blur', 'change']}]" -->
-                <el-form-item label="Email" prop="email">
-                  <el-input type="text" v-model="temp.email" size="small" placeholder="請輸入Email"></el-input>
-                </el-form-item>
+              <el-form-item label="Email" prop="email">
+                <el-input type="text" v-model="temp.email" size="small" placeholder="請輸入Email"></el-input>
+              </el-form-item>
             </el-col>
             <!-- 生日 -->
             <el-col :span="24">
-                <el-form-item label="生日" prop="birthday">
-                    <el-date-picker type="date" v-model="temp.birthday" placeholder="請選擇生日" format="yyyy-MM-dd" size="small"></el-date-picker>
-                </el-form-item>
+              <el-form-item label="生日" prop="birthday">
+                  <el-date-picker type="date" v-model="temp.birthday" placeholder="請選擇生日" value-format="yyyy-MM-dd" size="small"></el-date-picker>
+              </el-form-item>
             </el-col>
             <!-- 興趣 -->
             <el-col :span="24">
-                <el-form-item label="興趣" prop="interest">
+              <el-form-item label="興趣" prop="interest">
                 <el-input type="textarea" :autosize="{ minRows: 3 }" v-model="temp.interest" placeholder="請輸入興趣"></el-input>
-                </el-form-item>
+              </el-form-item>
             </el-col>
             <!-- 地址 -->
             <el-col :span="24">
-                <el-form-item label="地址">
-                  <el-input type="text" v-model="temp.address" size="small" placeholder="請輸入地址"></el-input>
-                </el-form-item>
+              <el-form-item label="地址">
+                <el-input type="text" v-model="temp.address" size="small" placeholder="請輸入地址"></el-input>
+              </el-form-item>
             </el-col>
             <!-- 卡別 -->
             <el-col :span="24">
-                <el-form-item label="卡別" prop="cardLevel">
-                  <el-input type="text" v-model="temp.cardLevel" size="small" :disabled="true"></el-input>
-                </el-form-item>
+              <el-form-item label="卡別" prop="cardLevel">
+                <el-input type="text" v-model="temp.cardLevel" size="small" :disabled="true"></el-input>
+              </el-form-item>
             </el-col>
             <!-- 狀態(上架/下架) -->
             <el-col :span="24">
-                <el-form-item label="狀態(是否啟用)" prop="state">
-                  <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
-                </el-form-item>
+              <el-form-item label="狀態(是否啟用)" prop="state">
+                <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
+              </el-form-item>
             </el-col>
           <!-- </template> -->
           <template v-if="dialogStatus==='update'">
@@ -164,7 +182,7 @@
             <!-- 發送生日禮日期 -->
             <el-col :span="24">
               <el-form-item label="發送生日禮日期">
-                <span>{{$dayjs(temp.sendBirthdayDate).format("YYYY-MM-DD")}}</span>
+                <span>{{temp.sendBirthdayDate?$dayjs(temp.sendBirthdayDate).format("YYYY-MM-DD"):'-'}}</span>
               </el-form-item>
             </el-col>
           </template>
@@ -182,7 +200,7 @@
         <el-row :gutter="8">
           <el-col :span="24">
             <el-form-item label="加/扣點數" prop="pointNumber">
-              <el-input v-model.number="pointsTemp.pointNumber" size="small" placeholder="加點輸入正整數/扣點輸入負整數"></el-input>
+              <el-input v-model.number="pointsTemp.pointNumber" size="small" placeholder="加點請輸入正整數/扣點請輸入負整數"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -201,7 +219,7 @@
         <el-select @change="recordLoad(dialogStatus)" v-model="recordListQuery.State" class="itemWidth" placeholder="請選擇點數狀態" size="small">
           <el-option v-for="item in pointsStateSelect" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
-        <el-table ref="mainTable" :key="tableKey" :data="pointsRecordList" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
+        <el-table :key="tableKey" :data="pointsRecordList" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
           <el-table-column min-width="150px" label="點數類型" prop="pointType" align="center"></el-table-column>
           <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center">
             <template slot-scope="scope">
@@ -234,7 +252,7 @@
         <el-select @change="recordLoad(dialogStatus)" v-model="recordListQuery.State" class="itemWidth" placeholder="請選擇點數狀態" size="small">
           <el-option v-for="item in couponStateSelect" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
-        <el-table ref="mainTable" :key="tableKey" :data="couponRecordList" v-loading="recordListLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 84px)">
+        <el-table :key="tableKey" :data="couponRecordList" v-loading="recordListLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 84px)">
           <el-table-column min-width="150px" label="優惠券名稱" prop="couponName" align="center"></el-table-column>
           <el-table-column min-width="120px" label="兌換此優惠券所需點數" prop="points" align="center">
             <template slot-scope="scope">
@@ -286,6 +304,7 @@ import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
+import JsonExcel from "vue-json-excel";
 const formTemplate = {
   id: "",
   name: "",//姓名
@@ -309,7 +328,7 @@ const pointsFormTemplate = {
 
 export default {
   name: "member",
-  components: { Sticky, permissionBtn, Pagination },
+  components: { Sticky, permissionBtn, Pagination,JsonExcel },
   directives: {
     waves,
     elDragDialog,
@@ -344,6 +363,26 @@ export default {
     //   return callback(new Error("請輸入正整數或負整數"));
     // };
     return {
+      json_fields: {
+        '名稱': 'name',
+        '電話(帳號)':'telephone',
+        '信箱': 'email',
+        '性別':'gender',
+        '國籍':'citizenship',
+        '生日':'birthday',
+        '興趣':'interest',
+        '地址':'address',
+        '卡別':'cardLevel',
+        '狀態':'state',
+        '入會日期':'createDate',
+        '累積點數':'pointsTotal',
+        '剩餘點數':'points',
+        '是否開卡':'openCard',
+        '開卡日期':'openCardDate',
+        '開卡飯店':'openCardHotel',
+        '發送生日禮日期':'sendBirthdayDate'
+      },
+      filterDateRange:null,
       couponRecordList:[],
       pointsRecordList:[],
       memberPointVisible:false,
@@ -373,6 +412,38 @@ export default {
           { type:'number', message: "必填是數字"}
         ]
       },
+      stateFilterSelectLists:[
+        {
+            label:"全部狀態",
+            value:null
+        },
+        {
+            label:"啟用",
+            value:true
+        },
+        {
+            label:"停用",
+            value:false
+        }
+      ],
+      sexyFilterSelectLists:[
+        {
+            label:"全部性別",
+            value:""
+        },
+        {
+            label:"男",
+            value:"男"
+        },
+        {
+            label:"女",
+            value:"女"
+        },
+        {
+            label:"其他",
+            value:"其他"
+        }
+      ],
       sexySelectLists:[
         {
             label:"男",
@@ -441,6 +512,10 @@ export default {
         page: 1,
         limit: 20,
         key: undefined,
+        State:null,
+        Gender:"",
+        StartDate:"",
+        EndDate:"",
       },
       pointsTemp:JSON.parse(JSON.stringify(pointsFormTemplate)),
       temp: JSON.parse(JSON.stringify(formTemplate)),
@@ -456,6 +531,15 @@ export default {
     };
   },
   computed:{
+    memberState(){
+      return ((state)=>{
+        let className = "enable"
+        if(!state){
+          className = 'disenable'
+        }
+        return className
+      })
+    },
     pointStateTextColor(){
       //0=>全部;1=>未使用;2=>已使用;3=>取消
       return ((state)=>{
@@ -484,6 +568,51 @@ export default {
     this.getList();
   },
   methods: {
+    changeDateRange(){
+      console.log(this.filterDateRange);
+      if(this.filterDateRange){
+        const [startDate,endDate] = this.filterDateRange
+        console.log(startDate);
+        this.listQuery.StartDate = startDate
+        this.listQuery.EndDate = endDate
+      }
+      if(!this.filterDateRange){
+        this.listQuery.StartDate = ""
+        this.listQuery.EndDate = ""
+      }
+      this.handleFilter()
+    },
+    //匯出
+    async fetchData(){
+      let handleData = []
+      this.listQuery.limit = 9999999;
+      let result = await this.$api.members.getList(this.listQuery)
+      const { code,data } = result;
+      if(code===200){
+        if(data.length===0){
+          this.$swal.fire({
+            title: "沒有符合的資料可匯出",
+            icon: "warning",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+          return
+        }
+        handleData = data.map((item)=>{
+          item.email = item.email?item.email:'-';
+          item.birthday = this.$dayjs(item.birthday).format('YYYY-MM-DD');
+          item.interest = item.interest?item.interest:'-';
+          item.state = item.state?'啟用':'停用';
+          item.createDate = this.$dayjs(item.createDate).format('YYYY-MM-DD');
+          item.openCard = item.openCard?'是':'否';
+          item.openCardDate = item.openCardDate?item.openCardDate:'-';
+          item.openCardHotel = item.openCardHotel?item.openCardHotel:'-';
+          item.sendBirthdayDate = item.sendBirthdayDate?this.$dayjs(item.sendBirthdayDate).format('YYYY-MM-DD'):'-';
+          return item
+        })
+        return handleData
+      }
+    },
     closeRecordDialog(){
       this.recordPointVisible = false;
       this.recordListQuery = {// 查詢條件
@@ -573,7 +702,7 @@ export default {
     validateBlurSelect(id) {
       this.$refs.ruleForm.validateField(id);
     },
-    onBtnClicked: function (domId, callback) {
+    onBtnClicked: function (domId) {
       console.log("you click:" + domId);
       switch (domId) {
         case "btnAdd":
@@ -604,9 +733,6 @@ export default {
           }
           this.handleDelete(this.multipleSelection);
           break;
-        case "btnExport":
-          this.$refs.mainTable.exportExcel("資源文件", callback);
-          break;
         default:
           break;
       }
@@ -630,21 +756,9 @@ export default {
       this.getList();
     },
     handleRecordCurrentChange(val) {
-      console.log("val",val);
-      // console.log("recordType",recordType);
       this.recordListQuery.page = val.page;
       this.recordListQuery.limit = val.limit;
       this.recordLoad(this.dialogStatus);
-    },
-    handleModifyStatus(row, disable) {
-      // 模擬修改狀態
-      this.$swal.fire({
-        title: "操作成功",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      row.disable = disable;
     },
     closeDialog(formType) {
       if(formType==='pointForm'){
@@ -674,27 +788,38 @@ export default {
     pointsSubmit(){
       this.$refs["pointsRuleForm"].validate((valid) => {
         if (valid) {
-          let apiName = "";
-          const integersResult  = Math.sign(this.pointsTemp.pointNumber)
-
-          if( integersResult === 1 ){ //新增點數
-            apiName = "addPoints"
-          }
-          if( integersResult === -1 ){ //扣點
-            apiName = "cancelPoints"
-            this.pointsTemp.pointNumber = Math.abs(this.pointsTemp.pointNumber)
-          }
-
-          this.$api.members[apiName](this.pointsTemp).then(() => {
-            this.$swal.fire({
-              title: "成功",
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-            this.closeDialog("pointForm");
-            this.getList();
-          });
+          this.$swal.fire({
+            title: "確定要為此會員加/扣點數嗎?",
+            icon: "warning",
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonText: "取消",
+            confirmButtonText: "確定",
+          }).then((result)=>{
+            if (result.isConfirmed){
+              let apiName = "";
+              const integersResult  = Math.sign(this.pointsTemp.pointNumber)
+    
+              if( integersResult === 1 ){ //新增點數
+                apiName = "addPoints"
+              }
+              if( integersResult === -1 ){ //扣點
+                apiName = "cancelPoints"
+                this.pointsTemp.pointNumber = Math.abs(this.pointsTemp.pointNumber)
+              }
+              this.$api.members[apiName](this.pointsTemp).then(() => {
+                this.$swal.fire({
+                  title: "成功",
+                  icon: "success",
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
+                this.closeDialog("pointForm");
+                this.getList();
+              });
+            }
+          })
         }
       });
     },
@@ -736,17 +861,31 @@ export default {
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
     },
-    handleDelete(rows) {
-      // 多行刪除
-      this.delrows("members", rows ,this.getList);
-    },
   },
 };
 </script>
 <style lang="scss" scoped>
 .memberPage{
+  ::v-deep .filter-container{
+    .exportBtn{
+      margin-left: 5px;
+      &>span{
+        display: flex;
+        align-items: center;
+        .iconfont{
+          transform: scale(1.3);
+        }
+      }
+    }
+  }
   .app-container{
     .el-table__body-wrapper{
+      .enable{
+        color: green;
+      }
+      .disenable{
+        color: red;
+      }
       .buttonFlexBox{
         min-height: 100px;
         display: flex;

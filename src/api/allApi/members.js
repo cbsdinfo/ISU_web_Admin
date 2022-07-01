@@ -56,14 +56,7 @@ const api = {
       method: 'post',
       data
     })
-  },
-  del(data) {
-    return request({
-      url: '/members/delete',
-      method: 'post',
-      data
-    })
-  },
+  }
 }
 
 export default api;
