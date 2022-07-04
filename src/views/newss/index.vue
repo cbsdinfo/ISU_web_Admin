@@ -23,9 +23,9 @@
             </template>
           </el-table-column>
           <el-table-column width="100px" align="center" label="是否可用">
-            <template slot-scope="scope"
-              ><span>{{ scope.row.state ? "是" : "否" }}</span></template
-            >
+            <template slot-scope="scope">
+              <span>{{ scope.row.state ? "是" : "否" }}</span>
+            </template>
           </el-table-column>
           <el-table-column min-width="100px" align="center" :label="'操作'">
             <template slot-scope="scope">
@@ -168,8 +168,7 @@ export default {
       total: 0,
       newsFormLoading:null,
       listLoading: true,
-      listQuery: {
-        // 查詢條件
+      listQuery: {// 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
@@ -344,7 +343,7 @@ export default {
     },
     // 保存提交
     submit() {
-      this.newsFormLoading = true;
+      
       let apiName = "";
       switch (this.dialogStatus) {
         case "add":
@@ -355,7 +354,9 @@ export default {
           break;
       }
       this.$refs["ruleForm"].validate((valid) => {
+        
         if (valid) {
+          this.newsFormLoading = true;
           //處理TAG
           this.temp.tags = this.dynamicTags.join(",");
 

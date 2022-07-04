@@ -86,14 +86,16 @@
                   <el-input type="text" autocomplete='off' v-model.trim="temp.telephone" size="small" placeholder="請輸入電話(帳號)"></el-input>
                 </el-form-item>
             </el-col>
-            <!-- 密碼 -->
-            <el-col :span="24">
-              <el-form-item label="密碼" prop="password">
-                <!-- 多一個隱藏的input是為了避免瀏覽器自動帶入帳號密碼 -->
-                <input type="password" name="txtPassword" style="display:none">
-                <el-input v-model.trim="temp.password" type="password" name="txtPassword" autocomplete="new-password" :disabled="dialogStatus==='update'" size="small" placeholder="請輸入密碼"></el-input>
-              </el-form-item>
-            </el-col>
+            <template v-if="dialogStatus==='add'">
+              <!-- 密碼 -->
+              <el-col :span="24">
+                <el-form-item label="密碼" prop="password">
+                  <!-- 多一個隱藏的input是為了避免瀏覽器自動帶入帳號密碼 -->
+                  <input type="password" name="txtPassword" style="display:none">
+                  <el-input v-model.trim="temp.password" type="password" name="txtPassword" autocomplete="new-password" :disabled="dialogStatus==='update'" size="small" placeholder="請輸入密碼"></el-input>
+                </el-form-item>
+              </el-col>
+            </template>
             <!-- 性別 -->
             <el-col :span="24">
               <el-form-item label="性別" prop="gender">
@@ -349,8 +351,6 @@ export default {
     };
     //信箱格式驗證
     const emailValidate = (rule,value,callback) => {
-      console.log("value",value);
-      // || !this.rules.email[0].required
       const emailRule = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;// eslint-disable-line
       const isEmail = this.temp[rule.field].match(emailRule);
       if (isEmail || (!this.rules.email[0].require && !value)) {

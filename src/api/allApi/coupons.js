@@ -28,14 +28,7 @@ const api = {
       method: 'post',
       data
     })
-  },
-  del(data) {
-    return request({
-      url: '/coupon/delete',
-      method: 'post',
-      data
-    })
-  },
+  }
 }
 
 export default api;

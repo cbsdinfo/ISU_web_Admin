@@ -22,7 +22,7 @@ import stampStoreProducts from "./allApi/stampStoreProducts";
 import products from "./allApi/products";
 import productCategorys from "./allApi/productCategorys";
 import coupons from "./allApi/coupons";
-import membershipBenefitss from "./allApi/membershipBenefitss";
+import membershipBenefits from "./allApi/membershipBenefits";
 import partnerStoreCategorys from "./allApi/partnerStoreCategorys";
 import partnerStores from "./allApi/partnerStores";
 import members from "./allApi/members";
@@ -52,7 +52,7 @@ export default {
     products,
     productCategorys,
     coupons,
-    membershipBenefitss,
+    membershipBenefits,
     partnerStoreCategorys,
     partnerStores,
     members

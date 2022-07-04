@@ -25,11 +25,11 @@
           <el-table-column min-width="120px" label="供應商代碼" prop="vendorCode" align="center"></el-table-column>
           <el-table-column min-width="120px" label="產品名稱" prop="productName" align="center"></el-table-column>
           <el-table-column min-width="120px" label="前台產品連結" prop="url" align="center"></el-table-column>
-          <el-table-column width="120px" label="是否為精選產品" align="center"
-            ><template slot-scope="scope"
-              ><span>{{ scope.row.featured === 1 ? "是" : "否" }}</span></template
-            ></el-table-column
-          >
+          <el-table-column width="120px" label="是否為精選產品" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.featured === 1 ? "是" : "否" }}</span>
+            </template>
+          </el-table-column>
           <el-table-column width="90px" label="產品狀態" prop="state" align="center">
             <template slot-scope="scope">
               <span :class="stateTextColor(scope.row.state)">{{statusText(scope.row.state)}}</span>

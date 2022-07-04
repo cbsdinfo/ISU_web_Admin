@@ -1,37 +1,16 @@
 import request from '@/utils/request'
 
 const api = {
-  getList(params) {
+  getMembershipBenefits(params) {
     return request({
-      url: '/membershipBenefits/load',
+      url: '/membershipBenefits/GetMembershipBenefits',
       method: 'get',
       params
     })
   },
-  get(params) {
-    return request({
-      url: '/membershipBenefits/get',
-      method: 'get',
-      params
-    })
-  },
-  add(data) {
+  addOrUpdate(data) {
     return request({
       url: '/membershipBenefits/AddOrUpdate',
-      method: 'post',
-      data
-    })
-  },
-  update(data) {
-    return request({
-      url: '/membershipBenefits/update',
-      method: 'post',
-      data
-    })
-  },
-  del(data) {
-    return request({
-      url: '/membershipBenefits/delete',
       method: 'post',
       data
     })
