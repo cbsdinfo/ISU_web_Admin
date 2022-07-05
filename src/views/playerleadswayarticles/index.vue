@@ -11,23 +11,23 @@
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
           <!-- <el-table-column type="selection" width="55" align="center"> </el-table-column> -->
+          <el-table-column width="180px" label="圖片" prop="listImg" align="center">
+            <template slot-scope="scope">
+              <div class="imgWrap"><img :src="`${imgUrl}${scope.row.listImg}`" alt="" /></div>
+            </template>
+          </el-table-column>
+          <el-table-column width="100px" label="區域類別" prop="areaName" align="center"></el-table-column>
+          <el-table-column min-width="100px" label="文章類別" prop="categoryName" align="center"></el-table-column>
+          <el-table-column min-width="150px" label="文章標題" prop="title" align="center"></el-table-column>
           <el-table-column width="150px" label="發佈日期" prop="releaseDate" align="center">
             <template slot-scope="scope">
               <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="100px" label="區域類別" prop="areaName" align="center"></el-table-column>
-          <el-table-column min-width="100px" label="文章類別" prop="categoryName" align="center"></el-table-column>
-          <el-table-column width="180px" label="列表圖片" prop="listImg" align="center">
-            <template slot-scope="scope">
-              <div class="imgWrap"><img :src="`${imgUrl}${scope.row.listImg}`" alt="" /></div>
-            </template>
-          </el-table-column>
-          <el-table-column min-width="100px" label="標題" prop="title" align="center"></el-table-column>
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-          <el-table-column width="100px" label="是否可用" align="center">
+          <el-table-column width="100px" label="狀態" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.state ? "是" : "否" }}</span>
+              <span :class="stateTextColor(scope.row.state)">{{ scope.row.state ? "上架" : "下架" }}</span>
             </template>
           </el-table-column>
           <el-table-column width="200px" :label="'操作'" align="center">
@@ -62,9 +62,9 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <!-- 日期 -->
+          <!-- 發布日期 -->
           <el-col :span="24">
-            <el-form-item label="日期" prop="releaseDate">
+            <el-form-item label="發布日期" prop="releaseDate">
               <el-date-picker class="itemWidth" type="date" v-model="temp.releaseDate" value-format="yyyy-MM-dd" placeholder="請選擇日期"></el-date-picker>
             </el-form-item>
           </el-col>
@@ -201,6 +201,16 @@ export default {
         state: [{ required: true, message: "必填欄位", trigger: "blur" }],
       },
     };
+  },
+  computed:{
+    stateTextColor(){
+      return (state)=>{
+        return {
+          greenText: state,
+          redText: !state
+        }
+      }
+    },
   },
   mounted() {
     this.getList();

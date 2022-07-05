@@ -3,7 +3,7 @@
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
         <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入商品、店家名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
-        <el-select size="mini" v-model="listQuery.State" placeholder="請選擇產品類別" @change="getList()">
+        <el-select size="mini" v-model="listQuery.State" placeholder="請選擇商品類別" @change="getList()">
           <el-option v-for="item in selectListState" :key="item.value" :label="item.label" :value="item.value"></el-option>
         </el-select>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
@@ -13,24 +13,22 @@
     <div class="app-container flex-item tableWrap">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <!-- <el-table-column type="selection" width="55" align="center"> </el-table-column> -->
-          <el-table-column min-width="100px" label="產品類別" prop="categoryName" align="center"></el-table-column>
-          <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center"></el-table-column>
-          <el-table-column width="120px" label="產品縮圖" prop="picture" align="center">
+          <el-table-column width="120px" label="商品縮圖" prop="picture" align="center">
             <template slot-scope="scope">
               <div class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
-              <!-- <div class="imgWrap"><img :src="`${imgUrl}${scope.row.picture}`" alt="" /></div> -->
             </template>
           </el-table-column>
+          <el-table-column min-width="100px" label="商品類別" prop="categoryName" align="center"></el-table-column>
+          <el-table-column min-width="120px" label="商品名稱" prop="productName" align="center"></el-table-column>
+          <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center"></el-table-column>
           <el-table-column min-width="120px" label="供應商代碼" prop="vendorCode" align="center"></el-table-column>
-          <el-table-column min-width="120px" label="產品名稱" prop="productName" align="center"></el-table-column>
-          <el-table-column min-width="120px" label="前台產品連結" prop="url" align="center"></el-table-column>
-          <el-table-column width="120px" label="是否為精選產品" align="center">
+          <el-table-column min-width="120px" label="前台商品連結" prop="url" align="center"></el-table-column>
+          <el-table-column width="120px" label="是否為精選商品" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.featured === 1 ? "是" : "否" }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="90px" label="產品狀態" prop="state" align="center">
+          <el-table-column width="90px" label="商品狀態" prop="state" align="center">
             <template slot-scope="scope">
               <span :class="stateTextColor(scope.row.state)">{{statusText(scope.row.state)}}</span>
             </template>
@@ -46,8 +44,6 @@
               <span>{{ !!scope.row.modifyDate?$dayjs(scope.row.modifyDate).format("YYYY-MM-DD"):"-"}}</span>
             </template>
           </el-table-column>
-          <!-- <el-table-column min-width="80px" label="產品類別ID" prop="categoryId" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="商城產品ID" prop="productId" align="center"></el-table-column> -->
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
           <el-table-column width="200px" :label="'操作'" align="center">
             <template slot-scope="scope">
@@ -69,8 +65,8 @@
           <!-- 新增,編輯 -->
           <template v-if="dialogStatus==='add' || dialogStatus==='update'">   
             <!-- 商品類別 -->
-            <el-form-item label="產品類別" prop="categoryId">
-              <el-select class="itemWidth" v-model.trim="temp.categoryId" placeholder="請選擇產品類別" @blur="validateBlurSelect('categoryId')">
+            <el-form-item label="商品類別" prop="categoryId">
+              <el-select class="itemWidth" v-model.trim="temp.categoryId" placeholder="請選擇商品類別" @blur="validateBlurSelect('categoryId')">
                 <el-option v-for="item in selectListCategories" :key="item.value" :label="item.label" :value="item.value"> </el-option>
               </el-select>
             </el-form-item>
@@ -80,29 +76,26 @@
                 <el-input class="itemWidth" type="text" v-model.trim="temp.storeName" placeholder="請輸入商家名稱"></el-input>
               </el-form-item>
             </el-col>
-            <!-- 產品名稱 -->
+            <!-- 商品名稱 -->
             <el-col :span="24">
-              <el-form-item label="產品名稱" prop="productName">
-                <el-input type="text" v-model.trim="temp.productName" placeholder="請輸入產品名稱"></el-input>
+              <el-form-item label="商品名稱" prop="productName">
+                <el-input type="text" v-model.trim="temp.productName" placeholder="請輸入商品名稱"></el-input>
               </el-form-item>
             </el-col>
-            <!-- 產品ID -->
+            <!-- 商品ID -->
             <el-col :span="24">
-              <el-form-item label="產品ID" prop="productId">
-                <el-input type="text" v-model.trim="temp.productId" placeholder="請輸入產品ID"></el-input>
+              <el-form-item label="商品ID" prop="productId">
+                <el-input type="text" v-model.trim="temp.productId" placeholder="請輸入商品ID"></el-input>
               </el-form-item>
             </el-col>
             <!-- 圖片上傳 -->
             <el-col :span="24">
-              <el-form-item label="產品圖片" prop="picture">
-                <upload-image :submitFlag="submitFlag" :imagePathAry="imagePathAry" @handleSubmit="handleSubmit"/>
+              <el-form-item label="商品圖片" prop="picture">
+                <!-- <upload-image :imagePathAry="imagePathAry" @handleSubmit="handleSubmit"/> -->
+                <upload-image @successUploadImg="successUploadImg" @deleteImg="deleteImg" 
+                  :imagesPropAry="imagesPropAry"
+                />
                 <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input>
-                <!-- <el-upload ref="upload" action="#" list-type="picture-card" :limit="2" :file-list="fileList" :on-success="fileSuccess" :http-request="uploadFile">
-                  <i slot="default" class="el-icon-plus"></i>
-                  <div slot="file" slot-scope="{ file }">
-                    <img class="el-upload-list__item-thumbnail" :src="`${imgUrl}${file.path}`" alt="" />
-                  </div>
-                </el-upload> -->
               </el-form-item>
             </el-col>
             <!-- 價格 -->
@@ -111,10 +104,10 @@
                 <el-input v-model.number="temp.price" placeholder="請輸入價格" size="small"></el-input>
               </el-form-item>
             </el-col>
-            <!-- 產品連結 -->
+            <!-- 商品連結 -->
             <el-col :span="24">
-              <el-form-item label="產品前台連結" prop="url">
-                <el-input type="text" v-model.trim="temp.url" placeholder="請輸入產品連結"></el-input>
+              <el-form-item label="商品前台連結" prop="url">
+                <el-input type="text" v-model.trim="temp.url" placeholder="請輸入商品連結"></el-input>
               </el-form-item>
             </el-col>
             <!-- 編輯器 -->
@@ -123,7 +116,7 @@
                 <VueEditor v-model="temp.contents"></VueEditor>
               </el-form-item>
             </el-col>
-            <!-- 是否為精選產品 -->
+            <!-- 是否為精選商品 -->
             <el-col :span="24">
               <el-form-item label="是否為精選商品" prop="featured">
                 <el-select class="itemWidth" v-model="temp.featured" placeholder="請選擇是否為精選商品" @blur="validateBlurSelect('featured')">
@@ -144,9 +137,9 @@
                 <el-input-number v-model="temp.sort" placeholder="請輸入排序" size="small" :min="0"></el-input-number>
               </el-form-item>
             </el-col>
-            <!-- 產品狀態 -->
+            <!-- 商品狀態 -->
             <el-col :span="24">
-              <el-form-item label="產品狀態" prop="state">
+              <el-form-item label="商品狀態" prop="state">
                 <el-radio v-model.number="temp.state" :label="1">未審核</el-radio>
                 <el-radio v-model.number="temp.state" :label="2">上架</el-radio>
                 <el-radio v-model.number="temp.state" :label="3">未通過</el-radio>
@@ -156,7 +149,7 @@
               </el-form-item>
             </el-col>
           </template>
-           <!-- 檢視 -->
+          <!-- 檢視 -->
           <template v-if="dialogStatus==='preview'">
             <section>
               <div class="previewItem">
@@ -168,7 +161,7 @@
                 <p class="item">{{temp.storeName}}</p>
               </div>
                <div class="previewItem">
-                <p class="title">產品縮圖</p>
+                <p class="title">商品縮圖</p>
                 <div class="item imgContent">
                   <div class="imgWrap" v-for="(item,index) in imagePathAry" :key="index">
                     <img :src="`${imgUrl}${item.path}`">
@@ -181,7 +174,7 @@
                 <p class="item">{{temp.vendorCode}}</p>
               </div>
                <div class="previewItem">
-                <p class="title">產品名稱</p>
+                <p class="title">商品名稱</p>
                 <p class="item">{{temp.productName}}</p>
               </div>
                <div class="previewItem">
@@ -215,7 +208,7 @@
       <div slot="footer">
         <template v-if="dialogStatus==='add' || dialogStatus==='update'">
           <el-button size="mini" @click="closeDialog">取消</el-button>
-          <el-button size="mini" type="primary" @click="submitFlag = true">確認</el-button>
+          <el-button size="mini" type="primary" @click="submit">確認</el-button>
         </template>
         <template v-if="dialogStatus==='preview'">
           <el-button size="mini" @click="closeDialog">取消</el-button>
@@ -245,11 +238,11 @@ const formTemplate = {
   categoryName: "",//商品類別名稱(資料帶入)
   storeName: "",//商家名稱(資料帶入)
   vendorCode: "",//供應商代碼(資料帶入)
-  productId: "",//產品ID(資料帶入)
-  productName: "",//產品名稱(資料帶入)
-  price:undefined ,//產品價格(資料帶入)
-  picture: "",//產品圖片路徑(資料帶入)
-  url: "",//前台產品連結(資料帶入)
+  productId: "",//商品ID(資料帶入)
+  productName: "",//商品名稱(資料帶入)
+  price:undefined ,//商品價格(資料帶入)
+  picture: "",//商品圖片路徑(資料帶入)
+  url: "",//前台商品連結(資料帶入)
   featured:undefined,//是否為精選商品(資料帶入)
   sort:"0",
   state: 1,//狀態( 1 = 未審核/ 2 =上架/ 3 =未通過)(資料帶入預設是未審核)
@@ -266,7 +259,7 @@ export default {
   data() {
     return {
       imagePathAry:[],
-      submitFlag:false,
+      imagesPropAry:[],
       selectListState:[
         {label:'全部',value:0},
         {label:'未審核',value:1},
@@ -356,6 +349,18 @@ export default {
     }
   },
   methods: {
+    deleteImg(imgPath){
+      this.imagePathAry = this.imagePathAry.filter(item=>item.path !== imgPath)
+    },
+    successUploadImg(successUploadResult){
+      // console.log(imgPathAry);
+      successUploadResult.forEach(item => {   
+        this.imagePathAry.push({
+          path:item.filePath,
+          id:item.id
+        })
+      });
+    },
     updateState(actionType){     
       if(actionType==='agree'){
         this.temp.state = 2
@@ -478,7 +483,7 @@ export default {
     resetTemp() {
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate));
-      this.imagePathAry = []
+      this.imagesPropAry = []
       // this.fileList = [];
     },
     closeDialog() {
@@ -504,15 +509,15 @@ export default {
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
     },
-    handleSubmit(imgPathAry){
-      if(imgPathAry.length===0){
-         this.temp.picture = ""
-      }else{
-        this.temp.picture = JSON.stringify(imgPathAry)
-      }
-      this.submitFlag = false;
-      this.submit()
-    },
+    // handleSubmit(imgPathAry){
+    //   if(imgPathAry.length===0){
+    //      this.temp.picture = ""
+    //   }else{
+    //     this.temp.picture = JSON.stringify(imgPathAry)
+    //   }
+    //   this.submitFlag = false;
+    //   this.submit()
+    // },
     // 保存提交
     submit() {
       // this.submitFlag = true;
@@ -526,6 +531,12 @@ export default {
             case "update":
               apiName = "update";
               break;
+          }
+          //將照片轉成JSON字串
+          if(this.imagePathAry.length>0){
+            this.temp.picture = JSON.stringify(this.imagePathAry);
+          }else{
+            this.temp.picture = ""
           }
           this.temp.categoryName = this.selectListCategories.filter((item) => item.value === this.temp.categoryId)[0]?.label;
           this.$api.products[apiName](this.temp).then(() => {
@@ -546,6 +557,7 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
+          this.imagesPropAry = JSON.parse(this.temp.picture)
           this.imagePathAry = JSON.parse(this.temp.picture)
         }
       });

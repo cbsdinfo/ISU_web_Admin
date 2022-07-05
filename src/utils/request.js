@@ -23,9 +23,10 @@ service.interceptors.response.use(
   (response) => {
     console.log(response);
     const { code, message } = response.data;
-    if (code === 200) {
+    if (code === 200 ) {
       return response.data;
     } else  {
+      console.log("code !== 200");
       Vue.prototype.$swal.fire({
         icon: 'error',
         title: message,

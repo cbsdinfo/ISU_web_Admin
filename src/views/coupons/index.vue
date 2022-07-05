@@ -13,7 +13,8 @@
           <el-table-column width="150px" label="優惠券縮圖" prop="picture" align="center">
             <template slot-scope="scope">
               <div class="imgWrap" v-if="scope.row.picture"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
-              <div class="imgWrap" v-else><img src="../../assets/default-img/coupons/gift-box 2.png" alt="" /></div>
+              <span v-else>無</span>
+              <!-- <div class="imgWrap" v-else><img src="../../assets/default-img/coupons/gift-box 2.png" alt="" /></div> -->
             </template>
           </el-table-column>
           <el-table-column min-width="80px" label="優惠券名稱" prop="name" align="center"></el-table-column>
@@ -57,8 +58,10 @@
           <!-- 優惠券圖片 -->
           <el-col :span="24">
             <el-form-item label="優惠券圖片" prop="picture">
-                <upload-image :uploadLimit="1" :submitFlag="submitFlag" :imagePathAry="imagePathAry" @handleSubmit="handleSubmit"/>
-                <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input>
+                <upload-image @successUploadImg="successUploadImg" @deleteImg="deleteImg" :uploadLimit="1" 
+                  :imagesPropAry="imagesPropAry"
+                />
+                <!-- <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input> -->
             </el-form-item>
           </el-col>
           <!-- 摘要 -->
@@ -82,7 +85,7 @@
           <!-- 狀態 -->
           <el-col :span="24">
             <el-form-item size="small" :label="'狀態(上/下架)'" prop="isEnable">
-              <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
+              <el-switch v-model="temp.state" active-text="上架" inactive-text="下架"></el-switch>
             </el-form-item>
           </el-col>
           <!-- 排序 -->
@@ -113,7 +116,7 @@
       </el-form>
       <div slot="footer">
         <el-button size="mini" @click="closeDialog">取消</el-button>
-        <el-button size="mini" type="primary" @click="submitFlag = true">確認</el-button>
+        <el-button size="mini" type="primary" @click="submit">確認</el-button>
       </div>
     </el-dialog>
   </div>
@@ -162,8 +165,8 @@ export default {
     return {
       couponsFormLoading:true,
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
-      submitFlag:false,
       imagePathAry:[],
+      imagesPropAry:[],
       selectLists: [],
       tableKey: 0,
       list: null,
@@ -209,7 +212,7 @@ export default {
     },
     stateTextColor(){
       return (state)=>{
-        console.log(state);
+        // console.log(state);
         return {
           greenText: state,
           redText: !state
@@ -218,14 +221,17 @@ export default {
     },
   },
   methods: {
-    handleSubmit(imgPathAry){
-      if(imgPathAry.length===0){
-        this.temp.picture = ""
-      }else{
-        this.temp.picture = JSON.stringify(imgPathAry)
-      }
-      this.submitFlag = false;
-      this.submit()
+    deleteImg(imgPath){
+      this.imagePathAry = this.imagePathAry.filter(item=>item.path !== imgPath)
+    },
+    successUploadImg(successUploadResult){
+      // console.log(imgPathAry);
+      successUploadResult.forEach(item => {   
+        this.imagePathAry.push({
+          path:item.filePath,
+          id:item.id
+        })
+      });
     },
     getList(){
       this.listLoading = true;
@@ -279,7 +285,7 @@ export default {
     resetTemp() {
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
-      this.imagePathAry = []
+      this.imagesPropAry = []
     },
     // 新增(談窗)
     handleCreate() {
@@ -299,17 +305,22 @@ export default {
         this.$refs["ruleForm"].validate((valid) => {
             if(valid){
                 this.couponsFormLoading = true
-                console.log("可以打API囉");
+                //將照片轉成JSON字串
+                if(this.imagePathAry.length>0){
+                  this.temp.picture = JSON.stringify(this.imagePathAry);
+                }else{
+                  this.temp.picture = ""
+                }
                 this.$api.coupons[apiName](this.temp).then(() => {
-                this.$swal.fire({
-                    title: "成功",
-                    icon: "success",
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
-                 this.couponsFormLoading = false
-                this.closeDialog();
-                this.getList();
+                  this.$swal.fire({
+                      title: "成功",
+                      icon: "success",
+                      timer: 2000,
+                      showConfirmButton: false,
+                  });
+                  this.couponsFormLoading = false
+                  this.closeDialog();
+                  this.getList();
                 });
             }
         });
@@ -322,7 +333,7 @@ export default {
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
           if(this.temp.picture){
-            this.imagePathAry = JSON.parse(this.temp.picture);
+            this.imagesPropAry = JSON.parse(this.temp.picture);
           }
         }
         this.couponsFormLoading = false

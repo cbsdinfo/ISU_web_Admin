@@ -176,6 +176,12 @@ table thead th {
 .app-container {
     background-color: #efefef;
     padding: 10px;
+    .greenText{
+        color:green;
+    }
+    .redText{
+        color:red;
+    }
 }
 
 .el-card__header {

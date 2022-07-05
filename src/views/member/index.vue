@@ -744,10 +744,12 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.members.getList(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
-        this.listLoading = false;
+        const { data, count,code } = response;
+        if(code === 200){
+          this.list = data;
+          this.total = count;
+          this.listLoading = false;
+        }
       });
     },
     handleFilter() {
@@ -788,7 +790,7 @@ export default {
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
     },
-    //點數送出
+    //點數加/扣點
     pointsSubmit(){
       this.$refs["pointsRuleForm"].validate((valid) => {
         if (valid) {
@@ -812,15 +814,20 @@ export default {
                 apiName = "cancelPoints"
                 this.pointsTemp.pointNumber = Math.abs(this.pointsTemp.pointNumber)
               }
-              this.$api.members[apiName](this.pointsTemp).then(() => {
-                this.$swal.fire({
-                  title: "成功",
-                  icon: "success",
-                  timer: 2000,
-                  showConfirmButton: false,
-                });
-                this.closeDialog("pointForm");
-                this.getList();
+              this.$api.members[apiName](this.pointsTemp).then((res) => {
+                if(res){
+                  const {code} = res
+                  if(code===200){
+                    this.$swal.fire({
+                      title: "成功",
+                      icon: "success",
+                      timer: 2000,
+                      showConfirmButton: false,
+                    });
+                    this.closeDialog("pointForm");
+                    this.getList();
+                  }
+                }
               });
             }
           })
@@ -840,15 +847,18 @@ export default {
       }
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
-          this.$api.members[apiName](this.temp).then(() => {
-            this.$swal.fire({
-              title: "成功",
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-            this.closeDialog("addForm");
-            this.getList();
+          this.$api.members[apiName](this.temp).then((res) => {
+            const {code} = res
+            if(code===200){
+              this.$swal.fire({
+                title: "成功",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              });
+              this.closeDialog("addForm");
+              this.getList();
+            }
           });
         }
       });
