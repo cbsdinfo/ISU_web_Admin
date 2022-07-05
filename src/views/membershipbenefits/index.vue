@@ -90,14 +90,15 @@ export default {
 @import "~quill/dist/quill.snow.css";
 .membershipbenefitsPage{
   ::v-deep .editorWrap{
-    margin: 20px auto 0px;
-    width: 70%;
+    margin-top: 20px;
+    // margin: 20px auto 0px;
+    width: 90%;
     .btnWrap{
       margin-top: 20px;
       text-align: center;
     }
     #editor{
-      height: 60vh; // <----- Set your height here
+      height: 50vh; // <----- Set your height here
     }
     
   }

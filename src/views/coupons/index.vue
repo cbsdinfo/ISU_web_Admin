@@ -10,17 +10,17 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <el-table-column width="150px" label="優惠券縮圖" prop="picture" align="center">
+          <el-table-column width="100px" label="優惠券縮圖" prop="picture" align="center">
             <template slot-scope="scope">
               <div class="imgWrap" v-if="scope.row.picture"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
               <span v-else>無</span>
               <!-- <div class="imgWrap" v-else><img src="../../assets/default-img/coupons/gift-box 2.png" alt="" /></div> -->
             </template>
           </el-table-column>
-          <el-table-column min-width="80px" label="優惠券名稱" prop="name" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="兌換所需點數" prop="points" align="center"></el-table-column>
-          <el-table-column min-width="80px" label="摘要" prop="summury" align="center"></el-table-column>
-          <el-table-column min-width="100px" label="內容" prop="contents" align="center"></el-table-column>
+          <el-table-column min-width="120px" label="優惠券名稱" prop="name" align="center"></el-table-column>
+          <el-table-column min-width="100px" label="兌換點數" prop="points" align="center"></el-table-column>
+          <el-table-column min-width="150px" label="摘要" prop="summury" align="center"></el-table-column>
+          <el-table-column min-width="400px" label="內容" prop="contents" align="center"></el-table-column>
           <el-table-column width="100px" label="狀態" prop="state" align="center">
             <template slot-scope="scope">
               <span :class="stateTextColor(scope.row.state)">{{scope.row.state?'上架':'下架' }}</span>
@@ -31,9 +31,9 @@
               <span :class="stateTextColor(scope.row.exchangeList)">{{scope.row.exchangeList?'是':'否' }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
+          <el-table-column min-width="50px" label="排序" prop="sort" align="center"></el-table-column>
           <!-- <el-table-column width="200px" label="分類標誌" prop="typeId" align="center"></el-table-column> -->
-          <el-table-column width="250px" :label="'操作'" align="center">
+          <el-table-column min-width="150px" :label="'操作'" align="center">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
