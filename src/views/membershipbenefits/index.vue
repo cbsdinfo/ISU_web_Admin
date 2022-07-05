@@ -10,7 +10,7 @@
         <el-row :gutter="8">
           <el-col :span="24">
             <el-form-item label="" prop="contents">
-              <VueEditor v-model="temp.contents"></VueEditor>
+              <VueEditor id="editor" v-model="temp.contents"></VueEditor>
             </el-form-item>
           </el-col>
         </el-row>
@@ -89,13 +89,17 @@ export default {
 @import "~quill/dist/quill.bubble.css";
 @import "~quill/dist/quill.snow.css";
 .membershipbenefitsPage{
-  .editorWrap{
+  ::v-deep .editorWrap{
     margin: 20px auto 0px;
     width: 70%;
     .btnWrap{
       margin-top: 20px;
       text-align: center;
     }
+    #editor{
+      height: 60vh; // <----- Set your height here
+    }
+    
   }
   
 }
