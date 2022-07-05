@@ -16,13 +16,12 @@
                 <div class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
             </template>
           </el-table-column>
-          <el-table-column width="100px" label="是否可用" prop="isEnable" align="center">
+          <!-- <el-table-column width="100px" label="是否可用" prop="isEnable" align="center">
             <template slot-scope="scope">
-              <span>{{scope.row.state?'是':'否' }}</span>
+              <span :class="stateTextColor(scope.row.state)">{{scope.row.state?'上架':'下架' }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-          <!-- <el-table-column width="200px" label="分類標誌" prop="typeId" align="center"></el-table-column> -->
+          <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column> -->
           <el-table-column width="250px" :label="'操作'" align="center">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
@@ -39,27 +38,28 @@
     <el-dialog class="dialog-mini" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
-          <el-form-item size="small" :label="'類別名稱'" prop="name">
+          <el-form-item :label="'類別名稱'" prop="name">
             <el-input v-model="temp.name"></el-input>
           </el-form-item>
           
           <el-form-item label="類別圖片" prop="picture">
-            <upload-image :uploadLimit="1" :submitFlag="submitFlag" :imagePathAry="imagePathAry" @handleSubmit="handleSubmit"/>
-            <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input>
+            <upload-image @successUploadImg="successUploadImg" @deleteImg="deleteImg" :uploadLimit="1" 
+              :imagesPropAry="imagesPropAry"
+            />
           </el-form-item>
 
-          <el-form-item size="small" :label="'排序'">
+          <el-form-item :label="'排序'">
             <el-input-number v-model="temp.sort" :min="0" :max="10"></el-input-number>
           </el-form-item>
 
-          <el-form-item size="small" :label="'是否可用'" prop="isEnable">
-            <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
+          <el-form-item :label="'狀態(上/下架)'" prop="isEnable">
+            <el-switch v-model="temp.state" active-text="上架" inactive-text="下架"></el-switch>
           </el-form-item>
         </el-row>
       </el-form>
       <div slot="footer">
         <el-button size="mini" @click="closeDialog">取消</el-button>
-        <el-button size="mini" type="primary" @click="submitFlag = true">確認</el-button>
+        <el-button size="mini" type="primary" @click="submit">確認</el-button>
       </div>
     </el-dialog>
   </div>
@@ -93,18 +93,16 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
+      imagePathAry:[],
+      imagesPropAry:[],
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       submitFlag:false,
-      imagePathAry:[],
-    //   userHasHighestAuthorityRole:undefined,
       selectLists: [],
-    //   multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
       total: 0,
       listLoading: true,
-      listQuery: {
-        // 查詢條件
+      listQuery: { // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
@@ -123,18 +121,17 @@ export default {
   },
   async mounted() {
     this.getList()
-    // this.userHasHighestAuthorityRole = await this.getUserPermissionRoles()
-    // if(this.userHasHighestAuthorityRole){
-    //   //有最高權限,可以取得所有機構新增的集章類別
-    //   this.listQuery.StoreId = ""
-    //   this.getList()
-    // }else{
-    //   //一般權限,只能取得該機構新增過的集章類別
-    //   await this.getOrgs()
-    //   this.getList()
-    // }
   },
   computed:{
+    stateTextColor(){
+      return (state)=>{
+        // console.log(state);
+        return {
+          greenText: state,
+          redText: !state
+        }
+      }
+    },
     formatImgData(){
       return (imgJsonString)=>{
         let firstImgPath = JSON.parse(imgJsonString)[0].path
@@ -143,14 +140,17 @@ export default {
     },
   },
   methods: {
-    handleSubmit(imgPathAry){
-      if(imgPathAry.length===0){
-        this.temp.picture = ""
-      }else{
-        this.temp.picture = JSON.stringify(imgPathAry)
-      }
-      this.submitFlag = false;
-      this.submit()
+    deleteImg(imgPath){
+      this.imagePathAry = this.imagePathAry.filter(item=>item.path !== imgPath)
+    },
+    successUploadImg(successUploadResult){
+      // console.log(imgPathAry);
+      successUploadResult.forEach(item => {   
+        this.imagePathAry.push({
+          path:item.filePath,
+          id:item.id
+        })
+      });
     },
     getList(){
       this.listLoading = true;
@@ -204,7 +204,7 @@ export default {
     resetTemp() {
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
-      this.imagePathAry = []
+      this.imagesPropAry = []
     },
     // 新增(談窗)
     handleCreate() {
@@ -223,32 +223,41 @@ export default {
         }
         this.$refs["ruleForm"].validate((valid) => {
             if(valid){
-                this.$api.partnerStoreCategorys[apiName](this.temp).then(() => {
-                this.$swal.fire({
-                    title: "成功",
-                    icon: "success",
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
-                this.closeDialog();
-                this.getList();
+                if(this.imagePathAry.length>0){
+                  this.temp.picture = JSON.stringify(this.imagePathAry);
+                }else{
+                  this.temp.picture = ""
+                }
+                this.$api.partnerStoreCategorys[apiName](this.temp).then((res) => {
+                const {code} = res;
+                if(code===200){
+                  this.$swal.fire({
+                      title: "成功",
+                      icon: "success",
+                      timer: 2000,
+                      showConfirmButton: false,
+                  });
+                  this.closeDialog();
+                  this.getList();
+                }
                 });
             }
         });
     },
-    // 編輯彈窗
+    //編輯彈窗
     handleUpdate(row) {
       this.$api.partnerStoreCategorys.get({ id: row.id }).then((res) => {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
           this.imagePathAry = JSON.parse(this.temp.picture);
+          this.imagesPropAry = JSON.parse(this.temp.picture);
         }
       });
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
     },
-    // 列表刪除
+    //列表刪除
     handleDelete(rows) {
       this.delrows("partnerStoreCategorys", rows, this.getList);
     },

@@ -211,8 +211,7 @@ export default {
       }
     },
     stateTextColor(){
-      return (state)=>{
-        // console.log(state);
+      return (state)=>{// console.log(state);
         return {
           greenText: state,
           redText: !state
