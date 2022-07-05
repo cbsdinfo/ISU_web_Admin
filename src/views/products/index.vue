@@ -26,7 +26,7 @@
           <el-table-column min-width="120px" label="前台商品連結" prop="url" align="center"></el-table-column>
           <el-table-column width="120px" label="是否為精選商品" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.featured === 1 ? "是" : "否" }}</span>
+              <span :class="featuredTextColor(scope.row.featured)">{{ scope.row.featured? "是" : "否" }}</span>
             </template>
           </el-table-column>
           <el-table-column width="90px" label="商品狀態" prop="state" align="center">
@@ -356,6 +356,14 @@ export default {
           reject: state===1 || state===4 ||state===3
         }
       }
+    },
+    featuredTextColor(){
+      return (state)=>{
+        return {
+          greenText: state,
+          redText: !state
+        }
+      }
     }
   },
   methods: {
@@ -549,15 +557,18 @@ export default {
             this.temp.picture = ""
           }
           this.temp.categoryName = this.selectListCategories.filter((item) => item.value === this.temp.categoryId)[0]?.label;
-          this.$api.products[apiName](this.temp).then(() => {
-            this.$swal.fire({
-              title: "成功",
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-            this.closeDialog()
-            this.getList()
+          this.$api.products[apiName](this.temp).then((res) => {
+            const{code} = res;
+            if(code === 200){
+              this.$swal.fire({
+                title: "成功",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              });
+              this.closeDialog()
+              this.getList()
+            }
           });
         }
       });
