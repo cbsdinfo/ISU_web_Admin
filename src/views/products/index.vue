@@ -15,7 +15,8 @@
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
           <el-table-column width="120px" label="商品縮圖" prop="picture" align="center">
             <template slot-scope="scope">
-              <div class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
+              <div v-if="scope.row.picture" class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
+              <span v-else>無</span>
             </template>
           </el-table-column>
           <el-table-column min-width="100px" label="商品類別" prop="categoryName" align="center"></el-table-column>
@@ -90,12 +91,12 @@
             </el-col>
             <!-- 圖片上傳 -->
             <el-col :span="24">
-              <el-form-item label="商品圖片" prop="picture">
+              <el-form-item label="商品圖片">
                 <!-- <upload-image :imagePathAry="imagePathAry" @handleSubmit="handleSubmit"/> -->
                 <upload-image @successUploadImg="successUploadImg" @deleteImg="deleteImg" 
                   :imagesPropAry="imagesPropAry"
                 />
-                <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input>
+                <!-- <el-input v-show="false" type="text" v-model.trim="imagePathAry"></el-input> -->
               </el-form-item>
             </el-col>
             <!-- 價格 -->
@@ -257,6 +258,12 @@ export default {
   },
   mixins: [pbMixins, extend],
   data() {
+    // const imageValidate = (rule, value, callback) => {
+    //   if (this.imagePathAry.length > 0) {
+    //     return callback();
+    //   }
+    //   return callback(new Error("圖片為必填"));
+    // };
     return {
       imagePathAry:[],
       imagesPropAry:[],
@@ -294,7 +301,10 @@ export default {
         categoryId: [{ required: true, message: "必填欄位", trigger: "change" }],
         // categoryName: [{ required: true, message: "必填欄位", trigger: "blur" }],
         storeName: [{ required: true, message: "必填欄位", trigger: ["blur","change"] }],
-        picture: [{ required: true, message: "圖片必填欄位" }],
+        // picture: [
+        //   { required: true, message: "圖片必填欄位" },
+        //   { validator: imageValidate, trigger: ["blur"]},
+        // ],
         price: [
           { required: true, message: "必填欄位", trigger: ["blur","change"] },
           { type:'number',message:"價格必須是數字"}
