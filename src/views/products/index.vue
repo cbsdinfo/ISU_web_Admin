@@ -91,12 +91,9 @@
             </el-col>
             <!-- 圖片上傳 -->
             <el-col :span="24">
-              <el-form-item label="商品圖片">
-                <!-- <upload-image :imagePathAry="imagePathAry" @handleSubmit="handleSubmit"/> -->
-                <upload-image @successUploadImg="successUploadImg" @deleteImg="deleteImg" 
-                  :imagesPropAry="imagesPropAry"
-                />
-                <!-- <el-input v-show="false" type="text" v-model.trim="imagePathAry"></el-input> -->
+              <el-form-item label="商品圖片" prop="picture">
+                <upload-image @successUploadImg="successUploadImg" @deleteImg="deleteImg" :imagesPropAry="imagesPropAry"/>
+                <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input>
               </el-form-item>
             </el-col>
             <!-- 價格 -->
@@ -299,12 +296,8 @@ export default {
       },
       rules: {
         categoryId: [{ required: true, message: "必填欄位", trigger: "change" }],
-        // categoryName: [{ required: true, message: "必填欄位", trigger: "blur" }],
         storeName: [{ required: true, message: "必填欄位", trigger: ["blur","change"] }],
-        // picture: [
-        //   { required: true, message: "圖片必填欄位" },
-        //   { validator: imageValidate, trigger: ["blur"]},
-        // ],
+        picture: [{ required: true, message: "必填欄位", trigger: ["blur", "change"]  }],
         price: [
           { required: true, message: "必填欄位", trigger: ["blur","change"] },
           { type:'number',message:"價格必須是數字"}
@@ -369,15 +362,20 @@ export default {
   methods: {
     deleteImg(imgPath){
       this.imagePathAry = this.imagePathAry.filter(item=>item.path !== imgPath)
+      if(this.imagePathAry.length>0){
+        this.temp.picture = JSON.stringify(this.imagePathAry)
+      }else{
+        this.temp.picture = ""
+      }
     },
     successUploadImg(successUploadResult){
-      // console.log(imgPathAry);
       successUploadResult.forEach(item => {   
         this.imagePathAry.push({
           path:item.filePath,
           id:item.id
         })
       });
+      this.temp.picture = JSON.stringify(this.imagePathAry)
     },
     updateState(actionType){     
       if(actionType==='agree'){
@@ -412,22 +410,6 @@ export default {
           fileList[index].path = filePath;
         }
       });
-    },
-    async uploadFile(item) {
-      let imgFile = item.file;
-      if (imgFile) {
-        console.log(imgFile);
-        const compressData = await this.$api.files.compressFile(imgFile, 250);
-        const formData = new FormData();
-        formData.append("files", compressData);
-        this.$api.files.Upload(formData).then((res) => {
-          const { code, result } = res;
-          if (code === 200) {
-            this.temp.picture = result[0].filePath;
-            item.onSuccess(result);
-          }
-        });
-      }
     },
     onBtnClicked: function (domId) {
       switch (domId) {
@@ -501,13 +483,12 @@ export default {
     resetTemp() {
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate));
-      this.imagesPropAry = []
-      // this.fileList = [];
+      this.imagesPropAry = [];
+      this.imagePathAry = [];
     },
     closeDialog() {
       this.dialogFormVisible = false;
       this.resetTemp();
-     
     },
     handlePreview(row) {
       this.$api.products.get({ id: row.id }).then((res) => {
@@ -515,9 +496,6 @@ export default {
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
           this.imagePathAry = JSON.parse(this.temp.picture)
-          // this.fileList.push({
-          //   path: this.temp.picture,
-          // });
         }
       });
       this.dialogStatus = "preview";
@@ -527,18 +505,8 @@ export default {
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
     },
-    // handleSubmit(imgPathAry){
-    //   if(imgPathAry.length===0){
-    //      this.temp.picture = ""
-    //   }else{
-    //     this.temp.picture = JSON.stringify(imgPathAry)
-    //   }
-    //   this.submitFlag = false;
-    //   this.submit()
-    // },
     // 保存提交
     submit() {
-      // this.submitFlag = true;
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
           let apiName = "";
@@ -551,11 +519,11 @@ export default {
               break;
           }
           //將照片轉成JSON字串
-          if(this.imagePathAry.length>0){
-            this.temp.picture = JSON.stringify(this.imagePathAry);
-          }else{
-            this.temp.picture = ""
-          }
+          // if(this.imagePathAry.length>0){
+          //   this.temp.picture = JSON.stringify(this.imagePathAry);
+          // }else{
+          //   this.temp.picture = ""
+          // }
           this.temp.categoryName = this.selectListCategories.filter((item) => item.value === this.temp.categoryId)[0]?.label;
           this.$api.products[apiName](this.temp).then((res) => {
             const{code} = res;

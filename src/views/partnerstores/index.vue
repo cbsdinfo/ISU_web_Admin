@@ -360,6 +360,8 @@ export default {
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
       this.fileList = [];
       this.dynamicTags = [];
+      this.imagePathAry=[],
+      this.imagesPropAry=[],
       this.dialogStatus = "";
       this.isRepeatTag = false;
     },

@@ -16,12 +16,12 @@
             </template>
           </el-table-column>
           <el-table-column min-width="50px" label="類別名稱" prop="name" align="center"></el-table-column>
-          <!-- <el-table-column width="100px" label="是否可用" prop="isEnable" align="center">
+          <el-table-column width="100px" label="狀態" prop="isEnable" align="center">
             <template slot-scope="scope">
               <span :class="stateTextColor(scope.row.state)">{{scope.row.state?'上架':'下架' }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column> -->
+          <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
           <el-table-column width="250px" :label="'操作'" align="center">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
@@ -46,6 +46,7 @@
             <upload-image @successUploadImg="successUploadImg" @deleteImg="deleteImg" :uploadLimit="1" 
               :imagesPropAry="imagesPropAry"
             />
+            <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input>
           </el-form-item>
 
           <el-form-item :label="'排序'">
@@ -116,6 +117,7 @@ export default {
       },
       rules: {
         name: [{ required: true, message: "必填欄位", trigger:  ["blur", "change"] }],
+        picture: [{ required: true, message: "必填欄位", trigger: ["blur", "change"]  }],
       },
     };
   },
@@ -142,15 +144,20 @@ export default {
   methods: {
     deleteImg(imgPath){
       this.imagePathAry = this.imagePathAry.filter(item=>item.path !== imgPath)
+      if(this.imagePathAry.length>0){
+        this.temp.picture = JSON.stringify(this.imagePathAry)
+      }else{
+        this.temp.picture = ""
+      }
     },
     successUploadImg(successUploadResult){
-      // console.log(imgPathAry);
       successUploadResult.forEach(item => {   
         this.imagePathAry.push({
           path:item.filePath,
           id:item.id
         })
       });
+      this.temp.picture = JSON.stringify(this.imagePathAry)
     },
     getList(){
       this.listLoading = true;
@@ -204,7 +211,8 @@ export default {
     resetTemp() {
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
-      this.imagesPropAry = []
+      this.imagesPropAry = [];
+      this.imagePathAry = [];
     },
     // 新增(談窗)
     handleCreate() {
@@ -223,11 +231,11 @@ export default {
         }
         this.$refs["ruleForm"].validate((valid) => {
             if(valid){
-                if(this.imagePathAry.length>0){
-                  this.temp.picture = JSON.stringify(this.imagePathAry);
-                }else{
-                  this.temp.picture = ""
-                }
+                // if(this.imagePathAry.length>0){
+                //   this.temp.picture = JSON.stringify(this.imagePathAry);
+                // }else{
+                //   this.temp.picture = ""
+                // }
                 this.$api.partnerStoreCategorys[apiName](this.temp).then((res) => {
                 const {code} = res;
                 if(code===200){
@@ -250,8 +258,10 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
-          this.imagePathAry = JSON.parse(this.temp.picture);
-          this.imagesPropAry = JSON.parse(this.temp.picture);
+          if(this.temp.picture){
+            this.imagePathAry = JSON.parse(this.temp.picture);
+            this.imagesPropAry = JSON.parse(this.temp.picture);
+          }
         }
       });
       this.dialogStatus = "update";

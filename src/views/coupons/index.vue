@@ -284,7 +284,8 @@ export default {
     resetTemp() {
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
-      this.imagesPropAry = []
+      this.imagePathAry=[];
+      this.imagesPropAry=[];
     },
     // 新增(談窗)
     handleCreate() {
