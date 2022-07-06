@@ -12,16 +12,16 @@
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
           <!-- <el-table-column type="selection" align="center" width="55"> </el-table-column> -->
-          <el-table-column min-width="50px" label="商品類別名稱" prop="name" align="center"></el-table-column>
           <el-table-column min-width="100px" label="商品類別圖檔" prop="picture" align="center">
             <template slot-scope="scope">
               <div class="imgWrap"><img :src="`${imgUrl}${scope.row.picture}`" alt="" /></div>
             </template>
           </el-table-column>
+          <el-table-column min-width="50px" label="商品類別名稱" prop="name" align="center"></el-table-column>
           <el-table-column min-width="50px" label="排序" prop="sort" align="center"></el-table-column>
           <el-table-column min-width="50px" label="是否可用" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.state ? "是" : "否" }}</span>
+              <span :class="stateTextColor(scope.row.state)">{{ scope.row.state ? "上架" : "下架" }}</span>
             </template>
           </el-table-column>
 
@@ -133,6 +133,16 @@ export default {
   },
   mounted() {
     this.getList();
+  },
+  computed:{
+    stateTextColor(){
+      return (state)=>{
+        return {
+          greenText: state,
+          redText: !state
+        }
+      }
+    }
   },
   methods: {
     //成功上傳圖片後的回調

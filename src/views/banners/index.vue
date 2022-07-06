@@ -20,7 +20,7 @@
             <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
             <el-table-column width="80px" label="是否可用" align="center">
               <template slot-scope="scope">
-                <span>{{ scope.row.state ? "是" : "否" }}</span>
+                <span :class="stateTextColor(scope.row.state)">{{ scope.row.state ? "上架" : "下架" }}</span>
               </template>
             </el-table-column>
             <el-table-column width="150px" :label="'操作'" align="center">
@@ -35,9 +35,6 @@
           <pagination v-show="total > 0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleCurrentChange" />
         </div>
       </div>
-      <!-- <el-tab-pane label="配置管理" name="second">配置管理</el-tab-pane>
-      <el-tab-pane label="角色管理" name="third">角色管理</el-tab-pane>
-      <el-tab-pane label="定时任务补偿" name="fourth">定时任务补偿</el-tab-pane> -->
     </el-tabs>
 
     <el-dialog class="dialog-mini" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
@@ -81,7 +78,7 @@
           <!--狀態上架/下架  -->
           <el-col :span="24">
             <el-form-item label="狀態(上架/下架)" prop="state">
-              <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
+              <el-switch v-model="temp.state" active-text="上架" inactive-text="下架"></el-switch>
             </el-form-item>
           </el-col>
         </el-row>
@@ -151,6 +148,16 @@ export default {
         state: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
       },
     };
+  },
+  computed:{
+    stateTextColor(){
+      return (state)=>{
+        return {
+          greenText: state,
+          redText: !state
+        }
+      }
+    }
   },
   mounted() {
     this.getList();
@@ -316,15 +323,6 @@ export default {
 </script>
 <style lang="scss" scoped>
 .bannerPage {
-  // .imgWrap {
-  //   margin: auto;
-  //   width: 200px;
-  //   height: 200px;
-  //   img {
-  //     width: 100%;
-  //     object-fit: cover;
-  //   }
-  // }
   ::v-deep .el-tabs {
     .el-tabs__header {
       padding-left: 10px;
@@ -332,11 +330,19 @@ export default {
         display: none;
       }
       .is-active {
-        background-color: blue;
+        background-color: #050D34;
         color: white;
       }
       .el-tabs__item {
         padding: 0px 10px;
+        border-top-right-radius: 10px;
+        border-top-left-radius: 10px;
+        transition: background .6s,color .6s;
+        &:hover{
+          color: white;
+          background: #050D34;
+          transition: background .6s,color .6s;
+        }
       }
     }
   }

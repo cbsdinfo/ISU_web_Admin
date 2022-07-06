@@ -10,17 +10,23 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <el-table-column min-width="150px" align="center" label="類別名稱" prop="categoryName"></el-table-column>
-          <el-table-column min-width="200px" align="center" label="店家名稱" prop="name"></el-table-column>
-          <el-table-column min-width="200px" align="center" label="經度" prop="long"></el-table-column>
-          <el-table-column min-width="200px" align="center" label="緯度" prop="lat"></el-table-column>
-           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-          <el-table-column width="100px" align="center" label="是否可用">
-            <template slot-scope="scope"
-              ><span>{{ scope.row.state ? "是" : "否" }}</span></template
-            >
+          <el-table-column width="120px" label="商家圖片" prop="picture" align="center">
+            <template slot-scope="scope">
+              <div v-if="scope.row.picture" class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
+              <span v-else>無</span>
+            </template>
           </el-table-column>
-          <el-table-column min-width="100px" align="center" :label="'操作'">
+          <el-table-column min-width="100px" align="center" label="商家類別名稱" prop="categoryName"></el-table-column>
+          <el-table-column min-width="150px" align="center" label="商家名稱" prop="name"></el-table-column>
+          <el-table-column width="150px" align="center" label="經度" prop="long"></el-table-column>
+          <el-table-column width="150px" align="center" label="緯度" prop="lat"></el-table-column>
+          <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
+          <el-table-column width="100px" align="center" label="狀態">
+            <template slot-scope="scope">
+              <span :class="stateTextColor(scope.row.state)">{{ scope.row.state ? "上架" : "下架" }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column width="200px" align="center" :label="'操作'">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
@@ -54,6 +60,13 @@
           <el-col :span="24">
             <el-form-item label="摘要" prop="contents">
               <el-input class="itemWidth" type="textarea" v-model="temp.contents" size="small" placeholder="請輸入商店簡介"></el-input>
+            </el-form-item>
+          </el-col>
+          <!-- 圖片上傳 -->
+          <el-col :span="24">
+            <el-form-item label="商品圖片" prop="picture">
+              <upload-image :uploadLimit="1" @successUploadImg="successUploadImg" @deleteImg="deleteImg" :imagesPropAry="imagesPropAry"/>
+              <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input>
             </el-form-item>
           </el-col>
           <!-- 商店電話號碼 -->
@@ -101,7 +114,7 @@
           <!-- 狀態(上架/下架) -->
           <el-col :span="24">
             <el-form-item label="狀態(上架/下架)" prop="state">
-              <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
+              <el-switch v-model="temp.state" active-text="上架" inactive-text="下架"></el-switch>
             </el-form-item>
           </el-col>
         </el-row>
@@ -123,17 +136,17 @@ import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
+import uploadImage from "@/components/UploadImage";
 
 const formTemplate = {
   id: "",
+  picture:"",
   categoryId: "", //類別名稱
   categoryName: "", //類別名稱
   name: "", //商店名稱
   contents: "", //商店簡介
   telephone: "", //商店電話
   address: "", //商店地址
-//   longLat: "", //商店經緯度
-//   businessHours: "", //商店營業時間
   long: "",//經度
   lat: "",//緯度
   startBusinessHours: "08:00",//開始營業時間
@@ -144,7 +157,7 @@ const formTemplate = {
 
 export default {
   name: "partnerstores",
-  components: { Sticky, permissionBtn, Pagination },
+  components: { Sticky, permissionBtn, Pagination ,uploadImage},
   directives: {
     waves,
     elDragDialog,
@@ -176,6 +189,8 @@ export default {
       return callback(new Error("經數整數為0-180,小數為0到7位"));
     };
     return {
+      imagePathAry:[],
+      imagesPropAry:[],
       selectLists: [],
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       fileList: [],
@@ -206,6 +221,7 @@ export default {
         categoryId: [{ required: true, message: "必填欄位", trigger: "change" }],
         name: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         contents: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
+        picture: [{ required: true, message: "必填欄位", trigger: ["blur", "change"]  }],
         telephone: [
           { required: true, message: "必填欄位", trigger: ["blur", "change"] },
           { validator: checkNum, trigger: ["blur", "change"] },
@@ -233,18 +249,52 @@ export default {
     this.getList();
     this.selectData();
   },
+  computed:{
+    formatImgData(){
+      return (imgJsonString)=>{
+        let firstImgPath =JSON.parse(imgJsonString)[0].path
+        return this.imgUrl + firstImgPath
+      }
+    },
+    stateTextColor(){
+      return (state)=>{
+        return {
+          greenText: state,
+          redText: !state
+        }
+      }
+    }
+  },
   methods: {
+    deleteImg(imgPath){
+      this.imagePathAry = this.imagePathAry.filter(item=>item.path !== imgPath)
+      if(this.imagePathAry.length>0){
+        this.temp.picture = JSON.stringify(this.imagePathAry)
+      }else{
+        this.temp.picture = ""
+      }
+    },
+    successUploadImg(successUploadResult){
+      successUploadResult.forEach(item => {   
+        this.imagePathAry.push({
+          path:item.filePath,
+          id:item.id
+        })
+      });
+      this.temp.picture = JSON.stringify(this.imagePathAry)
+    },
     validateBlurSelect(id) {
       this.$refs.ruleForm.validateField(id);
     },
     getList() {
       this.listLoading = true;
       this.$api.partnerStores.getList(this.listQuery).then((response) => {
-        console.log(response);
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
-        this.listLoading = false;
+        const { data, count,code } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count;
+          this.listLoading = false;
+        }
       });
     },
     // 取得下拉選單
@@ -264,8 +314,7 @@ export default {
         }
       });
     },
-    onBtnClicked: function (domId, callback) {
-      console.log("you click:" + domId);
+    onBtnClicked: function (domId) {
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -295,11 +344,6 @@ export default {
           }
           this.handleDelete(this.multipleSelection);
           break;
-        case "btnExport":
-          this.$refs.mainTable.exportExcel("資源文件", callback);
-          break;
-        default:
-          break;
       }
     },
     handleFilter() {
@@ -312,7 +356,6 @@ export default {
       this.getList();
     },
     resetTemp() {
-      //this.$refs["ruleForm"].clearValidate();
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
       this.fileList = [];
@@ -343,8 +386,7 @@ export default {
           this.temp.categoryName = this.selectLists.filter((item) => item.value === this.temp.categoryId)[0]?.label;
           this.temp.long = Number(this.temp.long) 
           this.temp.lat = Number(this.temp.lat)    
-          console.log(this.temp,apiName);
-
+        
           this.$api.partnerStores[apiName](this.temp).then(() => {
             this.$swal.fire({
               title: "成功",
@@ -365,7 +407,11 @@ export default {
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
           this.temp.long = String(this.temp.long) 
-          this.temp.lat = String(this.temp.lat)    
+          this.temp.lat = String(this.temp.lat)
+          if(this.temp.picture){
+            this.imagesPropAry = JSON.parse(this.temp.picture)
+            this.imagePathAry = JSON.parse(this.temp.picture)
+          }
         }
       });
       this.dialogStatus = "update";

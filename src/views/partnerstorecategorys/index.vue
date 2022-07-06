@@ -10,12 +10,12 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <el-table-column min-width="50px" label="類別名稱" prop="name" align="center"></el-table-column>
-          <el-table-column width="150px" label="產品縮圖" prop="picture" align="center">
+          <el-table-column width="150px" label="商家類別圖片" prop="picture" align="center">
             <template slot-scope="scope">
-                <div class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
+              <div class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
             </template>
           </el-table-column>
+          <el-table-column min-width="50px" label="類別名稱" prop="name" align="center"></el-table-column>
           <!-- <el-table-column width="100px" label="是否可用" prop="isEnable" align="center">
             <template slot-scope="scope">
               <span :class="stateTextColor(scope.row.state)">{{scope.row.state?'上架':'下架' }}</span>
@@ -49,7 +49,7 @@
           </el-form-item>
 
           <el-form-item :label="'排序'">
-            <el-input-number v-model="temp.sort" :min="0" :max="10"></el-input-number>
+            <el-input-number v-model="temp.sort" :min="0"></el-input-number>
           </el-form-item>
 
           <el-form-item :label="'狀態(上/下架)'" prop="isEnable">

@@ -125,8 +125,15 @@
             </el-col>
             <!-- 興趣 -->
             <el-col :span="24">
-              <el-form-item label="興趣" prop="interest">
-                <el-input type="textarea" :autosize="{ minRows: 3 }" v-model="temp.interest" placeholder="請輸入興趣"></el-input>
+              <el-form-item label="興趣">
+                <el-select v-model="interestSelected" multiple placeholder="請選擇興趣">
+                  <el-option v-for="item in interestSelectList" 
+                    :key="item.id"
+                    :label="item.title"
+                    :value="item.id">
+                  </el-option>
+                </el-select>
+                <!-- <el-input type="textarea" :autosize="{ minRows: 3 }" v-model="temp.interest" placeholder="請輸入興趣"></el-input> -->
               </el-form-item>
             </el-col>
             <!-- 地址 -->
@@ -137,13 +144,13 @@
             </el-col>
             <!-- 卡別 -->
             <el-col :span="24">
-              <el-form-item label="卡別" prop="cardLevel">
+              <el-form-item label="卡別">
                 <el-input type="text" v-model="temp.cardLevel" size="small" :disabled="true"></el-input>
               </el-form-item>
             </el-col>
             <!-- 狀態(上架/下架) -->
             <el-col :span="24">
-              <el-form-item label="狀態(是否啟用)" prop="state">
+              <el-form-item label="狀態(是否啟用)">
                 <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
               </el-form-item>
             </el-col>
@@ -367,6 +374,12 @@ export default {
     //   return callback(new Error("請輸入正整數或負整數"));
     // };
     return {
+      filterDateRange:null,
+      couponRecordList:[],
+      pointsRecordList:[],
+      memberPointVisible:false,
+      recordPointVisible:false,
+      isValidateEmail:"",
       json_fields: {
         '名稱': 'name',
         '電話(帳號)':'telephone',
@@ -386,12 +399,6 @@ export default {
         '開卡飯店':'openCardHotel',
         '發送生日禮日期':'sendBirthdayDate'
       },
-      filterDateRange:null,
-      couponRecordList:[],
-      pointsRecordList:[],
-      memberPointVisible:false,
-      recordPointVisible:false,
-      isValidateEmail:"",
       rules: {//驗證
         name: [{ required: true, message: "必填欄位", trigger: "blur" }],
         telephone: [
@@ -407,7 +414,6 @@ export default {
           { validator: emailValidate, trigger: ["blur"]},
         ],
         birthday: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
-        state: [{ required: true, message: "必填欄位", trigger: "blur" }],
       },
       pointRules:{
         pointNumber: [
@@ -494,6 +500,110 @@ export default {
           value:false
         },
       ],
+      interestSelectList:[
+        {
+          id:1,
+          title:"SUP"
+        },
+        {
+          id:2,
+          title:"自行車"
+        },
+        {
+          id:3,
+          title:"登山"
+        },
+        {
+          id:4,
+          title:"露營"
+        },
+        {
+          id:5,
+          title:"潛水"
+        },
+        {
+          id:6,
+          title:"溯溪"
+        },
+        {
+          id:7,
+          title:"電影"
+        },
+        {
+          id:8,
+          title:"美食"
+        },
+        {
+          id:9,
+          title:"歷史文化"
+        },
+        {
+          id:10,
+          title:"科學"
+        },
+        {
+          id:11,
+          title:"品酒"
+        },
+        {
+          id:12,
+          title:"品茶"
+        },
+        {
+          id:13,
+          title:"美術"
+        },
+        {
+          id:14,
+          title:"建行"
+        },
+        {
+          id:15,
+          title:"跑步"
+        },
+        {
+          id:16,
+          title:"烹飪"
+        },
+        {
+          id:17,
+          title:"手作體驗"
+        },
+        {
+          id:18,
+          title:"自拍"
+        },
+        {
+          id:19,
+          title:"咖啡"
+        },
+        {
+          id:20,
+          title:"植物"
+        },
+        {
+          id:21,
+          title:"語言交換"
+        },
+        {
+          id:22,
+          title:"獨木舟"
+        },
+        {
+          id:23,
+          title:"攀岩"
+        },
+        {
+          id:24,
+          title:"文化體驗"
+        },
+        {
+          id:25,
+          title:"飛行傘"
+        }
+      
+      ],
+      interestSelected:[],
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
@@ -707,7 +817,6 @@ export default {
       this.$refs.ruleForm.validateField(id);
     },
     onBtnClicked: function (domId) {
-      console.log("you click:" + domId);
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -782,7 +891,9 @@ export default {
       }
       if(formType==='addForm'){
         this.$refs["ruleForm"].resetFields();
+        // this.$refs["ruleForm"].resetFields();
         this.temp = JSON.parse(JSON.stringify(formTemplate));
+        this.interestSelected = []
       }
     },
     // 新增(談窗)
@@ -847,6 +958,11 @@ export default {
       }
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
+          //篩選出興趣
+          let interestResult = this.interestSelectList.filter((item)=>this.interestSelected.includes(item.id))
+          if(interestResult.length>0){
+            this.temp.interest = JSON.stringify(interestResult)
+          }
           this.$api.members[apiName](this.temp).then((res) => {
             const {code} = res
             if(code===200){
@@ -870,6 +986,11 @@ export default {
         if (code === 200) {
           console.log(result);
           this.temp = JSON.parse(JSON.stringify(result));
+          if(this.temp.interest){
+            let interestAry = JSON.parse(this.temp.interest)
+            this.interestSelected = interestAry.map(item=>item.id)
+            console.log(this.interestSelected);
+          }
         }
       });
       this.dialogStatus = "update";

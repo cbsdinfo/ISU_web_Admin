@@ -74,7 +74,7 @@
           </el-form-item>
 
           <el-form-item size="small" :label="'排序號'">
-            <el-input-number v-model="temp.sort" :min="0" :max="10"></el-input-number>
+            <el-input-number v-model="temp.sort" :min="0"></el-input-number>
           </el-form-item>
 
           <el-form-item size="small" :label="'是否可用'" prop="isEnable">

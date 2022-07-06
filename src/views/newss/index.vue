@@ -10,21 +10,21 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <el-table-column width="150px" align="center" label="發佈日期" prop="releaseDate">
-            <template slot-scope="scope">
-              <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column min-width="150px" align="center" label="類別名稱" prop="categoryName"></el-table-column>
-          <el-table-column min-width="200px" align="center" label="標題" prop="title"></el-table-column>
           <el-table-column width="180px" align="center" label="列表圖片" prop="listImg">
             <template slot-scope="scope">
               <div class="imgWrap"><img :src="`${imgUrl}${scope.row.listImg}`" alt="" /></div>
             </template>
           </el-table-column>
-          <el-table-column width="100px" align="center" label="是否可用">
+          <el-table-column min-width="150px" align="center" label="類別名稱" prop="categoryName"></el-table-column>
+          <el-table-column min-width="200px" align="center" label="標題" prop="title"></el-table-column>
+          <el-table-column width="100px" align="center" label="狀態">
             <template slot-scope="scope">
-              <span>{{ scope.row.state ? "是" : "否" }}</span>
+              <span :class="stateTextColor(scope.row.state)">{{ scope.row.state ? "上架" : "下架" }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column width="150px" align="center" label="發佈日期" prop="releaseDate">
+            <template slot-scope="scope">
+              <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
             </template>
           </el-table-column>
           <el-table-column min-width="100px" align="center" :label="'操作'">
@@ -193,6 +193,16 @@ export default {
       },
     };
   },
+  computed:{
+    stateTextColor(){
+      return (state)=>{
+        return {
+          greenText: state,
+          redText: !state
+        }
+      }
+    }
+  },
   mounted() {
     this.getList();
     this.selectData();
@@ -343,7 +353,6 @@ export default {
     },
     // 保存提交
     submit() {
-      
       let apiName = "";
       switch (this.dialogStatus) {
         case "add":
@@ -402,15 +411,6 @@ export default {
       this.dialogFormVisible = false;
       this.resetTemp();
     },
-    // 列表表格操作
-    // rowClick(row) {
-    //   this.$refs.mainTable.clearSelection();
-    //   this.$refs.mainTable.toggleRowSelection(row);
-    // },
-    //列表表格操作
-    // handleSelectionChange(val) {
-    //   this.multipleSelection = val;
-    // },
   },
 };
 </script>

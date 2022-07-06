@@ -22,7 +22,7 @@
           <!-- <el-table-column min-width="50px" label="庫存量" prop="inventory" align="center"></el-table-column> -->
           <el-table-column width="100px" label="狀態" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.state? "是" : "否" }}</span>
+              <span :class="stateTextColor(scope.row.state)">{{ scope.row.state? "上架" : "下架" }}</span>
             </template>
           </el-table-column>
           <el-table-column width="120px" label="建立日期" align="center">
@@ -168,9 +168,17 @@ export default {
       },
     };
   },
+  computed:{
+    stateTextColor(){
+      return (state)=>{
+        return {
+          greenText: state,
+          redText: !state
+        }
+      }
+    }
+  },
   async mounted() {
-    
-   
     if(this.hasButton("highestAuthorityRole")){//判斷此帳號
       this.listQuery.StoreId = ""
       //有最高權限,可以取得所有機構新增的集章類別

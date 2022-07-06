@@ -11,9 +11,9 @@
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
           <el-table-column min-width="50px" label="類別名稱" prop="name" align="center"></el-table-column>
-          <el-table-column width="80px" label="是否可用" prop="isEnable" align="center">
+          <el-table-column width="80px" label="狀態" prop="isEnable" align="center">
             <template slot-scope="scope">
-              <span>{{scope.row.isEnable?'是':'否' }}</span>
+              <span :class="stateTextColor(scope.row.isEnable)">{{scope.row.isEnable?'上架':'下架' }}</span>
             </template>
           </el-table-column>
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
@@ -39,7 +39,7 @@
           </el-form-item>
 
           <el-form-item size="small" :label="'排序'">
-            <el-input-number v-model="temp.sort" :min="0" :max="10"></el-input-number>
+            <el-input-number v-model="temp.sort" :min="0"></el-input-number>
           </el-form-item>
 
           <el-form-item size="small" :label="'是否可用'" prop="isEnable">
@@ -112,6 +112,16 @@ export default {
         name: [{ required: true, message: "必填欄位", trigger:  ["blur", "change"] }],
       },
     };
+  },
+  computed:{
+    stateTextColor(){
+      return (state)=>{
+        return {
+          greenText: state,
+          redText: !state
+        }
+      }
+    }
   },
   async mounted() {
     console.log(this.hasButton("highestAuthorityRole"));
