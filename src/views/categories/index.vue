@@ -13,9 +13,9 @@
             </div>
           </div>
           <el-card shadow="never" class="body-small categories-menu-card">
-            <div slot="header" class="clearfix">
+            <!-- <div slot="header" class="clearfix">
               <el-button type="text" style="padding: 0 11px" @click="getAllCategories">全部字典>></el-button>
-            </div>
+            </div> -->
             <el-tree :current-node-key="listQuery.TypeId" node-key="id" :highlight-current="true" @node-click="handleNodeClick" :data="categoryTypes" :expand-on-click-node="false" default-expand-all :props="categoryTypeProps">
               <span class="custom-tree-node" slot-scope="{ node }">
                 <span><i class="el-icon-menu" style="margin-right: 10px"></i>{{ node.label }}</span>
@@ -27,31 +27,38 @@
         <el-main class="categories-content flex-item">
           <sticky :className="'sub-navbar'">
             <div class="filter-container" style="white-space: nowrap; overflow-x: auto">
-              <el-input @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入關鍵字'" v-model="listQuery.key"> </el-input>
-
-              <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜尋</el-button>
-              <el-button :icon="`iconfont icon-${btn.icon}`" :type="btn.class" size="mini" v-for="btn of typesBtns" v-bind:key="btn.Id" class="filter-item" @click="onBtnClicked(btn.domId)">{{ btn.name }}</el-button>
+              <el-input @keyup.enter.native="handleFilter" @change="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入關鍵字'" v-model="listQuery.key"> </el-input>
+              <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
+              <!-- <el-button :icon="`iconfont icon-${btn.icon}`" :type="btn.class" size="mini" v-for="btn of typesBtns" v-bind:key="btn.Id" class="filter-item" @click="onBtnClicked(btn.domId)">{{ btn.name }}</el-button> -->
             </div>
           </sticky>
 
-          <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)" @row-click="rowClick" @selection-change="handleSelectionChange">
-            <el-table-column type="selection" align="center" width="55"> </el-table-column>
-            <el-table-column min-width="50px" label="名稱" prop="name"></el-table-column>
-            <el-table-column min-width="60px" label="值" prop="dtValue"></el-table-column>
+          <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 96px)" @row-click="rowClick" @selection-change="handleSelectionChange">
+            <!-- <el-table-column type="selection" align="center" width="55"> </el-table-column> -->
+            <el-table-column min-width="50px" label="名稱" prop="name" align="center"></el-table-column>
             <el-table-column width="80px" label="是否可用" prop="isEnable" align="center">
               <template slot-scope="scope">
                 <span :class="scope.row.isEnable | statusFilter">{{ statusOptions.find((u) => u.key == scope.row.isEnable).display_name }}</span>
               </template>
             </el-table-column>
             <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-            <el-table-column width="200px" label="分類標誌" prop="typeId"></el-table-column>
+            <!-- <el-table-column width="200px" label="分類標誌" prop="typeId"></el-table-column> -->
+            <el-table-column width="200px" :label="'操作'" align="center">
+              <template slot-scope="scope">
+                <div class="buttonFlexBox">
+                  <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
+                  <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
+                  <!-- <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button> -->
+                </div>
+              </template>
+            </el-table-column>
           </el-table>
           <pagination v-show="total > 0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleCurrentChange" />
         </el-main>
       </div>
 
       <!-- 新增類別彈窗 -->
-      <el-dialog :destroy-on-close="true" class="dialog-mini custom-dialog user-dialog" width="400px" title="新增分組" :visible.sync="addTypesDialog">
+      <el-dialog :destroy-on-close="true" class="dialog-mini custom-dialog user-dialog" width="400px" title="新增分組" :visible.sync="addTypesDialog" :close-on-click-modal="false" :lock-scroll="true">
         <el-form ref="categoryTypeForm" :model="categoryTypesInfo" :rules="categoryRules" el="categorys-tayps-form" label-width="80px">
           <el-form-item prop="id" label="分類id">
             <el-input size="small" v-model="categoryTypesInfo.id"></el-input>
@@ -67,7 +74,7 @@
       </el-dialog>
 
       <!--類別之下的次分類彈窗 -->
-      <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
           <el-form-item size="small" :label="'名稱'" prop="name">
             <el-input v-model="temp.name"></el-input>
@@ -106,6 +113,8 @@ import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
+import pbMixins from "@/mixins/permissionBtn.js";
+import permissionBtn from "@/components/PermissionBtn";
 
 const formTemplate = {
   id: "", // 分類表ID（可作為分類的標識）
@@ -121,8 +130,8 @@ const formTemplate = {
 
 export default {
   name: "category",
-  components: { Sticky, Pagination },
-  mixins: [extend],
+  components: { Sticky, Pagination,permissionBtn },
+  mixins: [pbMixins, extend],
   directives: {
     waves,
     elDragDialog,
@@ -140,7 +149,7 @@ export default {
         limit: 20,
         key: undefined,
         appId: undefined,
-        TypeId: undefined,
+        TypeId:"SYS_PlayerLeads_Article"
       },
       statusOptions: [
         { key: true, display_name: "啟用" },
@@ -273,9 +282,12 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.categorys.load(this.listQuery).then((response) => {
-        this.list = response.data;
-        this.total = response.count;
-        this.listLoading = false;
+        const {code} = response
+        if(code===200){
+          this.list = response.data;
+          this.total = response.count;
+          this.listLoading = false;
+        }
       });
     },
     handleFilter() {
@@ -376,23 +388,6 @@ export default {
         }
       });
     },
-    // // 新增類型下的第二層分類
-    // createData() {
-    //   this.$refs["dataForm"].validate((valid) => {
-    //     if (valid) {
-    //       this.$api.categorys.add(this.temp).then(() => {
-    //         this.list.unshift(this.temp);
-    //         this.dialogFormVisible = false;
-    //         this.$swal.fire({
-    //           icon: "success",
-    //           title: "創建成功",
-    //           timer: 1500,
-    //           showConfirmButton: false,
-    //         });
-    //       });
-    //     }
-    //   });
-    // },
     // 刪除分類
     handleDeleteCategories() {
       if (!this.listQuery.TypeId) {
