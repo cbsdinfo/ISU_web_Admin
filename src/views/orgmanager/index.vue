@@ -24,37 +24,37 @@
             <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 52px)" @row-click="rowClick" @selection-change="handleSelectionChange">
               <el-table-column type="selection" align="center" width="55"> </el-table-column>
 
-              <el-table-column :label="'Id'" v-if="showDescription" min-width="120px">
+              <el-table-column :label="'Id'" v-if="showDescription" min-width="120px" align="center">
                 <template slot-scope="scope">
                   <span>{{ scope.row.id }}</span>
                 </template>
               </el-table-column>
 
-              <el-table-column min-width="80px" :label="'層級ID'">
+              <el-table-column width="120px" :label="'層級ID'" align="center">
                 <template slot-scope="scope">
                   <span class="link-type" @click="handleUpdate(scope.row)">{{ scope.row.cascadeId }}</span>
                 </template>
               </el-table-column>
 
-              <el-table-column min-width="80px" :label="'名稱'">
+              <el-table-column min-width="120px" :label="'名稱'" align="center">
                 <template slot-scope="scope">
                   <span>{{ scope.row.name }}</span>
                 </template>
               </el-table-column>
 
-              <el-table-column width="120px" :label="'上級部門'">
+              <el-table-column min-width="100px" :label="'上級部門'" align="center">
                 <template slot-scope="scope">
                   <span>{{ scope.row.parentName }}</span>
                 </template>
               </el-table-column>
 
-              <el-table-column class-name="status-col" :label="'狀態'" width="100">
+              <el-table-column class-name="status-col" :label="'狀態'" width="100" align="center">
                 <template slot-scope="scope">
                   <span :class="scope.row.status | statusFilter">{{ statusOptions.find((u) => u.key == scope.row.status).display_name }}</span>
                 </template>
               </el-table-column>
 
-              <el-table-column align="center" :label="'操作'" width="150" class-name="small-padding fixed-width">
+              <el-table-column :label="'操作'" width="180" class-name="small-padding fixed-width" align="center">
                 <template slot-scope="scope">
                   <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">編輯</el-button>
                   <el-button v-if="scope.row.status == 0" size="mini" type="danger" @click="handleModifyStatus(scope.row, 1)">停用</el-button>

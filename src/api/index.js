@@ -26,6 +26,7 @@ import membershipBenefits from "./allApi/membershipBenefits";
 import partnerStoreCategorys from "./allApi/partnerStoreCategorys";
 import partnerStores from "./allApi/partnerStores";
 import members from "./allApi/members";
+import bookingRooms from "./allApi/bookingRooms";
 
 export default {
     accessObjs,
@@ -55,5 +56,6 @@ export default {
     membershipBenefits,
     partnerStoreCategorys,
     partnerStores,
-    members
+    members,
+    bookingRooms
 }
