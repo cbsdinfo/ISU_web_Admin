@@ -17,17 +17,17 @@
           </el-table-column>
           <el-table-column min-width="150px" align="center" label="類別名稱" prop="categoryName"></el-table-column>
           <el-table-column min-width="200px" align="center" label="標題" prop="title"></el-table-column>
-          <el-table-column width="100px" align="center" label="狀態">
+          <el-table-column width="80px" align="center" label="狀態">
             <template slot-scope="scope">
               <span :class="stateTextColor(scope.row.state)">{{ scope.row.state ? "上架" : "下架" }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="150px" align="center" label="發佈日期" prop="releaseDate">
+          <el-table-column width="120px" align="center" label="發佈日期" prop="releaseDate">
             <template slot-scope="scope">
               <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
             </template>
           </el-table-column>
-          <el-table-column min-width="100px" align="center" :label="'操作'">
+          <el-table-column min-width="150px" align="center" :label="'操作'" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
@@ -166,9 +166,10 @@ export default {
       tableKey: 0,
       list: null,
       total: 0,
-      newsFormLoading:null,
+      newsFormLoading: null,
       listLoading: true,
-      listQuery: {// 查詢條件
+      listQuery: {
+        // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
@@ -193,15 +194,12 @@ export default {
       },
     };
   },
-  computed:{
-    stateTextColor(){
-      return (state)=>{
-        return {
-          greenText: state,
-          redText: !state
-        }
-      }
-    }
+  computed: {
+    stateTextColor() {
+      return (state) => {
+        return state ? "greenText" : "redText";
+      };
+    },
   },
   mounted() {
     this.getList();
@@ -227,7 +225,7 @@ export default {
       this.$api.categorys.load(temp).then((res) => {
         const { code, data } = res;
         if (code === 200) {
-          this.selectLists = data.filter(item=>item.isEnable)
+          this.selectLists = data.filter((item) => item.isEnable);
           this.selectLists = this.selectLists.map((item) => ({
             label: item.name,
             value: item.id,
@@ -237,16 +235,11 @@ export default {
     },
     fileSuccess(res, file, fileList) {
       const { filePath } = res[0];
-      console.log(file);
-      console.log("fileList", fileList);
-      fileList.forEach((item, index) => {
-        if (file.uid !== item.uid) {
-          fileList.splice(index, 1);
-        }
-      });
       fileList.forEach((item, index) => {
         if (file.uid === item.uid) {
           fileList[index].path = filePath;
+        } else {
+          fileList.splice(index, 1);
         }
       });
     },
@@ -290,7 +283,6 @@ export default {
       this.$refs.ruleForm.validateField("categoryId");
     },
     onBtnClicked: function (domId, callback) {
-      console.log("you click:" + domId);
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -337,7 +329,6 @@ export default {
       this.getList();
     },
     resetTemp() {
-      //this.$refs["ruleForm"].clearValidate();
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
       this.fileList = [];
@@ -348,22 +339,12 @@ export default {
     // 新增(談窗)
     handleCreate() {
       this.dialogStatus = "add";
-      this.dialogFormVisible = true;
       this.temp.releaseDate = this.$dayjs().format("YYYY-MM-DD");
+      this.dialogFormVisible = true;
     },
     // 保存提交
     submit() {
-      let apiName = "";
-      switch (this.dialogStatus) {
-        case "add":
-          apiName = "add";
-          break;
-        case "update":
-          apiName = "update";
-          break;
-      }
       this.$refs["ruleForm"].validate((valid) => {
-        
         if (valid) {
           this.newsFormLoading = true;
           //處理TAG
@@ -372,8 +353,8 @@ export default {
           //取得類別名稱
           this.temp.categoryName = this.selectLists.filter((item) => item.value === this.temp.categoryId)[0]?.label;
 
-          this.$api.newss[apiName](this.temp).then(() => {
-            this.newsFormLoading = false; 
+          this.$api.newss[this.dialogStatus](this.temp).then(() => {
+            this.newsFormLoading = false;
             this.$swal.fire({
               title: "成功",
               icon: "success",
@@ -421,6 +402,7 @@ export default {
 @import "~quill/dist/quill.core.css";
 @import "~quill/dist/quill.bubble.css";
 @import "~quill/dist/quill.snow.css";
+
 .newsPage {
   .dialogContent {
     max-height: 70vh;
@@ -435,7 +417,6 @@ export default {
     }
     .button-new-tag {
       display: block;
-      // margin-left: 10px;
       height: 32px;
       line-height: 30px;
       padding-top: 0;
@@ -444,10 +425,7 @@ export default {
     .input-new-tag {
       display: block;
       width: 90px;
-      // margin-left: 10px;
     }
   }
-  
- 
 }
 </style>

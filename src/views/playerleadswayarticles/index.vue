@@ -10,7 +10,6 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <!-- <el-table-column type="selection" width="55" align="center"> </el-table-column> -->
           <el-table-column width="180px" label="圖片" prop="listImg" align="center">
             <template slot-scope="scope">
               <div class="imgWrap"><img :src="`${imgUrl}${scope.row.listImg}`" alt="" /></div>
@@ -18,19 +17,19 @@
           </el-table-column>
           <el-table-column width="100px" label="區域類別" prop="areaName" align="center"></el-table-column>
           <el-table-column min-width="100px" label="文章類別" prop="categoryName" align="center"></el-table-column>
-          <el-table-column min-width="150px" label="文章標題" prop="title" align="center"></el-table-column>
-          <el-table-column width="150px" label="發佈日期" prop="releaseDate" align="center">
+          <el-table-column min-width="200px" label="文章標題" prop="title" align="center"></el-table-column>
+          <el-table-column width="120px" label="發佈日期" prop="releaseDate" align="center">
             <template slot-scope="scope">
               <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
             </template>
           </el-table-column>
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-          <el-table-column width="100px" label="狀態" align="center">
+          <el-table-column width="80px" label="狀態" align="center">
             <template slot-scope="scope">
               <span :class="stateTextColor(scope.row.state)">{{ scope.row.state ? "上架" : "下架" }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="200px" :label="'操作'" align="center">
+          <el-table-column width="180px" :label="'操作'" align="center" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
@@ -128,6 +127,7 @@
     </el-dialog>
   </div>
 </template>
+
 <script>
 import { VueEditor } from "vue2-editor/dist/vue2-editor.core.js"; //編輯器
 import pbMixins from "@/mixins/permissionBtn.js";
@@ -178,7 +178,6 @@ export default {
       total: 0,
       listLoading: true,
       listQuery: {
-        // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
@@ -202,21 +201,17 @@ export default {
       },
     };
   },
-  computed:{
-    stateTextColor(){
-      return (state)=>{
-        return {
-          greenText: state,
-          redText: !state
-        }
-      }
+  computed: {
+    stateTextColor() {
+      return (state) => {
+        return state ? "greenText" : "redText";
+      };
     },
   },
   mounted() {
     this.getList();
     this.selectData("SYS_PlayerLeads_Article");
     this.selectData("SYS_PlayerLeads_Area");
-    // console.log(this.dayjs().format("YYYY-MM-DD"));
   },
   methods: {
     closeDialog() {
@@ -224,7 +219,6 @@ export default {
       this.resetTemp();
     },
     resetTemp() {
-      //this.$refs["ruleForm"].clearValidate();
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
       this.fileList = [];
@@ -295,14 +289,14 @@ export default {
         const { code, data } = res;
         if (code === 200) {
           if (typeId === "SYS_PlayerLeads_Article") {
-            this.selectListsArticle = data.filter(item=>item.isEnable)
+            this.selectListsArticle = data.filter((item) => item.isEnable);
             this.selectListsArticle = this.selectListsArticle.map((item) => ({
               label: item.name,
               value: item.id,
             }));
           }
           if (typeId === "SYS_PlayerLeads_Area") {
-            this.selectListsRoad = data.filter(item=>item.isEnable)
+            this.selectListsRoad = data.filter((item) => item.isEnable);
             this.selectListsRoad = this.selectListsRoad.map((item) => ({
               label: item.name,
               value: item.id,
@@ -354,15 +348,6 @@ export default {
     },
     // 保存提交
     submit() {
-      let apiName = "";
-      switch (this.dialogStatus) {
-        case "add":
-          apiName = "add";
-          break;
-        case "update":
-          apiName = "update";
-          break;
-      }
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
           //處理TAG
@@ -373,7 +358,7 @@ export default {
           //取得區域類別名稱
           this.temp.areaName = this.selectListsRoad.filter((item) => item.value === this.temp.areaId)[0]?.label;
 
-          this.$api.playerLeadsWayArticles[apiName](this.temp).then(() => {
+          this.$api.playerLeadsWayArticles[this.dialogStatus](this.temp).then(() => {
             this.$swal.fire({
               title: "成功",
               icon: "success",
@@ -407,7 +392,6 @@ export default {
       this.delrows("playerLeadsWayArticles", rows, this.getList);
     },
     onBtnClicked: function (domId, callback) {
-      console.log("you click:" + domId);
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -444,17 +428,10 @@ export default {
           break;
       }
     },
-    // 列表表格操作
-    // rowClick(row) {
-    //   this.$refs.mainTable.clearSelection();
-    //   this.$refs.mainTable.toggleRowSelection(row);
-    // },
-    // handleSelectionChange(val) {
-    //   this.multipleSelection = val;
-    // },
   },
 };
 </script>
+
 <style lang="scss" scoped>
 @import "~vue2-editor/dist/vue2-editor.css";
 
@@ -462,6 +439,7 @@ export default {
 @import "~quill/dist/quill.core.css";
 @import "~quill/dist/quill.bubble.css";
 @import "~quill/dist/quill.snow.css";
+
 .playLeaderPage {
   .dialogContent {
     max-height: 70vh;
@@ -478,7 +456,6 @@ export default {
     }
     .button-new-tag {
       display: block;
-      // margin-left: 10px;
       height: 32px;
       line-height: 30px;
       padding-top: 0;
@@ -487,7 +464,6 @@ export default {
     .input-new-tag {
       display: block;
       width: 90px;
-      // margin-left: 10px;
     }
   }
 }
