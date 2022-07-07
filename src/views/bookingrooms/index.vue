@@ -2,7 +2,7 @@
   <div class="flex-column stampstorecategorysPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入類別名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
+        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入飯店名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -148,8 +148,6 @@ export default {
       pictureImagePathAry:[],
       pictureImagesPropAry:[],
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
-      submitFlag:false,
-      selectLists: [],
       tableKey: 0,
       list: null,
       total: 0,
