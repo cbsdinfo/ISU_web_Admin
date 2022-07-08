@@ -47,7 +47,7 @@
           <el-col :span="24">
             <el-form-item label="類別" prop="categoryId">
               <el-select class="itemWidth" v-model="temp.categoryId" placeholder="請選擇類別" @blur="validateBlurSelect">
-                <el-option v-for="item in selectLists" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+                <el-option v-for="item in selectLists" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled"> </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -155,8 +155,9 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
-      selectLists: [],
+      temp: JSON.parse(JSON.stringify(formTemplate)),
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
+      selectLists: [],
       fileList: [],
       dynamicTags: [],
       tagInputVisible: false,
@@ -168,15 +169,13 @@ export default {
       total: 0,
       newsFormLoading: null,
       listLoading: true,
-      listQuery: {
-        // 查詢條件
+      dialogFormVisible: false,
+      dialogStatus: "",
+      listQuery: { // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -187,9 +186,8 @@ export default {
         releaseDate: [{ required: true, message: "必填欄位", trigger: "blur" }],
         title: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         summury: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
-        // contents: [{ required: true, message: "必填欄位", trigger: "blur" }],
-        sort: [{ required: true, message: "必填欄位", trigger: "blur" }],
         listImg: [{ required: true, message: "圖片為必填" }],
+        sort: [{ required: true, message: "必填欄位", trigger: "blur" }],
         state: [{ required: true, message: "必填欄位", trigger: "blur" }],
       },
     };
@@ -213,6 +211,9 @@ export default {
         this.list = data;
         this.total = count;
         this.listLoading = false;
+        this.$nextTick(() => {
+          this.$refs.mainTable.doLayout();
+        });
       });
     },
     // 取得下拉選單
@@ -225,10 +226,10 @@ export default {
       this.$api.categorys.load(temp).then((res) => {
         const { code, data } = res;
         if (code === 200) {
-          this.selectLists = data.filter((item) => item.isEnable);
-          this.selectLists = this.selectLists.map((item) => ({
+          this.selectLists = data.map((item) => ({
             label: item.name,
             value: item.id,
+            disabled:!item.isEnable
           }));
         }
       });
@@ -236,10 +237,13 @@ export default {
     fileSuccess(res, file, fileList) {
       const { filePath } = res[0];
       fileList.forEach((item, index) => {
+        if (file.uid !== item.uid) {
+          fileList.splice(index, 1);
+        }
+      });
+      fileList.forEach((item, index) => {
         if (file.uid === item.uid) {
           fileList[index].path = filePath;
-        } else {
-          fileList.splice(index, 1);
         }
       });
     },
@@ -282,7 +286,7 @@ export default {
     validateBlurSelect() {
       this.$refs.ruleForm.validateField("categoryId");
     },
-    onBtnClicked: function (domId, callback) {
+    onBtnClicked: function (domId) {
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -311,11 +315,6 @@ export default {
             return;
           }
           this.handleDelete(this.multipleSelection);
-          break;
-        case "btnExport":
-          this.$refs.mainTable.exportExcel("資源文件", callback);
-          break;
-        default:
           break;
       }
     },
@@ -353,23 +352,29 @@ export default {
           //取得類別名稱
           this.temp.categoryName = this.selectLists.filter((item) => item.value === this.temp.categoryId)[0]?.label;
 
-          this.$api.newss[this.dialogStatus](this.temp).then(() => {
+          this.$api.newss[this.dialogStatus](this.temp).then((res) => {
             this.newsFormLoading = false;
-            this.$swal.fire({
-              title: "成功",
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-            this.closeDialog();
-            this.getList();
+            const {code} = res
+            if(code===200){
+              this.newsFormLoading = false;
+              this.$swal.fire({
+                title: "成功",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              });
+              this.closeDialog();
+              this.getList();
+            }
           });
         }
       });
     },
     // 編輯彈窗
     handleUpdate(row) {
+      this.newsFormLoading = true;
       this.$api.newss.get({ id: row.id }).then((res) => {
+        this.newsFormLoading = false;
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));

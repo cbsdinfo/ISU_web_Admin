@@ -22,7 +22,7 @@
             </template>
           </el-table-column>
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-          <el-table-column width="250px" :label="'操作'" align="center">
+          <el-table-column width="250px" :label="'操作'" align="center" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <el-dialog class="dialog-mini" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" v-loading="formLoading" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <el-form-item :label="'類別名稱'" prop="name">
@@ -94,23 +94,22 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
+      temp: JSON.parse(JSON.stringify(formTemplate)),
       imagePathAry:[],
       imagesPropAry:[],
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
-      submitFlag:false,
-      selectLists: [],
       tableKey: 0,
       list: null,
       total: 0,
+      formLoading:false,
       listLoading: true,
+      dialogFormVisible: false,
+      dialogStatus: "",
       listQuery: { // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -127,11 +126,7 @@ export default {
   computed:{
     stateTextColor(){
       return (state)=>{
-        // console.log(state);
-        return {
-          greenText: state,
-          redText: !state
-        }
+        return state ? "greenText" : "redText";
       }
     },
     formatImgData(){
@@ -162,10 +157,15 @@ export default {
     getList(){
       this.listLoading = true;
       this.$api.partnerStoreCategorys.getList(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
         this.listLoading = false;
+        const { data, count,code } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count;
+          this.$nextTick(() => {
+            this.$refs.mainTable.doLayout();
+          });
+        }
       });
     },
     onBtnClicked: function (domId) {
@@ -220,37 +220,25 @@ export default {
       this.dialogFormVisible = true;
     },
     submit() {
-        let apiName = "";
-        switch (this.dialogStatus) {
-        case "add":
-            apiName = "add";
-            break;
-        case "update":
-            apiName = "update";
-            break;
+      this.$refs["ruleForm"].validate((valid) => {
+        if(valid){
+          this.formLoading = true
+          this.$api.partnerStoreCategorys[this.dialogStatus](this.temp).then((res) => {
+          this.formLoading = false
+          const {code} = res;
+          if(code===200){
+            this.$swal.fire({
+              title: "成功",
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            this.closeDialog();
+            this.getList();
+          }
+          });
         }
-        this.$refs["ruleForm"].validate((valid) => {
-            if(valid){
-                // if(this.imagePathAry.length>0){
-                //   this.temp.picture = JSON.stringify(this.imagePathAry);
-                // }else{
-                //   this.temp.picture = ""
-                // }
-                this.$api.partnerStoreCategorys[apiName](this.temp).then((res) => {
-                const {code} = res;
-                if(code===200){
-                  this.$swal.fire({
-                      title: "成功",
-                      icon: "success",
-                      timer: 2000,
-                      showConfirmButton: false,
-                  });
-                  this.closeDialog();
-                  this.getList();
-                }
-                });
-            }
-        });
+      });
     },
     //編輯彈窗
     handleUpdate(row) {

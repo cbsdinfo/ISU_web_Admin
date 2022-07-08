@@ -46,7 +46,7 @@
             </template>
           </el-table-column>
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-          <el-table-column width="200px" :label="'操作'" align="center">
+          <el-table-column width="200px" :label="'操作'" align="center" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handlePreview(scope.row)" type="primary" v-if="hasButton('preview')">查看</el-button>
@@ -60,7 +60,7 @@
       </div>
     </div>
      <!-- <upload-image/> -->
-    <el-dialog class="dialog-mini preview-dialog" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini preview-dialog" v-loading="formLoading" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <!-- 新增,編輯 -->
@@ -68,7 +68,7 @@
             <!-- 商品類別 -->
             <el-form-item label="商品類別" prop="categoryId">
               <el-select class="itemWidth" v-model.trim="temp.categoryId" placeholder="請選擇商品類別" @blur="validateBlurSelect('categoryId')">
-                <el-option v-for="item in selectListCategories" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+                <el-option v-for="item in selectListCategories" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled"> </el-option>
               </el-select>
             </el-form-item>
             <!-- 商家名稱 -->
@@ -255,15 +255,21 @@ export default {
   },
   mixins: [pbMixins, extend],
   data() {
-    // const imageValidate = (rule, value, callback) => {
-    //   if (this.imagePathAry.length > 0) {
-    //     return callback();
-    //   }
-    //   return callback(new Error("圖片為必填"));
-    // };
     return {
+      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
+      temp: JSON.parse(JSON.stringify(formTemplate)),
       imagePathAry:[],
       imagesPropAry:[],
+      selectListCategories:[],
+      fileList: [],
+      multipleSelection: [], // 列表checkbox選中的值
+      tableKey: 0,
+      list: null,
+      total: 0,
+      formLoading:false,
+      listLoading: true,
+      dialogFormVisible: false,
+      dialogStatus: "",
       selectListState:[
         {label:'全部',value:0},
         {label:'未審核',value:1},
@@ -271,24 +277,12 @@ export default {
         {label:'未通過',value:3},
         {label:'補貨中',value:4},
       ],
-      selectListCategories:[],
-      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
-      fileList: [],
-      multipleSelection: [], // 列表checkbox選中的值
-      tableKey: 0,
-      list: null,
-      total: 0,
-      listLoading: true,
-      listQuery: {
-        // 查詢條件
+      listQuery: { // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
-        State:0//0 = 全部 1 = 未審核 2 = 上架 3 = 未通過 4 = 補貨中
+        State:0//0 = 全部 ;1 = 未審核 ;2 = 上架; 3 = 未通過 ;4 = 補貨中
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -345,17 +339,14 @@ export default {
     stateTextColor(){
       return (state)=>{
         return {
-          agree: state===2,
-          reject: state===1 || state===4 ||state===3
+          greenText: state===2,
+          redText: state===1 || state===4 ||state===3
         }
       }
     },
     featuredTextColor(){
       return (state)=>{
-        return {
-          greenText: state,
-          redText: !state
-        }
+        return state?'greenText':'redText'
       }
     }
   },
@@ -447,10 +438,15 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.products.getList(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
         this.listLoading = false;
+        const { code,data, count } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count;
+          this.$nextTick(() => {
+            this.$refs.mainTable.doLayout();
+          });
+        }
       });
     },
     // 取得下拉選單
@@ -463,10 +459,11 @@ export default {
       this.$api.productCategorys.getList(temp).then((res) => {
         const { code, data } = res;
         if (code === 200) {
-          this.selectListCategories = data.filter(item=>item.state)
-          this.selectListCategories = this.selectListCategories.map((item) => ({
+          // this.selectListCategories = data.filter(item=>item.state)
+          this.selectListCategories = data.map((item) => ({
             label: item.name,
             value: item.id,
+            disabled:!item.state
           }));
         }
       });
@@ -509,23 +506,12 @@ export default {
     submit() {
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
-          let apiName = "";
-          switch (this.dialogStatus) {
-            case "add":
-              apiName = "add";
-              break;
-            case "update":
-              apiName = "update";
-              break;
-          }
-          //將照片轉成JSON字串
-          // if(this.imagePathAry.length>0){
-          //   this.temp.picture = JSON.stringify(this.imagePathAry);
-          // }else{
-          //   this.temp.picture = ""
-          // }
+
+          this.formLoading = true
           this.temp.categoryName = this.selectListCategories.filter((item) => item.value === this.temp.categoryId)[0]?.label;
-          this.$api.products[apiName](this.temp).then((res) => {
+
+          this.$api.products[this.dialogStatus](this.temp).then((res) => {
+            this.formLoading = false
             const{code} = res;
             if(code === 200){
               this.$swal.fire({
@@ -570,12 +556,6 @@ export default {
 .product{
   .itemProduct{
     margin-right: 5px;
-  }
-  .agree{
-    color:green;
-  }
-  .reject{
-    color:red;
   }
   .preview-dialog{
     .el-radio{

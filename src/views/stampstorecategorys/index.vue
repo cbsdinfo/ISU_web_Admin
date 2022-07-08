@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <el-dialog class="dialog-mini" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" v-loading="formLoading" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <el-form-item size="small" :label="'類別名稱'" prop="name">
@@ -86,24 +86,22 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
-      userHasHighestAuthorityRole:undefined,
-      selectLists: [],
+      temp: JSON.parse(JSON.stringify(formTemplate)),
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
       total: 0,
+      dialogFormVisible: false,
+      dialogStatus: "",
+      formLoading:false,
       listLoading: true,
-      listQuery: {
-        // 查詢條件
+      listQuery: { // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
         TypeId: "SYS_stampstorecategorys",
         StoreId:""
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -116,16 +114,11 @@ export default {
   computed:{
     stateTextColor(){
       return (state)=>{
-        return {
-          greenText: state,
-          redText: !state
-        }
+        return state ? "greenText" : "redText";
       }
     }
   },
   async mounted() {
-    console.log(this.hasButton("highestAuthorityRole"));
-    // this.userHasHighestAuthorityRole = await this.getUserPermissionRoles()
     if(this.hasButton("highestAuthorityRole")){
       //有最高權限,可以取得所有機構新增的集章類別
       this.listQuery.StoreId = ""
@@ -143,38 +136,24 @@ export default {
         this.$api.login.getOrgs(this.$store.state.user.token).then((res)=>{
             const {code,result} = res;
             if(code===200){
-                let rootParentId = result.filter(item=>!item.parentId)[0]?.id
-                this.listQuery.StoreId = rootParentId
-                resolve()
+              this.listQuery.StoreId = result.filter(item=>!item.parentId)[0]?.id
+              resolve()
             }
         })
       })
     },
-    //取得登帳號擁有的全部角色
-    // getUserPermissionRoles(){
-    //   return new Promise((resolve)=>{
-    //     this.$api.login.getPermissionRoles().then((res)=>{
-    //       const { result, code } = res;
-    //       if(code===200){
-    //         let userPermissionRolesId = result.map((item)=>item.id)
-    //         let userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
-    //         // this.userHasHighestAuthorityRole = userPermissionRolesId.includes("301166682144838")
-    //         resolve(userHasHighestAuthorityRole)
-    //       }
-    //     })
-    //   })
-    // },
     getList(){
       this.listLoading = true;
       this.$api.categorys.load(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
         this.listLoading = false;
+        const { data, count,code } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count;
+        }
       });
     },
     onBtnClicked: function (domId) {
-      console.log("you click:" + domId);
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -216,7 +195,6 @@ export default {
       this.getList();
     },
     resetTemp() {
-      //this.$refs["ruleForm"].clearValidate();
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
     },
@@ -227,39 +205,34 @@ export default {
     },
     // 保存提交
     submit() {
-        let apiName = "";
-        switch (this.dialogStatus) {
-        case "add":
-            apiName = "add";
-            if(this.userHasHighestAuthorityRole){
-              this.temp.dtCode="highestAuthorityRole";
-              this.temp.dtValue="最高權限角色"
-            }else{
-              this.temp.dtCode =  this.$store.state.user.defaultorg.id
-              this.temp.dtValue = this.$store.state.user.defaultorg.name
-            }
-            break;
-        case "update":
-            apiName = "update";
-            break;
-        }
-        
-        console.log(this.temp);
-        console.log(apiName);
-        this.$refs["ruleForm"].validate((valid) => {
-            if(valid){
-                this.$api.categorys[apiName](this.temp).then(() => {
-                this.$swal.fire({
+      this.$refs["ruleForm"].validate((valid) => {
+          if(valid){
+              this.formLoading = true
+              if(this.dialogStatus==='add'){
+                if(this.hasButton("highestAuthorityRole")){
+                  this.temp.dtCode="highestAuthorityRole";
+                  this.temp.dtValue="最高權限角色"
+                }else{
+                  this.temp.dtCode =  this.$store.state.user.defaultorg.id
+                  this.temp.dtValue = this.$store.state.user.defaultorg.name
+                }
+              } 
+              this.$api.categorys[this.dialogStatus](this.temp).then((res) => {
+                this.formLoading = false
+                const {code} = res
+                if(code===200){
+                  this.$swal.fire({
                     title: "成功",
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false,
-                });
-                this.closeDialog();
-                this.getList();
-                });
-            }
-        });
+                  });
+                  this.closeDialog();
+                  this.getList();
+                }
+              });
+          }
+      });
     },
     // 編輯彈窗
     handleUpdate(row) {

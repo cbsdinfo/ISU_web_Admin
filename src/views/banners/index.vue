@@ -5,7 +5,7 @@
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
-    <el-tabs v-model="defaultTabName" @tab-click="tabsClick">
+    <el-tabs v-model="defaultTabName" @tab-click="getList">
       <el-tab-pane label="上方banner" name="topBanner"></el-tab-pane>
       <el-tab-pane label="中間banner" name="middleBanner"></el-tab-pane>
       <div class="app-container flex-item">
@@ -37,7 +37,7 @@
       </div>
     </el-tabs>
 
-    <el-dialog class="dialog-mini" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" v-loading="formLoading" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form label-width="120px" :model="temp" :rules="rules" ref="ruleForm">
         <el-row :gutter="8">
           <!-- banner顯示在前台的位置 -->
@@ -119,23 +119,23 @@ export default {
   data() {
     return {
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
+      temp: JSON.parse(JSON.stringify(formTemplate)),
       fileList: [],
       defaultTabName: "topBanner",
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
       total: 0,
+      formLoading:false,
       listLoading: true,
-      listQuery: {
-        // 查詢條件
+      dialogFormVisible: false,
+      dialogStatus: "",
+      listQuery: {// 查詢條件
         page: 1,
         limit: 20,
         BannerType: "",
         key: undefined,
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -152,10 +152,7 @@ export default {
   computed:{
     stateTextColor(){
       return (state)=>{
-        return {
-          greenText: state,
-          redText: !state
-        }
+        return state?'greenText':'redText'
       }
     }
   },
@@ -163,10 +160,6 @@ export default {
     this.getList();
   },
   methods: {
-    tabsClick() {
-      console.log("tabsClick");
-      this.getList();
-    },
     validateBlurSelect() {
       this.$refs.ruleForm.validateField("bannerType");
     },
@@ -198,8 +191,7 @@ export default {
         });
       }
     },
-    onBtnClicked: function (domId, callback) {
-      console.log("you click:" + domId);
+    onBtnClicked: function (domId) {
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -229,21 +221,18 @@ export default {
           }
           this.handleDelete(this.multipleSelection);
           break;
-        case "btnExport":
-          this.$refs.mainTable.exportExcel("資源文件", callback);
-          break;
-        default:
-          break;
       }
     },
     getList() {
-      this.listQuery.BannerType = this.defaultTabName;
       this.listLoading = true;
+      this.listQuery.BannerType = this.defaultTabName;
       this.$api.banners.getList(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
         this.listLoading = false;
+        const { data, count,code } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count; 
+        }
       });
     },
     handleFilter() {
@@ -258,29 +247,25 @@ export default {
     // 保存提交
     submit() {
       let bannerType = this.temp.bannerType;
-      let apiName = "";
-      switch (this.dialogStatus) {
-        case "add":
-          apiName = "add";
-          break;
-        case "update":
-          apiName = "update";
-          break;
-      }
+
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
-          this.$api.banners[apiName](this.temp).then(() => {
-            this.$swal.fire({
-              title: "成功",
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-            this.closeDialog();
+          this.formLoading = true
+          this.$api.banners[this.dialogStatus](this.temp).then((res) => {
+            this.formLoading = false
+            const {code} = res
+            if(code===200){
+              this.$swal.fire({
+                title: "成功",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              });
 
-            //判斷彈窗新增的是上方還是中間banner,要更新tab的值
-            this.defaultTabName = bannerType;
-            this.getList();
+              this.closeDialog();
+              this.defaultTabName = bannerType; //判斷彈窗新增的是上方還是中間banner,要更新tab的值
+              this.getList();
+            }
           });
         }
       });

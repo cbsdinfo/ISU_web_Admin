@@ -6,8 +6,7 @@
         <el-select v-model.trim="listQuery.CategoryId" placeholder="請選擇集章類別" size="mini" @change="handleFilter">
           <el-option v-for="item in selectListCategoriesFilter" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
-        <!-- <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜尋</el-button> -->
-        <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
+        <permission-btn v-if="!hasButton('highestAuthorityRole')" size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
 
@@ -30,7 +29,7 @@
               <span>{{$dayjs(scope.row.createDate).format("YYYY-MM-DD")}}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="!userHasHighestAuthorityRole" width="200px" :label="'操作'" align="center">
+          <el-table-column v-if="!hasButton('highestAuthorityRole')" width="200px" :label="'操作'" align="center" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
@@ -43,15 +42,14 @@
       </div>
     </div>
 
-    <el-dialog class="dialog-mini preview-dialog" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
-    <!-- <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible"> -->
+    <el-dialog class="dialog-mini preview-dialog" v-loading="formLoading" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form label-width="120px" :model="temp" :rules="rules" ref="ruleForm">
         <el-row :gutter="8">
           <!-- 集章類別 -->
           <el-col :span="24">
             <el-form-item label="集章類別" prop="categoryId">
               <el-select v-model.trim="temp.categoryId" @blur="validateBlurSelect('categoryId')" class="itemWidth" placeholder="請選擇集章類別">
-                <el-option v-for="item in selectListCategories" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+                <el-option v-for="item in selectListCategories" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled"> </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -105,7 +103,7 @@ import extend from "@/extensions/delRows.js";
 
 const formTemplate = {
   id: "",
-  storeId: "",//一般角色權限給登入帳號所屬的機構id;最高權限角色給固定"highestAuthorityRole"
+  storeId: "",//一般角色權限給登入帳號所屬的機構id;
   categoryId: "",//集章類別ID
   categoryName: "",//集章類別名稱
   storeName: "",//店家名稱
@@ -125,31 +123,30 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
-      userHasHighestAuthorityRole:undefined,
-      selectDataQuery:{
-        page: 1,
-        limit: 999,
-        TypeId: "SYS_stampstorecategorys",
-        StoreId:"",
-      },
+      temp: JSON.parse(JSON.stringify(formTemplate)),
       selectListCategories:[],
       selectListCategoriesFilter:[],
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
       total: 0,
+      dialogFormVisible: false,
+      dialogStatus: "",
+      formLoading:false,
       listLoading: true,
-      listQuery: {
-        // 查詢條件
+      selectDataQuery:{
+        page: 1,
+        limit: 999,
+        TypeId: "SYS_stampstorecategorys",
+        StoreId:"",
+      },
+      listQuery: {// 查詢條件
         page: 1,
         limit: 10,
         StoreId:"",//必給
         key: undefined,//商家名稱,
         CategoryId:""//類別ID
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -171,10 +168,7 @@ export default {
   computed:{
     stateTextColor(){
       return (state)=>{
-        return {
-          greenText: state,
-          redText: !state
-        }
+        return state ? "greenText" : "redText";
       }
     }
   },
@@ -220,11 +214,11 @@ export default {
         const { code, data } = res;
         if (code === 200) {
          
-          // this.selectListFilter = data
-          this.selectListCategories = data.filter(item=>item.isEnable)
-          this.selectListCategories = this.selectListCategories.map((item) => ({
+          // this.selectListCategories = data.filter(item=>item.isEnable)
+          this.selectListCategories = data.map((item) => ({
             label: item.name,
             value: item.id,
+            disabled:!item.isEnable
           }));
          
           this.selectListCategoriesFilter = JSON.parse(JSON.stringify(data))
@@ -274,10 +268,15 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.stampStoreProducts.getList(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
         this.listLoading = false;
+        const { data, count,code } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count;
+          this.$nextTick(() => {
+            this.$refs.mainTable.doLayout();
+          });
+        }
       });
     },
     handleFilter() {
@@ -297,60 +296,34 @@ export default {
       this.temp.storeName = this.$store.state.user.defaultorg.name
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
-      // this.resetTemp();
-      // this.dialogStatus = "add";
-      // this.dialogFormVisible = true;
-      // this.$nextTick(() => {
-      //   this.$refs["ruleForm"].clearValidate();
-      // });
     },
     // 保存提交
     submit() {
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
-          let apiName = "";
-          switch (this.dialogStatus) {
-            case "add":
-              apiName = "add";
-              this.temp.storeId = this.$store.state.user.defaultorg.id
-              // if(this.userHasHighestAuthorityRole){
-              //   this.temp.storeId = "highestAuthorityRole"
-              // }else{
-              //   this.temp.storeId = this.$store.state.user.defaultorg.id
-              // }
-              break;
-            case "update":
-              apiName = "update";
-              break;
+          this.formLoading = true
+          if(this.dialogStatus==='add'){
+            //業務邏輯:只有一般商店的角色可新增,如果未來需求能使最高權限角色也可新增的話,要和後端確認最高權限角色新增時storeId要給什麼
+            this.temp.storeId = this.$store.state.user.defaultorg.id
           }
           this.temp.categoryName = this.selectListCategories.filter((item) => item.value === this.temp.categoryId)[0]?.label;
-          console.log(apiName,this.temp);
-          this.$api.stampStoreProducts[apiName](this.temp).then(() => {
-            this.$swal.fire({
-              title: "成功",
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-            this.closeDialog()
-            this.getList()
+          
+          this.$api.stampStoreProducts[this.dialogStatus](this.temp).then((res) => {
+            this.formLoading = false
+            const{code} = res;
+            if(code===200){
+              this.$swal.fire({
+                title: "成功",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              });
+              this.closeDialog()
+              this.getList()
+            }
           });
         }
       });
-      // this.$refs["ruleForm"].validate((valid) => {
-      //   if (valid) {
-      //     this.$api.stampStoreProducts.add(this.temp).then(() => {
-      //       this.list.unshift(this.temp);
-      //       this.dialogFormVisible = false;
-      //       this.$swal.fire({
-      //         title: "成功",
-      //         icon: "success",
-      //         timer: 2000,
-      //         showConfirmButton: false,
-      //       });
-      //     });
-      //   }
-      // });
     },
     // 彈出(編輯)
     handleUpdate(row) {
@@ -358,10 +331,11 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
+          this.dialogStatus = "update";
+          this.dialogFormVisible = true;
         }
       });
-      this.dialogStatus = "update";
-      this.dialogFormVisible = true;
+     
     },
     // 列表刪除
     handleDelete(rows) {

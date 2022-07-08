@@ -26,7 +26,7 @@
               <span :class="stateTextColor(scope.row.state)">{{ scope.row.state ? "上架" : "下架" }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="200px" align="center" :label="'操作'">
+          <el-table-column width="200px" align="center" :label="'操作'" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
@@ -39,14 +39,14 @@
       </div>
     </div>
 
-    <el-dialog class="dialog-mini" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog  @close="closeDialog" class="dialog-mini" v-loading="formLoading" top="10vh" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <!-- 類別 -->
           <el-col :span="24">
             <el-form-item label="商店類別" prop="categoryId">
               <el-select class="itemWidth" v-model="temp.categoryId" placeholder="請選擇類別" @blur="validateBlurSelect('categoryId')">
-                <el-option v-for="item in selectLists" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+                <el-option v-for="item in selectLists" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled"> </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -189,30 +189,25 @@ export default {
       return callback(new Error("經數整數為0-180,小數為0到7位"));
     };
     return {
+      temp: JSON.parse(JSON.stringify(formTemplate)),
+      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       imagePathAry:[],
       imagesPropAry:[],
       selectLists: [],
-      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
-      fileList: [],
-      dynamicTags: [],
-      tagInputVisible: false,
-      tagInputValue: "",
-      isRepeatTag: false,
       multipleSelection: [], // 列表checkbox選中的值
+      dialogFormVisible: false,
+      dialogStatus: "",
       tableKey: 0,
       list: null,
       total: 0,
+      formLoading:false,
       listLoading: true,
-      listQuery: {
-        // 查詢條件
+      listQuery: { // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
         CategoryId: "", //商家ID
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -258,10 +253,7 @@ export default {
     },
     stateTextColor(){
       return (state)=>{
-        return {
-          greenText: state,
-          redText: !state
-        }
+        return state ? "greenText" : "redText";
       }
     }
   },
@@ -289,11 +281,14 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.partnerStores.getList(this.listQuery).then((response) => {
+        this.listLoading = false;
         const { data, count,code } = response;
         if(code===200){
           this.list = data;
-          this.total = count;
-          this.listLoading = false;
+          this.total = count; 
+          this.$nextTick(() => {
+            this.$refs.mainTable.doLayout();
+          });
         }
       });
     },
@@ -306,10 +301,10 @@ export default {
       this.$api.partnerStoreCategorys.getList(temp).then((res) => {
         const { code, data } = res;
         if (code === 200) {
-          this.selectLists = data.filter(item=>item.state)
-          this.selectLists = this.selectLists.map((item) => ({
+          this.selectLists = data.map((item) => ({
             label: item.name,
             value: item.id,
+            disabled:!item.state
           }));
         }
       });
@@ -339,7 +334,6 @@ export default {
               timer: 2000,
               showConfirmButton: false,
             });
-
             return;
           }
           this.handleDelete(this.multipleSelection);
@@ -358,12 +352,9 @@ export default {
     resetTemp() {
       this.$refs["ruleForm"].resetFields();
       this.temp = JSON.parse(JSON.stringify(formTemplate)); // copy obj
-      this.fileList = [];
-      this.dynamicTags = [];
       this.imagePathAry=[],
       this.imagesPropAry=[],
       this.dialogStatus = "";
-      this.isRepeatTag = false;
     },
     // 新增(談窗)
     handleCreate() {
@@ -373,31 +364,27 @@ export default {
     },
     // 保存提交
     submit() {
-      let apiName = "";
-      switch (this.dialogStatus) {
-        case "add":
-          apiName = "add";
-          break;
-        case "update":
-          apiName = "update";
-          break;
-      }
       this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
+          this.formLoading = true
           //取得類別名稱
           this.temp.categoryName = this.selectLists.filter((item) => item.value === this.temp.categoryId)[0]?.label;
           this.temp.long = Number(this.temp.long) 
           this.temp.lat = Number(this.temp.lat)    
         
-          this.$api.partnerStores[apiName](this.temp).then(() => {
-            this.$swal.fire({
-              title: "成功",
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-            this.closeDialog();
-            this.getList();
+          this.$api.partnerStores[this.dialogStatus](this.temp).then((res) => {
+            this.formLoading = false
+            const {code} = res
+            if(code===200){
+              this.$swal.fire({
+                title: "成功",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              });
+              this.closeDialog();
+              this.getList();
+            }
           });
         }
       });

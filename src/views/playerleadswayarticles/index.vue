@@ -42,14 +42,14 @@
       </div>
     </div>
 
-    <el-dialog v-el-drag-dialog class="dialog-mini" @close="closeDialog" top="10vh" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" v-loading="formLoading" @close="closeDialog" top="10vh" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <!-- 區域類別 -->
           <el-col :span="24">
             <el-form-item label="區域類別" prop="areaId">
               <el-select class="itemWidth" v-model="temp.areaId" placeholder="請選擇區域類別" @blur="validateBlurSelect('areaId')">
-                <el-option v-for="item in selectListsRoad" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+                <el-option v-for="item in selectListsRoad" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled"> </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -57,7 +57,7 @@
           <el-col :span="24">
             <el-form-item label="文章類別" prop="categoryId">
               <el-select class="itemWidth" v-model="temp.categoryId" placeholder="請選擇文章類別" @blur="validateBlurSelect('categoryId')">
-                <el-option v-for="item in selectListsArticle" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+                <el-option v-for="item in selectListsArticle" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled"> </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -164,11 +164,12 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
+      temp: JSON.parse(JSON.stringify(formTemplate)),
+      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       dynamicTags: [],
       tagInputVisible: false,
       tagInputValue: "",
       isRepeatTag: false,
-      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       fileList: [],
       selectListsArticle: [],
       selectListsRoad: [],
@@ -176,15 +177,15 @@ export default {
       tableKey: 0,
       list: null,
       total: 0,
+      formLoading: false,
       listLoading: true,
+      dialogFormVisible: false,
+      dialogStatus: "",
       listQuery: {
         page: 1,
         limit: 20,
         key: undefined,
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -289,17 +290,17 @@ export default {
         const { code, data } = res;
         if (code === 200) {
           if (typeId === "SYS_PlayerLeads_Article") {
-            this.selectListsArticle = data.filter((item) => item.isEnable);
-            this.selectListsArticle = this.selectListsArticle.map((item) => ({
+            this.selectListsArticle = data.map((item) => ({
               label: item.name,
               value: item.id,
+              disabled:!item.isEnable
             }));
           }
           if (typeId === "SYS_PlayerLeads_Area") {
-            this.selectListsRoad = data.filter((item) => item.isEnable);
-            this.selectListsRoad = this.selectListsRoad.map((item) => ({
+            this.selectListsRoad = data.map((item) => ({
               label: item.name,
               value: item.id,
+              disabled:!item.isEnable
             }));
           }
         }
@@ -308,10 +309,15 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.playerLeadsWayArticles.getList(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
         this.listLoading = false;
+        const { data, count,code } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count;
+          this.$nextTick(() => {
+            this.$refs.mainTable.doLayout();
+          });
+        }
       });
     },
     handleFilter() {
@@ -329,26 +335,10 @@ export default {
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
     },
-    //新增列表
-    createData() {
-      this.$refs["ruleForm"].validate((valid) => {
-        if (valid) {
-          this.$api.playerLeadsWayArticles.add(this.temp).then(() => {
-            this.list.unshift(this.temp);
-            this.dialogFormVisible = false;
-            this.$swal.fire({
-              title: "成功",
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-          });
-        }
-      });
-    },
     // 保存提交
     submit() {
       this.$refs["ruleForm"].validate((valid) => {
+        this.formLoading = true
         if (valid) {
           //處理TAG
           this.temp.tags = this.dynamicTags.join(",");
@@ -359,6 +349,7 @@ export default {
           this.temp.areaName = this.selectListsRoad.filter((item) => item.value === this.temp.areaId)[0]?.label;
 
           this.$api.playerLeadsWayArticles[this.dialogStatus](this.temp).then(() => {
+            this.formLoading = false
             this.$swal.fire({
               title: "成功",
               icon: "success",
@@ -373,7 +364,9 @@ export default {
     },
     // 編輯彈窗
     handleUpdate(row) {
+      this.formLoading = true
       this.$api.playerLeadsWayArticles.get({ id: row.id }).then((res) => {
+        this.formLoading = false
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
@@ -391,7 +384,7 @@ export default {
     handleDelete(rows) {
       this.delrows("playerLeadsWayArticles", rows, this.getList);
     },
-    onBtnClicked: function (domId, callback) {
+    onBtnClicked: function (domId) {
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -420,11 +413,6 @@ export default {
             return;
           }
           this.handleDelete(this.multipleSelection);
-          break;
-        case "btnExport":
-          this.$refs.mainTable.exportExcel("資源文件", callback);
-          break;
-        default:
           break;
       }
     },

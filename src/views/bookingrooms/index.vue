@@ -24,7 +24,7 @@
             </template>
           </el-table-column>
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-          <el-table-column width="250px" :label="'操作'" align="center">
+          <el-table-column width="250px" :label="'操作'" align="center" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
@@ -37,14 +37,14 @@
       </div>
     </div>
 
-    <el-dialog class="dialog-mini" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" v-loading="formLoading" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <!-- 區域類別 -->
           <el-col :span="24">
             <el-form-item label="區域類別" prop="areaId">
               <el-select class="itemWidth" v-model="temp.areaId" placeholder="請選擇區域類別" @blur="validateBlurSelect('areaId')">
-                <el-option v-for="item in areaSelectList" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+                <el-option v-for="item in areaSelectList" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled"> </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -142,24 +142,25 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
+      temp: JSON.parse(JSON.stringify(formTemplate)),
+      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
+      dialogFormVisible: false,
+      dialogStatus: "",
       areaSelectList:[],
       logoImagePathAry:[],
       logoImagesPropAry:[],
       pictureImagePathAry:[],
       pictureImagesPropAry:[],
-      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       tableKey: 0,
       list: null,
       total: 0,
+      formLoading:false,
       listLoading: true,
       listQuery: { // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -180,10 +181,7 @@ export default {
   computed:{
     stateTextColor(){
       return (state)=>{
-        return {
-          greenText: state,
-          redText: !state
-        }
+        return state ? "greenText" : "redText";
       }
     },
     formatImgData(){
@@ -207,10 +205,10 @@ export default {
       this.$api.categorys.load(temp).then((res) => {
         const { code, data } = res;
         if (code === 200) {
-          this.areaSelectList = data.filter(item=>item.isEnable)
-          this.areaSelectList = this.areaSelectList.map((item) => ({
+          this.areaSelectList = data.map((item) => ({
             label: item.name,
             value: item.id,
+            disabled:!item.isEnable
           }));
         }
       });
@@ -234,8 +232,6 @@ export default {
       }
     },
     successUploadImg(successUploadResult,imageType){
-      console.log("successUploadResult",successUploadResult);
-      console.log("imageType",imageType);
       if(imageType==='logo'){
         successUploadResult.forEach(item => {   
           this.logoImagePathAry.push({
@@ -258,10 +254,15 @@ export default {
     getList(){
       this.listLoading = true;
       this.$api.bookingRooms.getList(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
         this.listLoading = false;
+        const { data, count,code } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count;
+          this.$nextTick(() => {
+            this.$refs.mainTable.doLayout();
+          });
+        }
       });
     },
     onBtnClicked: function (domId) {
@@ -318,33 +319,27 @@ export default {
       this.dialogFormVisible = true;
     },
     submit() {
-        let apiName = "";
-        switch (this.dialogStatus) {
-        case "add":
-            apiName = "add";
-            break;
-        case "update":
-            apiName = "update";
-            break;
+      this.$refs["ruleForm"].validate((valid) => {
+        if(valid){
+          this.formLoading = true
+          this.temp.areaName = this.areaSelectList.filter((item) => item.value === this.temp.areaId)[0]?.label;
+
+          this.$api.bookingRooms[this.dialogStatus](this.temp).then((res) => {
+            this.formLoading = false
+            const {code} = res;
+            if(code===200){
+              this.$swal.fire({
+                title: "成功",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              });
+              this.closeDialog();
+              this.getList();
+            }
+          });
         }
-        this.$refs["ruleForm"].validate((valid) => {
-          if(valid){
-            this.temp.areaName = this.areaSelectList.filter((item) => item.value === this.temp.areaId)[0]?.label;
-            this.$api.bookingRooms[apiName](this.temp).then((res) => {
-              const {code} = res;
-              if(code===200){
-                this.$swal.fire({
-                  title: "成功",
-                  icon: "success",
-                  timer: 2000,
-                  showConfirmButton: false,
-                });
-                this.closeDialog();
-                this.getList();
-              }
-            });
-          }
-        });
+      });
     },
     //編輯彈窗
     handleUpdate(row) {

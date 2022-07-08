@@ -154,17 +154,12 @@ export default {
   },
   mixins: [pbMixins, extend],
   data() {
-    //驗證電話號碼
-    // const checkNum = (rule, value, callback) => {
-    //   const isNum = this.temp[rule.field].match(/^[0-9]+$/);
-    //   if (isNum) {
-    //     return callback();
-    //   }
-    //   return callback(new Error("請輸入正確的數字格式"));
-    // };
     return {
+      temp: JSON.parse(JSON.stringify(formTemplate)),
       couponsFormLoading:true,
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
+      dialogFormVisible: false,
+      dialogStatus: "",
       imagePathAry:[],
       imagesPropAry:[],
       selectLists: [],
@@ -177,9 +172,6 @@ export default {
         limit: 20,
         key: undefined,
       },
-      temp: JSON.parse(JSON.stringify(formTemplate)),
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         add: "新增",
@@ -191,7 +183,6 @@ export default {
         points: [
           { required: true, message: "必填欄位", trigger:  ["blur", "change"] },
           { type: 'number', message: "必填為數字", trigger:  ["blur", "change"] },
-        //   { validator: checkNum, trigger: ["blur", "change"] },
         ],
         expiryDays: [
           { required: true, message: "必填欄位", trigger:  ["blur", "change"] },
@@ -222,23 +213,30 @@ export default {
   methods: {
     deleteImg(imgPath){
       this.imagePathAry = this.imagePathAry.filter(item=>item.path !== imgPath)
+      if(this.imagePathAry.length>0){
+        this.temp.picture = JSON.stringify(this.imagePathAry)
+      }else{
+        this.temp.picture = ""
+      }
     },
     successUploadImg(successUploadResult){
-      // console.log(imgPathAry);
       successUploadResult.forEach(item => {   
         this.imagePathAry.push({
           path:item.filePath,
           id:item.id
         })
       });
+      this.temp.picture = JSON.stringify(this.logoImagePathAry)
     },
     getList(){
       this.listLoading = true;
       this.$api.coupons.getList(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
         this.listLoading = false;
+        const { data, count,code } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count;
+        }
       });
     },
     onBtnClicked: function (domId) {
@@ -293,41 +291,35 @@ export default {
       this.dialogFormVisible = true;
     },
     submit() {
-        let apiName = "";
-        switch (this.dialogStatus) {
-        case "add":
-            apiName = "add";
-            break;
-        case "update":
-            apiName = "update";
-            break;
-        }
         this.$refs["ruleForm"].validate((valid) => {
             if(valid){
                 this.couponsFormLoading = true
                 //將照片轉成JSON字串
-                if(this.imagePathAry.length>0){
-                  this.temp.picture = JSON.stringify(this.imagePathAry);
-                }else{
-                  this.temp.picture = ""
-                }
-                this.$api.coupons[apiName](this.temp).then(() => {
-                  this.$swal.fire({
-                      title: "成功",
-                      icon: "success",
-                      timer: 2000,
-                      showConfirmButton: false,
-                  });
+                // if(this.imagePathAry.length>0){
+                //   this.temp.picture = JSON.stringify(this.imagePathAry);
+                // }else{
+                //   this.temp.picture = ""
+                // }
+                this.$api.coupons[this.dialogStatus](this.temp).then((res) => {
                   this.couponsFormLoading = false
-                  this.closeDialog();
-                  this.getList();
+                  const {code} = res
+                  if(code===200){
+                    this.$swal.fire({
+                        title: "成功",
+                        icon: "success",
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                    
+                    this.closeDialog();
+                    this.getList();
+                  }
                 });
             }
         });
     },
     // 編輯彈窗
     handleUpdate(row) {
-      this.couponsFormLoading = true
       this.$api.coupons.get({ id: row.id }).then((res) => {
         const { code, result } = res;
         if (code === 200) {
@@ -335,11 +327,11 @@ export default {
           if(this.temp.picture){
             this.imagesPropAry = JSON.parse(this.temp.picture);
           }
+          this.dialogStatus = "update";
+          this.dialogFormVisible = true;
         }
-        this.couponsFormLoading = false
       });
-      this.dialogStatus = "update";
-      this.dialogFormVisible = true;
+    
       
     },
     // 列表刪除
