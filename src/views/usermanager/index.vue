@@ -25,25 +25,25 @@
             <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 52px)" @row-click="rowClick" @selection-change="handleSelectionChange">
               <el-table-column align="center" type="selection" width="55"> </el-table-column>
 
-              <el-table-column :label="'Id'" v-if="showDescription" min-width="120px">
+              <el-table-column :label="'Id'" v-if="showDescription" min-width="120px" align="center">
                 <template slot-scope="scope">
                   <span>{{ scope.row.id }}</span>
                 </template>
               </el-table-column>
 
-              <el-table-column min-width="80px" :label="'帳號'">
+              <el-table-column min-width="80px" :label="'帳號'" align="center">
                 <template slot-scope="scope">
                   <span class="link-type" @click="handleUpdate(scope.row)">{{ scope.row.account }}</span>
                 </template>
               </el-table-column>
 
-              <el-table-column min-width="80px" :label="'姓名'">
+              <el-table-column min-width="80px" :label="'姓名'" align="center">
                 <template slot-scope="scope">
                   <span>{{ scope.row.name }}</span>
                 </template>
               </el-table-column>
 
-              <el-table-column width="120px" :label="'所屬部門'">
+              <el-table-column min-width="120px" :label="'所屬部門'" align="center">
                 <template slot-scope="scope">
                   <span>{{ scope.row.organizations }}</span>
                 </template>
@@ -63,8 +63,8 @@
               <el-table-column align="center" :label="'操作'" width="230" class-name="small-padding fixed-width">
                 <template slot-scope="scope">
                   <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">編輯</el-button>
-                  <el-button v-if="scope.row.status == 1" size="mini" type="danger" @click="handleModifyStatus(scope.row, 0)">停用</el-button>
-                  <el-button v-else size="mini" type="success" @click="handleModifyStatus(scope.row, 1)">啟用</el-button>
+                  <el-button v-if="scope.row.status === 1 && hasButton('btnDisEnable')" @click="handleModifyStatus(scope.row, 0)" size="mini" type="danger">停用</el-button>
+                  <el-button v-if="scope.row.status === 0 && hasButton('btnEnable')" @click="handleModifyStatus(scope.row, 1)" size="mini" type="success">啟用</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -73,7 +73,7 @@
         </el-col>
       </el-row>
       <!-- 彈窗(編輯帳號) -->
-      <el-dialog class="dialog-mini" width="500px" v-el-drag-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
           <el-form-item size="small" :label="'Id'" prop="id" v-show="dialogStatus == 'update'">
             <el-input v-model="temp.id" :disabled="true" size="small" placeholder="系統自動處理"></el-input>
@@ -128,6 +128,7 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import permissionBtn from "@/components/PermissionBtn";
+import pbMixins from "@/mixins/permissionBtn.js";
 import SelectRoles from "@/components/SelectRoles";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
@@ -142,46 +143,46 @@ export default {
     SelectRoles,
     Pagination,
   },
-  mixins: [extend],
+  mixins: [extend,pbMixins],
   directives: {
     waves,
     elDragDialog,
   },
   data() {
     return {
-      defaultProps: {
-        // tree配置項
-        children: "children",
-        label: "label",
-      },
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
       total: 0,
       listLoading: true,
-      listQuery: {
-        // 查詢條件
+      showDescription: false,
+      dialogFormVisible: false,
+      dialogRoleVisible: false, // 分配角色對話框
+      dialogStatus: "",
+      orgs: [], // 用戶可訪問到的組織列表
+      orgsTree: [], // 用戶可訪問到的所有機構組成的樹
+      selectRoles: [], // 用戶分配的角色
+      selectRoleNames: "",
+      listQuery: { // 查詢條件
         page: 1,
         limit: 20,
         orgId: "",
         key: undefined,
       },
-      apps: [],
-      statusOptions: [
+      defaultProps: { // tree配置項
+        children: "children",
+        label: "label",
+      },
+      statusOptions: [//1=啟用;0=停用
         {
           key: 0,
           display_name: "停用",
         },
         {
           key: 1,
-          display_name: "正常",
+          display_name: "啟用",
         },
       ],
-      showDescription: false,
-      orgs: [], // 用戶可訪問到的組織列表
-      orgsTree: [], // 用戶可訪問到的所有機構組成的樹
-      selectRoles: [], // 用戶分配的角色
-      selectRoleNames: "",
       temp: {
         id: undefined,
         description: "",
@@ -192,13 +193,10 @@ export default {
         password: "",
         status: 1,
       },
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         create: "新增",
       },
-      dialogRoleVisible: false, // 分配角色對話框
       rules: {
         account: [
           {
@@ -208,7 +206,6 @@ export default {
           },
         ],
       },
-      downloadLoading: false,
     };
   },
   computed: {
@@ -313,7 +310,6 @@ export default {
             });
             return;
           }
-          console.log("this.handleAccessRole(this.multipleSelection[0]);");
           this.handleAccessRole(this.multipleSelection[0]);
           break;
       }
@@ -321,17 +317,16 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.users.getList(this.listQuery).then((response) => {
-        this.list = response.data;
-        this.total = response.count;
         this.listLoading = false;
+        const {code} = response
+        if(code===200){
+          this.list = response.data;
+          this.total = response.count;
+        }
       });
     },
     handleFilter() {
       this.listQuery.page = 1;
-      this.getList();
-    },
-    handleSizeChange(val) {
-      this.listQuery.limit = val;
       this.getList();
     },
     handleCurrentChange(val) {
@@ -359,7 +354,7 @@ export default {
               if (res.code === 200) {
                 this.$swal.fire({
                   icon: "success",
-                  title: `${status === 1 ? "停用" : "啟用"}成功`,
+                  title: `${status === 1 ? "啟用" : "停用"}成功`,
                   timer: 1500,
                   showConfirmButton: false,
                 });
@@ -439,9 +434,9 @@ export default {
         }
       });
     },
-    // 多行刪除
+    // 列表刪除
     handleDelete(rows) {
-      this.delrows("users", rows);
+      this.delrows("users", rows , this.getList);
     },
     // 分配角色
     handleAccessRole(row) {

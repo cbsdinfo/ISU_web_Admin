@@ -9,6 +9,7 @@ import locale from 'element-ui/lib/locale/lang/zh-TW'
 import VueContextMenu from 'vue-contextmenu'
 import Swal from 'sweetalert2'
 import dayjs from 'dayjs';
+import * as filters from '@/utils/Filter'
 
 import '@/styles/index.scss'
 
@@ -35,6 +36,14 @@ Vue.use(VueContextMenu)
 Vue.prototype.$swal = Swal
 
 Vue.config.productionTip = false
+
+//執行Filter
+Object.keys(filters).forEach(key => {
+  Vue.filter(key,filters[key])
+})
+// Vue.filter('dateTimeFormatToDate', function (value) {
+//   return dayjs(value).format("YYYY-MM-DD")
+// })
 
 new Vue({
   el: '#app',

@@ -26,7 +26,7 @@
           </el-table-column>
           <el-table-column width="120px" label="建立日期" align="center">
             <template slot-scope="scope">
-              <span>{{$dayjs(scope.row.createDate).format("YYYY-MM-DD")}}</span>
+              <span>{{ scope.row.releaseDate | dateTimeFormatToDate }}</span>
             </template>
           </el-table-column>
           <el-table-column v-if="!hasButton('highestAuthorityRole')" width="200px" :label="'操作'" align="center" fixed="right">

@@ -49,7 +49,6 @@ const user = {
         })
       })
     },
-
     // 獲取用戶信息
     GetInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
@@ -127,7 +126,7 @@ const user = {
   getters: {
     defaultorg: state => {
       return state.defaultorg
-    },
+    }
   }
 }
 

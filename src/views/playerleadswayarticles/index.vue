@@ -20,7 +20,7 @@
           <el-table-column min-width="200px" label="文章標題" prop="title" align="center"></el-table-column>
           <el-table-column width="120px" label="發佈日期" prop="releaseDate" align="center">
             <template slot-scope="scope">
-              <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
+              <span>{{ scope.row.releaseDate | dateTimeFormatToDate }}</span>
             </template>
           </el-table-column>
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>

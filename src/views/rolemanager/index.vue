@@ -14,13 +14,13 @@
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 52px)" @row-click="rowClick" @selection-change="handleSelectionChange">
           <el-table-column align="center" type="selection" width="55"> </el-table-column>
 
-          <el-table-column :label="'Id'" v-if="showDescription" min-width="120px">
+          <el-table-column :label="'Id'" v-if="showDescription" min-width="120px" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.id }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column min-width="50px" :label="'角色名稱'">
+          <el-table-column min-width="50px" :label="'角色名稱'" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.name }}</span>
             </template>
@@ -41,7 +41,8 @@
           <el-table-column align="center" :label="'操作'" width="230" class-name="small-padding fixed-width">
             <template slot-scope="scope">
               <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">編輯</el-button>
-              <el-button v-if="scope.row.status == 0 && hasButton('btnEnable')" size="mini" type="danger" @click="handleModifyStatus(scope.row, 1)">停用</el-button>
+              <el-button v-if="scope.row.status === 1 && hasButton('btnDisEnable')" @click="handleModifyStatus(scope.row, 0)" size="mini" type="danger">停用</el-button>
+              <el-button v-if="scope.row.status === 0 && hasButton('btnEnable')" @click="handleModifyStatus(scope.row, 1)" size="mini" type="success">啟用</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -49,7 +50,7 @@
       </div>
 
       <!-- dialog -->
-      <el-dialog width="500px" v-el-drag-dialog class="dialog-mini" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :close-on-press-escape="false">
+      <el-dialog width="500px" class="dialog-mini" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :close-on-press-escape="false">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
           <el-form-item size="small" :label="'Id'" prop="id" v-show="dialogStatus == 'update'">
             <el-input v-model="temp.id" :disabled="true" placeholder="系統自動處理"></el-input>
@@ -70,15 +71,15 @@
         </div>
       </el-dialog>
       <!--只有這麼寫dialog，才能正常觸發ESC關閉-->
-      <el-dialog class="dialog-mini" ref="accessModulesDlg" v-el-drag-dialog :title="accessTitle" :visible.sync="dialogAccessModules" :close-on-click-modal="false" :close-on-press-escape="false">
+      <el-dialog class="dialog-mini" ref="accessModulesDlg" :title="accessTitle" :visible.sync="dialogAccessModules" :close-on-click-modal="false" :close-on-press-escape="false">
         <access-modules ref="accessModules" v-if="dialogAccessModules" :role-id="multipleSelection[0].id" @change-title="changeTitle" @close="dialogAccessModules = false"></access-modules>
       </el-dialog>
 
-      <el-dialog class="dialog-mini" v-el-drag-dialog :title="'為角色分配資源'" :visible.sync="dialogAccessResource" :close-on-click-modal="false" :close-on-press-escape="false">
+      <el-dialog class="dialog-mini" :title="'為角色分配資源'" :visible.sync="dialogAccessResource" :close-on-click-modal="false" :close-on-press-escape="false">
         <access-resource ref="accessResource" v-if="dialogAccessResource" :role-id="multipleSelection[0].id" @close="dialogAccessResource = false"></access-resource>
       </el-dialog>
       <!-- 新增角色用戶 -->
-      <el-dialog class="dialog-mini user-dialog" v-el-drag-dialog :title="'新增角色用戶'" :visible.sync="roleUsers.dialogUserResource" :close-on-click-modal="false" :close-on-press-escape="false">
+      <el-dialog class="dialog-mini user-dialog" :title="'為角色分配帳號'" :visible.sync="roleUsers.dialogUserResource" :close-on-click-modal="false" :close-on-press-escape="false">
         <selectUsersCom ref="selectUser" v-if="roleUsers.dialogUserResource" :hiddenFooter="true" :loginKey="'loginUser'" :users.sync="assignedUserIds" :userNames="roleUsers.rowIndex > -1 && roleUsers.list[roleUsers.rowIndex].map((u) => u.name || u.account).join(',')"> </selectUsersCom>
         <div style="text-align: right" slot="footer">
           <el-button size="small" type="cancel" @click="roleUsers.dialogUserResource = false">取消</el-button>
@@ -100,6 +101,7 @@ import accessResource from "./assignRes";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
 import selectUsersCom from "@/components/SelectUsersCom";
+import extend from "@/extensions/delRows.js";
 
 export default {
   name: "role",
@@ -116,7 +118,7 @@ export default {
     waves,
     elDragDialog,
   },
-  mixins: [pbMixins],
+  mixins: [extend,pbMixins],
   data() {
     return {
       defaultProps: {
@@ -139,12 +141,12 @@ export default {
       apps: [],
       statusOptions: [
         {
-          key: 1,
+          key: 0,
           display_name: "停用",
         },
         {
-          key: 0,
-          display_name: "正常",
+          key: 1,
+          display_name: "啟用",
         },
       ],
       showDescription: false,
@@ -193,7 +195,7 @@ export default {
     statusFilter(status) {
       var res = "color-success";
       switch (status) {
-        case 1:
+        case 0:
           res = "color-danger";
           break;
         default:
@@ -250,6 +252,13 @@ export default {
           if (this.multipleSelection.length !== 1) {
             this.$message({
               message: "只能選中一個進行編輯",
+              type: "error",
+            });
+            return;
+          }
+          if (this.multipleSelection[0].status === 0) {
+            this.$message({
+              message: "所選角色目前為停用狀態,無法為角色分配模塊",
               type: "error",
             });
             return;
@@ -326,13 +335,39 @@ export default {
         this.pageFn();
       });
     },
+    // 模擬修改狀態
     handleModifyStatus(row, status) {
-      // 模擬修改狀態
-      this.$message({
-        message: "操作成功",
-        type: "success",
+      this.$swal.fire({
+        icon: "warning",
+        title: `確定要${status === 1 ? "啟用" : "停用"}『${row.name}』嗎？`,
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "確定",
+        cancelButtonText: "取消",
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          row.status = status;
+          let params = Object.assign({}, row);
+          console.log(params);
+          this.$api.roles.update(params).then((res) => {
+            if (res.code === 200) {
+              this.$swal.fire({
+                icon: "success",
+                title: `${status === 1 ? "啟用" : "停用"}成功`,
+                timer: 1500,
+                showConfirmButton: false,
+              });
+            }
+          });
+        }
       });
-      row.status = status;
+      // this.$message({
+      //   message: "操作成功",
+      //   type: "success",
+      // });
+      // row.status = status;
     },
     resetTemp() {
       this.temp = {
@@ -404,25 +439,29 @@ export default {
         }
       });
     },
+     // 列表刪除
     handleDelete(rows) {
-      // 多行刪除
-      this.$api.roles.del(rows.map((u) => u.id)).then(() => {
-        this.$swal
-          .fire({
-            icon: "success",
-            title: "刪除成功",
-            timer: 1500,
-            showConfirmButton: false,
-          })
-          .then(() => {
-            rows.forEach((row) => {
-              const index = this.list.indexOf(row);
-              this.list.splice(index, 1);
-              this.roleUsers.list.splice(index, 1);
-            });
-          });
-      });
+      this.delrows("roles", rows, this.getList);
     },
+    // 列表刪除
+    // handleDelete(rows) {
+    //   this.$api.roles.del(rows.map((u) => u.id)).then(() => {
+    //     this.$swal
+    //       .fire({
+    //         icon: "success",
+    //         title: "刪除成功",
+    //         timer: 1500,
+    //         showConfirmButton: false,
+    //       })
+    //       .then(() => {
+    //         rows.forEach((row) => {
+    //           const index = this.list.indexOf(row);
+    //           this.list.splice(index, 1);
+    //           this.roleUsers.list.splice(index, 1);
+    //         });
+    //       });
+    //   });
+    // },
   },
 };
 </script>

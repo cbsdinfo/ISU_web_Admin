@@ -45,7 +45,7 @@
           </el-table-column>
           <el-table-column width="100px" label="入會日期" prop="createDate" align="center">
             <template slot-scope="scope">
-              <span>{{ $dayjs(scope.row.createDate).format("YYYY-MM-DD") }}</span>
+              <span>{{ scope.row.releaseDate | dateTimeFormatToDate }}</span>
             </template>
           </el-table-column>
           <el-table-column width="100px" label="開卡日期" prop="openCardDate" align="center">
@@ -233,7 +233,28 @@
           <el-option v-for="item in pointsStateSelect" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
         <el-table :key="tableKey" :data="pointsRecordList" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
+          <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center">
+            <template slot-scope="scope">
+              <span>{{scope.row.storeName?scope.row.storeName:'管理員'}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column min-width="120px" label="操作點數人員" prop="createUserName" align="center"></el-table-column>
           <el-table-column min-width="150px" label="點數類型" prop="pointType" align="center"></el-table-column>
+          <el-table-column min-width="150px" label="剩餘點數" prop="remainPoint" align="center"></el-table-column>
+          <el-table-column min-width="150px" label="已使用點數" prop="usePoint" align="center"></el-table-column>
+          <el-table-column min-width="150px" label="新增點數" prop="getPoint" align="center">
+            <template slot-scope="scope">
+              <span :class="pointColor('add',scope.row.getPoint)">{{scope.row.getPoint>0?`${'+'}${scope.row.getPoint}`:'-'}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column min-width="150px" label="取消點數" prop="cancelPoint" align="center">
+            <template slot-scope="scope">
+              <span :class="pointColor('cancel',scope.row.cancelPoint)">{{scope.row.cancelPoint>0?`${'-'}${scope.row.cancelPoint}`:scope.row.cancelPoint}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column width="180px" label="給點/兌換點數的時間" prop="createDate" align="center"></el-table-column>
+          <el-table-column width="180px" label="點數到期日" prop="pointEndDate" align="center"></el-table-column> -->
+          <!-- <el-table-column min-width="150px" label="點數類型" prop="pointType" align="center"></el-table-column>
           <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center">
             <template slot-scope="scope">
               <span>{{scope.row.storeName?scope.row.storeName:'-'}}</span>
@@ -257,7 +278,7 @@
               <span>{{scope.row.modifyDate?scope.row.modifyDate:'-'}}</span>
             </template>
           </el-table-column>
-          <el-table-column width="180px" label="點數到期日" prop="pointEndDate" align="center"></el-table-column>
+          <el-table-column width="180px" label="點數到期日" prop="pointEndDate" align="center"></el-table-column> -->
         </el-table>
       </template>
       <!-- 優惠券紀錄 -->
@@ -292,12 +313,12 @@
               <span>{{scope.row.storeName?scope.row.storeName:'-'}}</span>
             </template>
           </el-table-column>
-          <el-table-column min-width="120px" label="使用點數人員" prop="modifyUserName" align="center">
+          <el-table-column min-width="120px" label="使用人員" prop="modifyUserName" align="center">
             <template slot-scope="scope">
               <span>{{scope.row.modifyUserName?scope.row.modifyUserName:'-'}}</span>
             </template>
           </el-table-column>
-          <el-table-column width="180px" label="使用點數時間" prop="modifyDate" align="center">
+          <el-table-column width="180px" label="使用時間" prop="modifyDate" align="center">
             <template slot-scope="scope">
               <span>{{scope.row.modifyDate?scope.row.modifyDate:'-'}}</span>
             </template>
@@ -647,22 +668,21 @@ export default {
   computed:{
     memberState(){
       return ((state)=>{
-        let className = "enable"
+        let className = "greenText"
         if(!state){
-          className = 'disenable'
+          className = 'redText'
         }
         return className
       })
     },
-    pointStateTextColor(){
-      //0=>全部;1=>未使用;2=>已使用;3=>取消
-      return ((state)=>{
-        let className = "notUsed"
-        if(state===2){
-          className = 'used'
+    pointColor(){
+      return ((actionType,pointNumbers)=>{
+        let className = ''
+        if(actionType==='add'){
+          className = 'greenText'
         }
-        if(state===3){
-          className = 'cancel'
+        if(actionType==='cancel' && pointNumbers>0){
+          className = 'redText'
         }
         return className
       })
@@ -1015,12 +1035,6 @@ export default {
   }
   .app-container{
     .el-table__body-wrapper{
-      .enable{
-        color: green;
-      }
-      .disenable{
-        color: red;
-      }
       .buttonFlexBox{
         min-height: 100px;
         display: flex;
@@ -1037,10 +1051,10 @@ export default {
     .el-dialog__body{
       height: 70vh;
       // overflow-y: scroll;
-      .used{
+      .used,.redText{
         color: red;
       }
-      .notUsed{
+      .notUsed,.greenText{
         color: green;
       }
       .cancel{

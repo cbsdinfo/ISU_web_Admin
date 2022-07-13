@@ -37,7 +37,7 @@
           <el-table-column min-width="100px" label="價格" prop="price" align="center"></el-table-column>
           <el-table-column width="150px" align="center" label="商品申請上架日期" prop="releaseDate">
             <template slot-scope="scope">
-              <span>{{ $dayjs(scope.row.createDate).format("YYYY-MM-DD") }}</span>
+              <span>{{ scope.row.releaseDate | dateTimeFormatToDate }}</span>
             </template>
           </el-table-column>
           <el-table-column width="150px" align="center" label="最後更新時間" prop="releaseDate">

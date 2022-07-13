@@ -57,7 +57,8 @@
               <el-table-column :label="'操作'" width="180" class-name="small-padding fixed-width" align="center">
                 <template slot-scope="scope">
                   <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">編輯</el-button>
-                  <el-button v-if="scope.row.status == 0" size="mini" type="danger" @click="handleModifyStatus(scope.row, 1)">停用</el-button>
+                  <el-button v-if="scope.row.status === 1 && hasButton('btnDisEnable')" @click="handleModifyStatus(scope.row, 0)" size="mini" type="danger">停用</el-button>
+                  <el-button v-if="scope.row.status === 0 && hasButton('btnEnable')" @click="handleModifyStatus(scope.row, 1)" size="mini" type="success">啟用</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -66,7 +67,7 @@
         </el-col>
       </el-row>
 
-      <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
           <el-form-item size="small" :label="'Id'" prop="id" v-show="dialogStatus == 'update'">
             <span>{{ temp.id }}</span>
@@ -93,7 +94,7 @@
         </div>
       </el-dialog>
       <!-- 新增角色用戶 -->
-      <el-dialog class="dialog-mini user-dialog" v-el-drag-dialog :title="'分配用戶'" :visible.sync="roleUsers.dialogUserResource">
+      <el-dialog class="dialog-mini user-dialog" :title="'分配用戶'" :visible.sync="roleUsers.dialogUserResource" :close-on-click-modal="false" :lock-scroll="true">
         <selectUsersCom ref="selectUser" v-if="roleUsers.dialogUserResource" :orgId="multipleSelection[0].id" :hiddenFooter="true" :loginKey="'loginUser'" :users.sync="assignedUserIds" :userNames="roleUsers.rowIndex > -1 && roleUsers.list[roleUsers.rowIndex].map((u) => u.name || u.account).join(',')"> </selectUsersCom>
         <div style="text-align: right" slot="footer">
           <el-button size="small" type="cancel" @click="roleUsers.dialogUserResource = false">取消</el-button>
@@ -111,6 +112,7 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import permissionBtn from "@/components/PermissionBtn";
+import pbMixins from "@/mixins/permissionBtn.js";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
 import selectUsersCom from "@/components/SelectUsersCom";
@@ -125,7 +127,7 @@ export default {
     Pagination,
     selectUsersCom,
   },
-  mixins: [extend],
+  mixins: [extend,pbMixins],
   directives: {
     waves,
     elDragDialog,
@@ -152,14 +154,14 @@ export default {
         key: undefined,
       },
       apps: [],
-      statusOptions: [
+      statusOptions: [//1=啟用;0=停用
         {
           key: 1,
-          display_name: "停用",
+          display_name: "啟用",
         },
         {
           key: 0,
-          display_name: "正常",
+          display_name: "停用",
         },
       ],
       showDescription: false,
@@ -251,7 +253,7 @@ export default {
     statusFilter(status) {
       var res = "color-success";
       switch (status) {
-        case 1:
+        case 0:
           res = "color-danger";
           break;
         default:
@@ -332,6 +334,13 @@ export default {
             });
             return;
           }
+          if(this.multipleSelection[0].status===0){
+            this.$message({
+              message: "選取機構為停用狀態,無法為機構分配帳號",
+              type: "error",
+            });
+            return;
+          }
           this.roleUsers.rowIndex = this.list.findIndex((item) => item.id === this.multipleSelection[0].id);
           this.loadRoleUsers();
           break;
@@ -397,13 +406,39 @@ export default {
       this.listQuery.limit = val.limit;
       this.pageSubOrgs();
     },
+    // 模擬修改狀態
     handleModifyStatus(row, status) {
-      // 模擬修改狀態
-      this.$message({
-        message: "操作成功",
-        type: "success",
+      this.$swal.fire({
+        icon: "warning",
+        title: `確定要${status === 1 ? "啟用" : "停用"}『${row.name}』嗎？`,
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "確定",
+        cancelButtonText: "取消",
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          row.status = status;
+          let params = Object.assign({}, row);
+          console.log(params);
+          this.$api.orgs.update(params).then((res) => {
+            if (res.code === 200) {
+              this.$swal.fire({
+                icon: "success",
+                title: `${status === 1 ? "啟用" : "停用"}成功`,
+                timer: 1500,
+                showConfirmButton: false,
+              });
+            }
+          });
+        }
       });
-      row.status = status;
+      // this.$message({
+      //   message: "操作成功",
+      //   type: "success",
+      // });
+      // row.status = status;
     },
     resetTemp() {
       this.temp = {
@@ -488,8 +523,8 @@ export default {
         }
       });
     },
+     //列表刪除
     handleDelete(rows) {
-      // 多行刪除
       this.delrows("orgs", rows, this.getOrgTree);
     },
   },

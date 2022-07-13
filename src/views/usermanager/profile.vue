@@ -103,7 +103,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["defaultorgid", "name"]),
+    ...mapGetters(["defaultorgid"]),
   },
   filters: {},
   mounted() {

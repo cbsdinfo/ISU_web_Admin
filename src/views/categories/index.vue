@@ -4,7 +4,10 @@
       <div class="categories-container flex-row">
         <div style="border-right: 1px solid #ccc">
           <div class="buttons-box filter-container">
-            <el-button :icon="`iconfont icon-${btn.icon}`" :type="btn.class" size="mini" v-for="btn of categoryBtns" v-bind:key="btn.Id" class="filter-item" @click="onBtnClicked(btn.domId)">{{ btn.name }}</el-button>
+            <!-- 此按鈕只有System可操作,客戶不應能操作類別的新增或刪除 -->
+            <template v-if="this.$store.getters.name==='System'">
+              <el-button :icon="`iconfont icon-${btn.icon}`" :type="btn.class" size="mini" v-for="btn of categoryBtns" v-bind:key="btn.Id" class="filter-item" @click="onBtnClicked(btn.domId)">{{ btn.name }}</el-button>
+            </template>
             <div @keyup.13="handleSearchCategoryTypes">
               <el-input placeholder="請輸入內容" v-model="typesListQuery.key" size="mini" style="margin-top: 10px; width: 130px">
                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
@@ -23,7 +26,7 @@
             </el-tree>
           </el-card>
         </div>
-
+       
         <el-main class="categories-content flex-item">
           <sticky :className="'sub-navbar'">
             <div class="filter-container" style="white-space: nowrap; overflow-x: auto">
@@ -42,13 +45,11 @@
               </template>
             </el-table-column>
             <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-            <!-- <el-table-column width="200px" label="分類標誌" prop="typeId"></el-table-column> -->
             <el-table-column width="200px" :label="'操作'" align="center">
               <template slot-scope="scope">
                 <div class="buttonFlexBox">
                   <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
                   <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
-                  <!-- <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button> -->
                 </div>
               </template>
             </el-table-column>
@@ -57,7 +58,7 @@
         </el-main>
       </div>
 
-      <!-- 新增類別彈窗 -->
+      <!-- 新增類別 -->
       <el-dialog :destroy-on-close="true" class="dialog-mini custom-dialog user-dialog" width="400px" title="新增分組" :visible.sync="addTypesDialog" :close-on-click-modal="false" :lock-scroll="true">
         <el-form ref="categoryTypeForm" :model="categoryTypesInfo" :rules="categoryRules" el="categorys-tayps-form" label-width="80px">
           <el-form-item prop="id" label="分類id">
@@ -73,7 +74,7 @@
         </div>
       </el-dialog>
 
-      <!--類別之下的次分類彈窗 -->
+      <!--類別下的次分類 -->
       <el-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
           <el-form-item size="small" :label="'名稱'" prop="name">
@@ -107,7 +108,7 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+// import { mapGetters } from "vuex";
 import extend from "@/extensions/delRows.js";
 import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
@@ -199,7 +200,7 @@ export default {
   },
   computed: {
     // 使用對象展開運算符將 getter 混入 computed 對象中
-    ...mapGetters(["modulesTree"]),
+    // ...mapGetters(["loginAccount"]),
     categoryBtns() {
       var route = this.$route;
       var elements = route.meta.elements;
@@ -232,11 +233,11 @@ export default {
     this.loadCategoryTypes();
   },
   methods: {
-    getAllCategories() {
-      this.listQuery.TypeId = "";
-      this.listQuery.page = 1;
-      this.getList();
-    },
+    // getAllCategories() {
+    //   this.listQuery.TypeId = "";
+    //   this.listQuery.page = 1;
+    //   this.getList();
+    // },
     rowClick(row) {
       this.$refs.mainTable.clearSelection();
       this.$refs.mainTable.toggleRowSelection(row);
@@ -315,7 +316,7 @@ export default {
         this.$refs["dataForm"].clearValidate();
       });
     },
-    // 保存提交
+    //保存提交
     createData() {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
@@ -421,8 +422,8 @@ export default {
       this.$api.categorys.loadType(this.typesListQuery).then((res) => {
         this.categoryTypes = [...res.data];
         
-        //因需求只能讓該商店看見自己商店新增的集章類別,所以不能在此頁顯示,必須獨立頁面出去做
-        //;但集章類別新增API又是和最新消息類別等等是同一支,導致兩個地方都會顯示集章類別,所以此頁要篩選掉不顯示
+        //因需求只能讓店家看見自己新增的"集章類別",店家無法看見其他店家新增的"集章類別",並且一般商店角色權限無法看見公版的類別管理,所以必須把集章的頁面獨立出去
+        //;但集章類別新增API又是和類別管理是同一支,導致兩個地方都會顯示集章類別,所以此頁要排除集章類別的資料不顯示
         this.categoryTypes = this.categoryTypes.filter(item=>item.id !=='SYS_stampstorecategorys')
         
       });
@@ -432,10 +433,15 @@ export default {
       this.getList();
     },
   },
+  mounted(){
+    console.log(this.$store.getters);
+    // console.log(this.$store.getters.loginName);
+    // console.log(this.$store.getters.defaultorgid);
+  }
 };
 </script>
 
-<style rel="stylesheet/scss" lang="scss">
+<style rel="stylesheet/getterscss" lang="scss">
 .dialog-mini .el-select {
   width: 100%;
 }

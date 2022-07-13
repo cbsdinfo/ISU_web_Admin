@@ -24,7 +24,7 @@
           </el-table-column>
           <el-table-column width="120px" align="center" label="發佈日期" prop="releaseDate">
             <template slot-scope="scope">
-              <span>{{ $dayjs(scope.row.releaseDate).format("YYYY-MM-DD") }}</span>
+              <span>{{ scope.row.releaseDate | dateTimeFormatToDate }}</span>
             </template>
           </el-table-column>
           <el-table-column min-width="150px" align="center" :label="'操作'" fixed="right">
@@ -207,13 +207,15 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.newss.load(this.listQuery).then((response) => {
-        const { data, count } = response;
-        this.list = data;
-        this.total = count;
-        this.listLoading = false;
-        this.$nextTick(() => {
-          this.$refs.mainTable.doLayout();
-        });
+        const { data, count,code } = response;
+        if(code===200){
+          this.list = data;
+          this.total = count;
+          this.listLoading = false;
+          this.$nextTick(() => {
+            this.$refs.mainTable.doLayout();
+          });
+        }
       });
     },
     // 取得下拉選單

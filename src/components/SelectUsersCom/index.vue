@@ -117,11 +117,11 @@ export default {
       searchKey: "",
       statusOptions: [
         {
-          key: true,
+          key: 0,
           display_name: "停用",
         },
         {
-          key: false,
+          key: 1,
           display_name: "正常",
         },
       ],
@@ -172,7 +172,7 @@ export default {
     userStatusFilter(status) {
       var res = "color-success";
       switch (status) {
-        case 1:
+        case 0:
           res = "color-danger";
           break;
         default:
@@ -219,7 +219,6 @@ export default {
     handlePageSearch(val) {
       this.loadData(val);
     },
-
     // 獲取用戶
     getUserList() {
       this.tableData.loading = true;
