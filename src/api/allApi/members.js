@@ -36,6 +36,14 @@ const api = {
       data
     })
   },
+  //取得會員點數使用或取消列表 (Auth)
+  memberPointsUseOrCancelLoad(params) {
+    return request({
+      url: '/member/MemberPointsUseOrCancelLoad',
+      method: 'get',
+      params
+    })
+  },
   memberCouponLoad(params) {
     return request({
       url: '/member/MemberCouponLoad',

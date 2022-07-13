@@ -2,7 +2,13 @@
   <div>
     <el-input @click.native="selectDialog = true" readonly v-model="names" :placeholder="placeholder"></el-input>
     <el-dialog :destroy-on-close="true" class="dialog-mini custom-dialog user-dialog" width="850px" title="選擇角色" :visible.sync="selectDialog">
-      <selectUsersCom v-if="selectDialog" :ignore-auth="ignoreAuth" :show.sync="selectDialog" :loginKey="'loginRole'" :users.sync="selectRoles" :userNames.sync="names"></selectUsersCom>
+      <selectUsersCom v-if="selectDialog" 
+        :ignore-auth="ignoreAuth" 
+        :show.sync="selectDialog" 
+        :loginKey="'loginRole'" 
+        :users.sync="selectRoles" 
+        :userNames.sync="names"
+      ></selectUsersCom>
     </el-dialog>
   </div>
 </template>

@@ -105,8 +105,27 @@
           <el-button size="mini" v-else type="primary" @click="updateData">確認</el-button>
         </div>
       </el-dialog>
-      <!-- 第一層分配角色 -->
-      <el-dialog width="516px" class="dialog-mini body-small" v-el-drag-dialog :title="'分配角色'" :visible.sync="dialogRoleVisible">
+      <!-- 第一層分配角色(優化版) -->
+      <el-dialog width="50%" class="dialog-mini body-small" :title="'分配角色'" :visible.sync="dialogRoleVisible" :close-on-click-modal="false" :lock-scroll="true">
+        <el-form ref="rolesForm" size="small" label-position="left">
+          <el-form-item>
+            <selectUsersCom v-if="dialogRoleVisible"
+              :ignore-auth="true" 
+              :loginKey="'loginRole'" 
+              :users.sync="selectRoles" 
+              :userNames.sync="selectRoleNames"
+              :hiddenFooter="true"
+              @selectionUserChange="selectionUserChange"
+            ></selectUsersCom>
+          </el-form-item>
+        </el-form>
+        <div slot="footer">
+          <el-button size="mini" @click="dialogRoleVisible = false">取消</el-button>
+          <el-button size="mini" type="primary" @click="acceRole">確認</el-button>
+        </div>
+      </el-dialog>
+      <!-- 第一層分配角色(原版) -->
+      <!-- <el-dialog width="516px" class="dialog-mini body-small" v-el-drag-dialog :title="'分配角色'" :visible.sync="dialogRoleVisible">
         <el-form ref="rolesForm" size="small" v-if="dialogRoleVisible" label-position="left">
           <el-form-item>
             <select-roles :roles="selectRoles" :userNames="selectRoleNames" v-on:roles-change="rolesChange"></select-roles>
@@ -116,7 +135,7 @@
           <el-button size="mini" @click="dialogRoleVisible = false">取消</el-button>
           <el-button size="mini" type="primary" @click="acceRole">確認</el-button>
         </div>
-      </el-dialog>
+      </el-dialog> -->
     </div>
   </div>
 </template>
@@ -129,25 +148,18 @@ import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import permissionBtn from "@/components/PermissionBtn";
 import pbMixins from "@/mixins/permissionBtn.js";
-import SelectRoles from "@/components/SelectRoles";
+import selectUsersCom from "@/components/SelectUsersCom";
+// import SelectRoles from "@/components/SelectRoles";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
 
 export default {
   name: "user",
-  components: {
-    Sticky,
-    permissionBtn,
-    Treeselect,
-    SelectRoles,
-    Pagination,
-  },
+  // components: {Sticky,permissionBtn,Treeselect,Pagination,SelectRoles},
+  components: {Sticky,permissionBtn,Treeselect,Pagination,selectUsersCom},
   mixins: [extend,pbMixins],
-  directives: {
-    waves,
-    elDragDialog,
-  },
+  directives: {waves,elDragDialog,},
   data() {
     return {
       multipleSelection: [], // 列表checkbox選中的值
@@ -439,28 +451,30 @@ export default {
       this.delrows("users", rows , this.getList);
     },
     // 分配角色
-    handleAccessRole(row) {
-      console.log(row);
-      const _this = this;
+    async handleAccessRole(row) {
       this.temp = Object.assign({}, row); // copy obj
-      this.$api.roles.loadForUser(this.temp.id).then((response) => {
-        _this.dialogRoleStatus = "update";
-        _this.dialogRoleVisible = true;
-        _this.selectRoles = response.result;
-        _this.getRoleList();
-        _this.$nextTick(() => {
-          _this.$refs["rolesForm"].clearValidate();
+      this.$api.roles.loadForUser(this.temp.id).then(async (response) => {
+        this.selectRoles = response.result;
+        await this.getRoleList();
+        this.dialogRoleStatus = "update";
+        this.dialogRoleVisible = true;
+        this.$nextTick(() => {
+          this.$refs["rolesForm"].clearValidate();
         });
       });
     },
     // 獲取角色
     getRoleList() {
-      this.$api.roles.getList({}).then((response) => {
-        this.selectRoleNames = [...response.result]
-          .filter((x) => this.selectRoles.indexOf(x.id) > -1)
-          .map((item) => item.name || item.account)
-          .join(",");
-      });
+      console.log("getRoleList");
+      return new Promise((resolve)=>{
+        this.$api.roles.getList({}).then((response) => {
+          this.selectRoleNames = [...response.result]
+            .filter((x) => this.selectRoles.indexOf(x.id) > -1)
+            .map((item) => item.name || item.account)
+            .join(",");
+          resolve()
+        });
+      })
     },
     rolesChange(type, val) {
       if (type === "Texts") {
@@ -469,23 +483,26 @@ export default {
       }
       this.selectRoles = val;
     },
+    selectionUserChange(val){
+      console.log(val);
+      this.selectRoles = val
+    },
     acceRole() {
       console.log("acceRole");
-      this.$api.accessObjs
-        .assign({
-          type: "UserRole",
-          firstId: this.temp.id,
-          secIds: this.selectRoles,
-        })
-        .then(() => {
-          this.dialogRoleVisible = false;
-          this.$swal.fire({
-            icon: "success",
-            title: "更新成功",
-            timer: 1500,
-            showConfirmButton: false,
-          });
+      this.$api.accessObjs.assign({
+        type: "UserRole",
+        firstId: this.temp.id,
+        secIds: this.selectRoles,
+      })
+      .then(() => {
+        this.dialogRoleVisible = false;
+        this.$swal.fire({
+          icon: "success",
+          title: "更新成功",
+          timer: 1500,
+          showConfirmButton: false,
         });
+      });
     },
   },
 };

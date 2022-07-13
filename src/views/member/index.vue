@@ -60,8 +60,9 @@
               <div class="buttonFlexBox">
                 <el-button v-if="hasButton('btnEdit')" @click="handleUpdate(scope.row)" type="primary"  size="mini">編輯</el-button>
                 <el-button v-if="hasButton('pointsAddOrCancel')" @click="openPointsDialog(scope.row)" size="mini" type="white" >加/扣點</el-button>
-                <el-button v-if="hasButton('pointsRecord')" @click="openRecord(scope.row,'pointsRecord')" size="mini" type="white">點數紀錄</el-button>
-                <el-button v-if="hasButton('couponRecord')" @click="openRecord(scope.row,'couponRecord')" size="mini" type="white">優惠券紀錄</el-button>
+                <el-button v-if="hasButton('pointsUsedOrCancelRecord')" @click="openRecord(scope.row,'memberPointsUseOrCancelLoad')" size="mini" type="white">使用/取消點數紀錄</el-button>
+                <el-button v-if="hasButton('pointsGetRecord')" @click="openRecord(scope.row,'memberPointsLoad')" size="mini" type="white">獲得點數紀錄</el-button>
+                <el-button v-if="hasButton('couponRecord')" @click="openRecord(scope.row,'memberCouponLoad')" size="mini" type="white">優惠券紀錄</el-button>
               </div>
             </template>
           </el-table-column>
@@ -227,62 +228,63 @@
 
     <!-- 紀錄彈窗 -->
     <el-dialog @close="closeRecordDialog" class="dialog-mini pointRecordDialog" top="10vh" width="80%" :title="textMap[dialogStatus]" :visible.sync="recordPointVisible" :close-on-click-modal="false" :lock-scroll="true">
-      <!-- 點數紀錄 -->
-      <template v-if="dialogStatus==='pointsRecord'">
+      <!-- 使用/取消點數紀錄 -->
+      <template v-if="dialogStatus==='memberPointsUseOrCancelLoad'">
         <el-select @change="recordLoad(dialogStatus)" v-model="recordListQuery.State" class="itemWidth" placeholder="請選擇點數狀態" size="small">
           <el-option v-for="item in pointsStateSelect" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
-        <el-table :key="tableKey" :data="pointsRecordList" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
-          <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center">
-            <template slot-scope="scope">
-              <span>{{scope.row.storeName?scope.row.storeName:'管理員'}}</span>
-            </template>
-          </el-table-column>
-          <el-table-column min-width="120px" label="操作點數人員" prop="createUserName" align="center"></el-table-column>
-          <el-table-column min-width="150px" label="點數類型" prop="pointType" align="center"></el-table-column>
-          <el-table-column min-width="150px" label="剩餘點數" prop="remainPoint" align="center"></el-table-column>
-          <el-table-column min-width="150px" label="已使用點數" prop="usePoint" align="center"></el-table-column>
-          <el-table-column min-width="150px" label="新增點數" prop="getPoint" align="center">
-            <template slot-scope="scope">
-              <span :class="pointColor('add',scope.row.getPoint)">{{scope.row.getPoint>0?`${'+'}${scope.row.getPoint}`:'-'}}</span>
-            </template>
-          </el-table-column>
-          <el-table-column min-width="150px" label="取消點數" prop="cancelPoint" align="center">
-            <template slot-scope="scope">
-              <span :class="pointColor('cancel',scope.row.cancelPoint)">{{scope.row.cancelPoint>0?`${'-'}${scope.row.cancelPoint}`:scope.row.cancelPoint}}</span>
-            </template>
-          </el-table-column>
-          <el-table-column width="180px" label="給點/兌換點數的時間" prop="createDate" align="center"></el-table-column>
-          <el-table-column width="180px" label="點數到期日" prop="pointEndDate" align="center"></el-table-column> -->
-          <!-- <el-table-column min-width="150px" label="點數類型" prop="pointType" align="center"></el-table-column>
+        <el-table :key="tableKey" :data="pointsRecord" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
+
           <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center">
             <template slot-scope="scope">
               <span>{{scope.row.storeName?scope.row.storeName:'-'}}</span>
             </template>
           </el-table-column>
-          <el-table-column width="100px" label="點數數量" align="center">1</el-table-column>
-          <el-table-column width="100px" label="點數狀態" prop="state" align="center">
+          
+          <el-table-column min-width="120px" label="操作點數人員" prop="createUserName" align="center"></el-table-column>
+
+          <el-table-column min-width="150px" label="點數操作方式" prop="state" align="center">
             <template slot-scope="scope">
-              <span :class="pointStateTextColor(scope.row.state)">{{scope.row.state===1?'未使用':scope.row.state===2?'已使用':'取消'}}</span>
+              <span v-if="scope.row.state===1">使用</span>
+              <span v-if="scope.row.state===2">取消</span>
             </template>
           </el-table-column>
-          <el-table-column min-width="120px" label="新增點數人員" prop="createUserName" align="center"></el-table-column>
-          <el-table-column width="180px" label="新增點數時間" prop="createDate" align="center"></el-table-column>
-          <el-table-column min-width="120px" label="使用點數人員" prop="modifyUserName" align="center">
+
+          <el-table-column min-width="150px" label="點數異動數量" prop="point" align="center">
             <template slot-scope="scope">
-              <span>{{scope.row.modifyUserName?scope.row.modifyUserName:'-'}}</span>
+              <span class="redText">-{{scope.row.point}}</span>
             </template>
           </el-table-column>
-          <el-table-column width="180px" label="使用點數時間" prop="modifyDate" align="center">
+
+          <el-table-column width="180px" label="點數異動時間" prop="createDate" align="center"></el-table-column>
+
+        </el-table>
+      </template>
+      <!-- 獲取點數紀錄 -->
+      <template v-if="dialogStatus==='memberPointsLoad'">
+        <el-table :key="tableKey" :data="pointsRecord" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
+
+          <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center">
             <template slot-scope="scope">
-              <span>{{scope.row.modifyDate?scope.row.modifyDate:'-'}}</span>
+              <span>{{scope.row.storeName?scope.row.storeName:'-'}}</span>
             </template>
           </el-table-column>
-          <el-table-column width="180px" label="點數到期日" prop="pointEndDate" align="center"></el-table-column> -->
+
+          <el-table-column min-width="120px" label="操作點數人員" prop="createUserName" align="center"></el-table-column>
+
+          <el-table-column min-width="120px" label="獲取點數" prop="getPoint" align="center">
+            <template slot-scope="scope">
+              <span class="greenText">+{{scope.row.getPoint}}</span>
+            </template>
+          </el-table-column>
+          
+          <el-table-column min-width="120px" label="獲取點數時間" prop="createDate" align="center"></el-table-column>
+          <el-table-column min-width="120px" label="點數到期時間" prop="pointEndDate" align="center"></el-table-column>
+
         </el-table>
       </template>
       <!-- 優惠券紀錄 -->
-      <template v-if="dialogStatus==='couponRecord'">
+      <template v-if="dialogStatus==='memberCouponLoad'">
         <el-select @change="recordLoad(dialogStatus)" v-model="recordListQuery.State" class="itemWidth" placeholder="請選擇點數狀態" size="small">
           <el-option v-for="item in couponStateSelect" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
@@ -397,7 +399,7 @@ export default {
     return {
       filterDateRange:null,
       couponRecordList:[],
-      pointsRecordList:[],
+      pointsRecord:[],
       memberPointVisible:false,
       recordPointVisible:false,
       isValidateEmail:"",
@@ -491,20 +493,16 @@ export default {
       ],
       pointsStateSelect:[
         {
-          label:"全部",
+          label:"使用/取消",
           value:0
         },
         {
-          label:"未使用",
+          label:"使用",
           value:1
         },
         {
-          label:"已使用",
-          value:2
-        },
-        {
           label:"取消",
-          value:3
+          value:2
         },
       ],
       couponStateSelect:[
@@ -660,7 +658,8 @@ export default {
         update: "編輯",
         add: "新增",
         pointsAddOrCancel:"加/扣會員點數",
-        pointsRecord:"點數紀錄",
+        pointsUsedOrCancelRecord:"使用/取消點數紀錄",
+        pointsGetRecord:"獲取店數紀錄",
         couponRecord:"優惠券紀錄",
       },
     };
@@ -762,62 +761,35 @@ export default {
       this.recordPointVisible = true;
       this.dialogStatus = type;
       this.recordListQuery.MemberId = row.id
-      if(type==='pointsRecord'){
+      if(type==='memberPointsLoad'){
+        this.recordListQuery.State = null 
+      }
+      if(type==='memberPointsUseOrCancelLoad'){
         //點數API,撈全部狀態state = 0 
         this.recordListQuery.State = 0 
       }
-      if(type==='couponRecord'){
+      if(type==='memberCouponLoad'){
         //優惠券API,撈全部狀態state = null
-        console.log("this.recordListQuery.state = null ");
         this.recordListQuery.State = null 
       }
-      this.recordLoad(type)
+      this.recordLoad()
     },
-    recordLoad(type){
+    recordLoad(){
       this.recordListLoading = true;
-      let apiName = ""
-      if(type==='pointsRecord'){
-        apiName = "memberPointsLoad"
-      }
-      if(type==='couponRecord'){
-        apiName = "memberCouponLoad"
-      }
-      this.$api.members[apiName](this.recordListQuery).then((res)=>{
-          const { code,count,data} = res
-          if(code===200){
-            if( apiName === "memberPointsLoad"){
-              this.pointsRecordList = data;
-            }
-            if( apiName === "memberCouponLoad"){
-              this.couponRecordList = data;
-            }
-            this.recordTotal = count
+      this.$api.members[this.dialogStatus](this.recordListQuery).then((res)=>{
+        this.recordListLoading = false;
+        const { code,count,data} = res
+        if(code===200){
+          if( this.dialogStatus === "memberPointsUseOrCancelLoad" ||this.dialogStatus === "memberPointsLoad"){
+            this.pointsRecord = data;
           }
-          this.recordListLoading = false;
+          if( this.dialogStatus === "memberCouponLoad"){
+            this.couponRecordList = data;
+          }
+          this.recordTotal = count
+        }
+        
       })
-
-      // if(type==='pointsRecord'){
-      //   this.$api.members.memberPointsLoad(this.recordListQuery).then((res)=>{
-      //     const { code,count,data} = res
-      //     if(code===200){
-      //       this.pointsRecordList = data;
-      //       this.recordTotal = count
-      //     }
-      //     this.listLoading = false;
-      //   })
-      // }
-      // if(type==='couponRecord'){
-      //   const requestData = {
-      //     MemberId:memberId,
-      //     page:1,
-      //     limit:999,
-      //     State:2,//null=>全部;true=>使用;false=>未使用
-      //     key:""
-      //   }
-      //   this.$api.members.memberCouponLoad(requestData).then((res)=>{
-      //     console.log(res);
-      //   })
-      // }
     },
     openPointsDialog(row){
       this.pointsTemp.memberId = row.id;

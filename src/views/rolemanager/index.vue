@@ -1,14 +1,14 @@
 <template>
   <div class="flex-column">
+    
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
         <el-input @keyup.enter.native="handleFilter" prefix-icon="el-icon-search" size="small" style="width: 200px; margin-bottom: 0" class="filter-item" :placeholder="'關鍵字'" v-model="listQuery.key"> </el-input>
-
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
-
         <el-checkbox size="small" style="margin-left: 15px" @change="tableKey = tableKey + 1" v-model="showDescription">Id/描述</el-checkbox>
       </div>
     </sticky>
+
     <div class="app-container flex-item">
       <div class="bg-white fh">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 52px)" @row-click="rowClick" @selection-change="handleSelectionChange">
@@ -70,17 +70,21 @@
           <el-button size="small" v-else type="primary" @click="updateData">確認</el-button>
         </div>
       </el-dialog>
-      <!--只有這麼寫dialog，才能正常觸發ESC關閉-->
-      <el-dialog class="dialog-mini" ref="accessModulesDlg" :title="accessTitle" :visible.sync="dialogAccessModules" :close-on-click-modal="false" :close-on-press-escape="false">
-        <access-modules ref="accessModules" v-if="dialogAccessModules" :role-id="multipleSelection[0].id" @change-title="changeTitle" @close="dialogAccessModules = false"></access-modules>
+      <!--為角色分配模塊-->
+      <!-- 只有這麼寫dialog，才能正常觸發ESC關閉 -->
+      <el-dialog class="dialog-mini" ref="accessModulesDlg" title="為角色分配模塊菜單" :visible.sync="dialogAccessModules" :close-on-click-modal="false" :close-on-press-escape="false">
+        <access-modules v-if="dialogAccessModules" @close="dialogAccessModules = false" ref="accessModules" :role-id="multipleSelection[0].id"></access-modules>
+        <!-- <access-modules ref="accessModules" v-if="dialogAccessModules" :role-id="multipleSelection[0].id" @change-title="changeTitle" @close="dialogAccessModules = false"></access-modules> -->
       </el-dialog>
-
-      <el-dialog class="dialog-mini" :title="'為角色分配資源'" :visible.sync="dialogAccessResource" :close-on-click-modal="false" :close-on-press-escape="false">
-        <access-resource ref="accessResource" v-if="dialogAccessResource" :role-id="multipleSelection[0].id" @close="dialogAccessResource = false"></access-resource>
-      </el-dialog>
-      <!-- 新增角色用戶 -->
+    
+      <!-- 為角色分配帳號 -->
       <el-dialog class="dialog-mini user-dialog" :title="'為角色分配帳號'" :visible.sync="roleUsers.dialogUserResource" :close-on-click-modal="false" :close-on-press-escape="false">
-        <selectUsersCom ref="selectUser" v-if="roleUsers.dialogUserResource" :hiddenFooter="true" :loginKey="'loginUser'" :users.sync="assignedUserIds" :userNames="roleUsers.rowIndex > -1 && roleUsers.list[roleUsers.rowIndex].map((u) => u.name || u.account).join(',')"> </selectUsersCom>
+        <selectUsersCom ref="selectUser" v-if="roleUsers.dialogUserResource" 
+          :hiddenFooter="true" 
+          :loginKey="'loginUser'" 
+          :users.sync="assignedUserIds" 
+          :userNames="roleUsers.rowIndex > -1 && roleUsers.list[roleUsers.rowIndex].map((u) => u.name || u.account).join(',')"
+        ></selectUsersCom>
         <div style="text-align: right" slot="footer">
           <el-button size="small" type="cancel" @click="roleUsers.dialogUserResource = false">取消</el-button>
           <el-button size="small" type="primary" @click="handleSaveUsers">確定</el-button>
@@ -92,14 +96,13 @@
 
 <script>
 import pbMixins from "@/mixins/permissionBtn.js";
-import waves from "@/directive/waves"; // 水波紋指令
+// import waves from "@/directive/waves"; // 水波紋指令
+// import elDragDialog from "@/directive/el-dragDialog";
 import Sticky from "@/components/Sticky";
 import RoleUsers from "@/components/RoleUsers";
 import permissionBtn from "@/components/PermissionBtn";
 import accessModules from "@/components/AccessModules";
-import accessResource from "./assignRes";
 import Pagination from "@/components/Pagination";
-import elDragDialog from "@/directive/el-dragDialog";
 import selectUsersCom from "@/components/SelectUsersCom";
 import extend from "@/extensions/delRows.js";
 
@@ -110,35 +113,37 @@ export default {
     Sticky,
     permissionBtn,
     accessModules,
-    accessResource,
     Pagination,
     selectUsersCom,
   },
-  directives: {
-    waves,
-    elDragDialog,
-  },
+  // directives: {
+  //   waves,
+  //   elDragDialog,
+  // },
   mixins: [extend,pbMixins],
   data() {
     return {
-      defaultProps: {
-        // tree配置項
-        children: "children",
-        label: "label",
-      },
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
       roleList: [],
       total: 0,
       listLoading: true,
-      listQuery: {
-        // 查詢條件
+      showDescription: false,
+      dialogAccessModules: false, // 角色分配模塊對話框
+      // dialogAccessResource: false, // 分配資源對話框
+      dialogFormVisible: false,
+      dialogStatus: "",
+      // accessTitle: "為角色分配模塊菜單",
+      /**
+       * 組織已分配的用戶ID
+       */
+      assignedUserIds: [],
+      listQuery: {// 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
       },
-      apps: [],
       statusOptions: [
         {
           key: 0,
@@ -149,7 +154,6 @@ export default {
           display_name: "啟用",
         },
       ],
-      showDescription: false,
       temp: {
         id: undefined,
         organizations: "",
@@ -157,16 +161,10 @@ export default {
         name: "",
         status: 0,
       },
-      dialogAccessModules: false, // 角色分配模塊對話框
-      dialogAccessResource: false, // 分配資源對話框
-      dialogFormVisible: false,
-      dialogStatus: "",
       textMap: {
         update: "編輯",
         create: "新增",
       },
-      dialogPvVisible: false,
-      pvData: [],
       rules: {
         name: [
           {
@@ -176,19 +174,13 @@ export default {
           },
         ],
       },
-      downloadLoading: false,
-      /**
-       * 組織已分配的用戶ID
-       */
-      assignedUserIds: [],
       roleUsers: {
         dialogUserResource: false,
         Texts: "",
         rowIndex: -1,
         selectUsers: [],
         list: [],
-      },
-      accessTitle: "為角色分配模塊菜單",
+      }
     };
   },
   filters: {
@@ -208,16 +200,14 @@ export default {
     this.getList();
   },
   methods: {
-    changeTitle(val) {
-      // 自動調整對話框標題
-      this.accessTitle = val;
-    },
+    // changeTitle(val) {
+    //   console.log(val);
+    //   // 自動調整對話框標題
+    //   this.accessTitle = val;
+    // },
     rowClick(row) {
       this.$refs.mainTable.clearSelection();
       this.$refs.mainTable.toggleRowSelection(row);
-    },
-    getAllroles() {
-      this.getList();
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;
@@ -266,17 +256,6 @@ export default {
 
           this.dialogAccessModules = true;
           break;
-        case "btnAssignReource":
-          if (this.multipleSelection.length !== 1) {
-            this.$message({
-              message: "只能選中一個進行編輯",
-              type: "error",
-            });
-            return;
-          }
-
-          this.dialogAccessResource = true;
-          break;
         case "btnRoleAccessUser":
           if (this.multipleSelection.length !== 1) {
             this.$message({
@@ -287,10 +266,7 @@ export default {
           }
           this.roleUsers.rowIndex = this.list.findIndex((item) => item.id === this.multipleSelection[0].id);
           this.assignedUserIds = this.roleUsers.list[this.roleUsers.rowIndex].map((u) => u.id);
-
           this.roleUsers.dialogUserResource = true;
-          break;
-        default:
           break;
       }
     },
@@ -378,8 +354,8 @@ export default {
         status: 0,
       };
     },
+    // 彈出新增框
     handleCreate() {
-      // 彈出新增框
       this.resetTemp();
       this.dialogStatus = "create";
       this.dialogFormVisible = true;
@@ -387,8 +363,8 @@ export default {
         this.$refs["dataForm"].clearValidate();
       });
     },
+    // 保存提交
     createData() {
-      // 保存提交
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
           this.$api.roles.add(this.temp).then((response) => {
@@ -406,8 +382,8 @@ export default {
         }
       });
     },
-    handleUpdate(row) {
-      // 彈出編輯框
+    // 彈出編輯框
+    handleUpdate(row) { 
       this.temp = Object.assign({}, row); // copy obj
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
