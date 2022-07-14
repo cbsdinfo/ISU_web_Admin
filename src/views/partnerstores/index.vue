@@ -10,12 +10,12 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <el-table-column width="120px" label="商家圖片" prop="picture" align="center">
+          <!-- <el-table-column width="120px" label="商家圖片" prop="picture" align="center">
             <template slot-scope="scope">
               <div v-if="scope.row.picture" class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
               <span v-else>無</span>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column min-width="100px" align="center" label="商家類別名稱" prop="categoryName"></el-table-column>
           <el-table-column min-width="150px" align="center" label="商家名稱" prop="name"></el-table-column>
           <el-table-column width="150px" align="center" label="經度" prop="long"></el-table-column>
@@ -63,12 +63,12 @@
             </el-form-item>
           </el-col>
           <!-- 圖片上傳 -->
-          <el-col :span="24">
-            <el-form-item label="商品圖片" prop="picture">
+          <!-- <el-col :span="24">
+            <el-form-item label="商家圖片" prop="picture">
               <upload-image :uploadLimit="1" @successUploadImg="successUploadImg" @deleteImg="deleteImg" :imagesPropAry="imagesPropAry"/>
               <el-input v-show="false" type="text" v-model.trim="temp.picture"></el-input>
             </el-form-item>
-          </el-col>
+          </el-col> -->
           <!-- 商店電話號碼 -->
           <el-col :span="24">
             <el-form-item label="電話號碼" prop="telephone">
@@ -79,6 +79,12 @@
           <el-col :span="24">
             <el-form-item label="商店地址" prop="address">
               <el-input class="itemWidth" type="text" v-model="temp.address" size="small" placeholder="請輸入商店地址"></el-input>
+            </el-form-item>
+          </el-col>
+          <!-- 商店網址 -->
+          <el-col :span="24">
+            <el-form-item label="網址">
+              <el-input class="itemWidth" type="text" v-model="temp.url" size="small" placeholder="請輸入網址"></el-input>
             </el-form-item>
           </el-col>
           <!-- 商店經度 -->
@@ -136,7 +142,7 @@ import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
-import uploadImage from "@/components/UploadImage";
+// import uploadImage from "@/components/UploadImage";
 
 const formTemplate = {
   id: "",
@@ -149,6 +155,7 @@ const formTemplate = {
   address: "", //商店地址
   long: "",//經度
   lat: "",//緯度
+  url:"",
   startBusinessHours: "08:00",//開始營業時間
   endBusinessHours: "18:00",//結束營業時間
   sort: 0, //排序
@@ -157,7 +164,7 @@ const formTemplate = {
 
 export default {
   name: "partnerstores",
-  components: { Sticky, permissionBtn, Pagination ,uploadImage},
+  components: { Sticky, permissionBtn, Pagination},
   directives: {
     waves,
     elDragDialog,
@@ -218,7 +225,7 @@ export default {
         contents: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         picture: [{ required: true, message: "必填欄位", trigger: ["blur", "change"]  }],
         telephone: [
-          { required: true, message: "必填欄位", trigger: ["blur", "change"] },
+          { required: false, message: "必填欄位", trigger: ["blur", "change"] },
           { validator: checkNum, trigger: ["blur", "change"] },
           { min: 9, message: "號碼至少9碼", trigger: ["blur", "change"] },
         ],

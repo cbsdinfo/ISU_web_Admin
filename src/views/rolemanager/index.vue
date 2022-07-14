@@ -79,7 +79,7 @@
     
       <!-- 為角色分配帳號 -->
       <el-dialog class="dialog-mini user-dialog" :title="'為角色分配帳號'" :visible.sync="roleUsers.dialogUserResource" :close-on-click-modal="false" :close-on-press-escape="false">
-        <selectUsersCom ref="selectUser" v-if="roleUsers.dialogUserResource" 
+        <selectUsersCom v-if="roleUsers.dialogUserResource" ref="selectUser" 
           :hiddenFooter="true" 
           :loginKey="'loginUser'" 
           :users.sync="assignedUserIds" 

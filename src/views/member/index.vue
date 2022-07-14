@@ -55,14 +55,15 @@
           </el-table-column>
           <el-table-column width="120px" label="剩餘點數" prop="points" align="center"></el-table-column>
 
-          <el-table-column width="300px" :label="'操作'" align="center">
+          <el-table-column min-width="250px" :label="'操作'" align="center">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
-                <el-button v-if="hasButton('btnEdit')" @click="handleUpdate(scope.row)" type="primary"  size="mini">編輯</el-button>
-                <el-button v-if="hasButton('pointsAddOrCancel')" @click="openPointsDialog(scope.row)" size="mini" type="white" >加/扣點</el-button>
-                <el-button v-if="hasButton('pointsUsedOrCancelRecord')" @click="openRecord(scope.row,'memberPointsUseOrCancelLoad')" size="mini" type="white">使用/取消點數紀錄</el-button>
-                <el-button v-if="hasButton('pointsGetRecord')" @click="openRecord(scope.row,'memberPointsLoad')" size="mini" type="white">獲得點數紀錄</el-button>
-                <el-button v-if="hasButton('couponRecord')" @click="openRecord(scope.row,'memberCouponLoad')" size="mini" type="white">優惠券紀錄</el-button>
+                <el-button v-if="hasButton('btnPreview')" @click="handleUpdate(scope.row,'preview')" type="primary" size="mini">檢視</el-button>
+                <el-button v-if="hasButton('btnEdit') && hasButton('highestAuthorityRole')" @click="handleUpdate(scope.row,'update')" type="primary" size="mini">編輯</el-button>
+                <el-button v-if="hasButton('pointsAddOrCancel') && hasButton('highestAuthorityRole')" @click="openPointsDialog(scope.row)" size="mini" type="white" >加/扣點</el-button>
+                <el-button v-if="hasButton('pointsUsedOrCancelRecord') && hasButton('highestAuthorityRole')" @click="openRecord(scope.row,'memberPointsUseOrCancelLoad')" size="mini" type="white">使用/取消點數紀錄</el-button>
+                <el-button v-if="hasButton('pointsGetRecord') && hasButton('highestAuthorityRole')" @click="openRecord(scope.row,'memberPointsLoad')" size="mini" type="white">獲得點數紀錄</el-button>
+                <el-button v-if="hasButton('couponRecord') && hasButton('highestAuthorityRole')" @click="openRecord(scope.row,'memberCouponLoad')" size="mini" type="white">優惠券紀錄</el-button>
               </div>
             </template>
           </el-table-column>
@@ -78,13 +79,13 @@
             <!-- 姓名 -->
             <el-col :span="24">
               <el-form-item label="姓名" prop="name">
-                <el-input type="text" v-model.trim="temp.name" size="small" placeholder="請輸入姓名"></el-input>
+                <el-input type="text" v-model.trim="temp.name" size="small" placeholder="請輸入姓名" :disabled="dialogStatus==='preview'"></el-input>
               </el-form-item>
             </el-col>
             <!-- 電話(帳號) -->
             <el-col :span="24">
                 <el-form-item label="電話(帳號)" prop="telephone">
-                  <el-input type="text" autocomplete='off' v-model.trim="temp.telephone" size="small" placeholder="請輸入電話(帳號)"></el-input>
+                  <el-input type="text" autocomplete='off' v-model.trim="temp.telephone" size="small" placeholder="請輸入電話(帳號)" :disabled="dialogStatus==='preview'"></el-input>
                 </el-form-item>
             </el-col>
             <template v-if="dialogStatus==='add'">
@@ -100,7 +101,7 @@
             <!-- 性別 -->
             <el-col :span="24">
               <el-form-item label="性別" prop="gender">
-                <el-select @blur="validateBlurSelect('gender')" v-model="temp.gender" class="itemWidth" placeholder="請選擇性別" size="small">
+                <el-select @blur="validateBlurSelect('gender')" v-model="temp.gender" class="itemWidth" placeholder="請選擇性別" size="small" :disabled="dialogStatus==='preview'">
                   <el-option v-for="item in sexySelectLists" :key="item.value" :label="item.label" :value="item.value"> </el-option>
                 </el-select>
               </el-form-item>
@@ -108,26 +109,26 @@
             <!-- 國籍 -->
             <el-col :span="24">
               <el-form-item label="國籍" prop="citizenship">
-                <el-radio v-model="temp.citizenship" label="本國籍" @change="changeCitizenship">本國籍</el-radio>
-                <el-radio v-model="temp.citizenship" label="外國籍" @change="changeCitizenship">外國籍</el-radio>
+                <el-radio v-model="temp.citizenship" label="本國籍" @change="changeCitizenship" :disabled="dialogStatus==='preview'">本國籍</el-radio>
+                <el-radio v-model="temp.citizenship" label="外國籍" @change="changeCitizenship" :disabled="dialogStatus==='preview'">外國籍</el-radio>
               </el-form-item>
             </el-col>
             <!-- 信箱 -->
             <el-col :span="24">
               <el-form-item label="Email" prop="email">
-                <el-input type="text" v-model="temp.email" size="small" placeholder="請輸入Email"></el-input>
+                <el-input type="text" v-model="temp.email" size="small" placeholder="請輸入Email" :disabled="dialogStatus==='preview'"></el-input>
               </el-form-item>
             </el-col>
             <!-- 生日 -->
             <el-col :span="24">
               <el-form-item label="生日" prop="birthday">
-                  <el-date-picker type="date" v-model="temp.birthday" placeholder="請選擇生日" value-format="yyyy-MM-dd" size="small"></el-date-picker>
+                  <el-date-picker type="date" v-model="temp.birthday" placeholder="請選擇生日" value-format="yyyy-MM-dd" size="small" :disabled="dialogStatus==='preview'"></el-date-picker>
               </el-form-item>
             </el-col>
             <!-- 興趣 -->
             <el-col :span="24">
               <el-form-item label="興趣">
-                <el-select v-model="interestSelected" multiple placeholder="請選擇興趣">
+                <el-select v-model="interestSelected" multiple placeholder="請選擇興趣" :disabled="dialogStatus==='preview'">
                   <el-option v-for="item in interestSelectList" 
                     :key="item.id"
                     :label="item.title"
@@ -140,7 +141,7 @@
             <!-- 地址 -->
             <el-col :span="24">
               <el-form-item label="地址">
-                <el-input type="text" v-model="temp.address" size="small" placeholder="請輸入地址"></el-input>
+                <el-input type="text" v-model="temp.address" size="small" placeholder="請輸入地址" :disabled="dialogStatus==='preview'"></el-input>
               </el-form-item>
             </el-col>
             <!-- 卡別 -->
@@ -152,11 +153,11 @@
             <!-- 狀態(上架/下架) -->
             <el-col :span="24">
               <el-form-item label="狀態(是否啟用)">
-                <el-switch v-model="temp.state" active-text="是" inactive-text="否"></el-switch>
+                <el-switch v-model="temp.state" active-text="是" inactive-text="否" :disabled="dialogStatus==='preview'"></el-switch>
               </el-form-item>
             </el-col>
           <!-- </template> -->
-          <template v-if="dialogStatus==='update'">
+          <template v-if="dialogStatus==='update' || dialogStatus==='preview'">
             <!-- 入會日期 -->
             <el-col :span="24">
               <el-form-item label="入會日期">
@@ -203,8 +204,8 @@
         </el-row>
       </el-form>
       <div slot="footer">
-        <el-button size="mini" @click="closeDialog('addForm')">取消</el-button>
-        <el-button size="mini" type="primary" @click="submit">確認</el-button>
+        <el-button @click="closeDialog('addForm')" size="mini">取消</el-button>
+        <el-button v-if="dialogStatus==='update'" @click="submit" size="mini" type="primary">確認</el-button>
       </div>
     </el-dialog>
 
@@ -233,7 +234,7 @@
         <el-select @change="recordLoad(dialogStatus)" v-model="recordListQuery.State" class="itemWidth" placeholder="請選擇點數狀態" size="small">
           <el-option v-for="item in pointsStateSelect" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
-        <el-table :key="tableKey" :data="pointsRecord" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
+        <el-table :key="tableKey" :data="recordList" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
 
           <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center">
             <template slot-scope="scope">
@@ -243,7 +244,7 @@
           
           <el-table-column min-width="120px" label="操作點數人員" prop="createUserName" align="center"></el-table-column>
 
-          <el-table-column min-width="150px" label="點數操作方式" prop="state" align="center">
+          <el-table-column min-width="150px" label="點數異動操作" prop="state" align="center">
             <template slot-scope="scope">
               <span v-if="scope.row.state===1">使用</span>
               <span v-if="scope.row.state===2">取消</span>
@@ -262,19 +263,23 @@
       </template>
       <!-- 獲取點數紀錄 -->
       <template v-if="dialogStatus==='memberPointsLoad'">
-        <el-table :key="tableKey" :data="pointsRecord" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
+        <el-table :key="tableKey" :data="recordList" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
 
           <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center">
             <template slot-scope="scope">
-              <span>{{scope.row.storeName?scope.row.storeName:'-'}}</span>
+              <span :class="pointEndDateTextColor(scope.row)">{{scope.row.storeName?scope.row.storeName:'-'}}</span>
             </template>
           </el-table-column>
 
           <el-table-column min-width="120px" label="操作點數人員" prop="createUserName" align="center"></el-table-column>
-
+          <el-table-column min-width="120px" label="點數是否到期" prop="pointEndDate" align="center">
+            <template slot-scope="scope">
+              <span :class="pointEndDateTextColor(scope.row)">{{checkPointEndDate(scope.row.pointEndDate)}}</span>
+            </template>
+          </el-table-column>
           <el-table-column min-width="120px" label="獲取點數" prop="getPoint" align="center">
             <template slot-scope="scope">
-              <span class="greenText">+{{scope.row.getPoint}}</span>
+              <span class="greenText" :class="pointEndDateTextColor(scope.row)">+{{scope.row.getPoint}}</span>
             </template>
           </el-table-column>
           
@@ -288,7 +293,7 @@
         <el-select @change="recordLoad(dialogStatus)" v-model="recordListQuery.State" class="itemWidth" placeholder="請選擇點數狀態" size="small">
           <el-option v-for="item in couponStateSelect" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
-        <el-table :key="tableKey" :data="couponRecordList" v-loading="recordListLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 84px)">
+        <el-table :key="tableKey" :data="recordList" v-loading="recordListLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 84px)">
           <el-table-column min-width="150px" label="優惠券名稱" prop="couponName" align="center"></el-table-column>
           <el-table-column min-width="120px" label="兌換此優惠券所需點數" prop="points" align="center">
             <template slot-scope="scope">
@@ -399,7 +404,7 @@ export default {
     return {
       filterDateRange:null,
       couponRecordList:[],
-      pointsRecord:[],
+      recordList:[],
       memberPointVisible:false,
       recordPointVisible:false,
       isValidateEmail:"",
@@ -640,8 +645,7 @@ export default {
         //優惠券狀態,null=>全部;false=>未使用;true=>已使用
         key:""
       },
-      listQuery: {
-        // 查詢條件
+      listQuery: { // 查詢條件
         page: 1,
         limit: 20,
         key: undefined,
@@ -656,6 +660,7 @@ export default {
       dialogStatus: "",
       textMap: {
         update: "編輯",
+        preview:"檢視",
         add: "新增",
         pointsAddOrCancel:"加/扣會員點數",
         pointsUsedOrCancelRecord:"使用/取消點數紀錄",
@@ -695,10 +700,30 @@ export default {
         }
         return className
       })
+    },
+    checkPointEndDate(){
+      return ((pointEndDate)=>{
+        let stateText = "可使用(尚未到期)"
+        if(!this.$dayjs().isBefore(this.$dayjs(pointEndDate))){
+          stateText = "無法使用(已到期)"
+        }
+        return stateText
+      })
+    },
+    pointEndDateTextColor(){
+      return ((row)=>{
+        let className = "greenText"
+        if(!this.$dayjs().isBefore(this.$dayjs(row.pointEndDate))){
+          className = "grayText"
+        }
+        return className
+      })
     }
   },
   mounted() {
     this.getList();
+    console.log(this.$dayjs().isBefore(this.$dayjs('2011-01-01')));
+   
   },
   methods: {
     changeDateRange(){
@@ -761,16 +786,12 @@ export default {
       this.recordPointVisible = true;
       this.dialogStatus = type;
       this.recordListQuery.MemberId = row.id
-      if(type==='memberPointsLoad'){
+      if(type==='memberPointsLoad' || type==='memberCouponLoad'){ //優惠券API,撈全部狀態state = null
         this.recordListQuery.State = null 
       }
       if(type==='memberPointsUseOrCancelLoad'){
         //點數API,撈全部狀態state = 0 
         this.recordListQuery.State = 0 
-      }
-      if(type==='memberCouponLoad'){
-        //優惠券API,撈全部狀態state = null
-        this.recordListQuery.State = null 
       }
       this.recordLoad()
     },
@@ -780,15 +801,9 @@ export default {
         this.recordListLoading = false;
         const { code,count,data} = res
         if(code===200){
-          if( this.dialogStatus === "memberPointsUseOrCancelLoad" ||this.dialogStatus === "memberPointsLoad"){
-            this.pointsRecord = data;
-          }
-          if( this.dialogStatus === "memberCouponLoad"){
-            this.couponRecordList = data;
-          }
+          this.recordList = data;
           this.recordTotal = count
         }
-        
       })
     },
     openPointsDialog(row){
@@ -833,7 +848,6 @@ export default {
               timer: 2000,
               showConfirmButton: false,
             });
-
             return;
           }
           this.handleDelete(this.multipleSelection);
@@ -845,11 +859,11 @@ export default {
     getList() {
       this.listLoading = true;
       this.$api.members.getList(this.listQuery).then((response) => {
+        this.listLoading = false;
         const { data, count,code } = response;
         if(code === 200){
           this.list = data;
           this.total = count;
-          this.listLoading = false;
         }
       });
     },
@@ -883,7 +897,6 @@ export default {
       }
       if(formType==='addForm'){
         this.$refs["ruleForm"].resetFields();
-        // this.$refs["ruleForm"].resetFields();
         this.temp = JSON.parse(JSON.stringify(formTemplate));
         this.interestSelected = []
       }
@@ -907,6 +920,7 @@ export default {
             confirmButtonText: "確定",
           }).then((result)=>{
             if (result.isConfirmed){
+
               let apiName = "";
               const integersResult  = Math.sign(this.pointsTemp.pointNumber)
     
@@ -972,20 +986,18 @@ export default {
       });
     },
     // 編輯彈窗
-    handleUpdate(row) {
+    handleUpdate(row,actionType) {
       this.$api.members.get({ id: row.id }).then((res) => {
         const { code, result } = res;
         if (code === 200) {
-          console.log(result);
           this.temp = JSON.parse(JSON.stringify(result));
           if(this.temp.interest){
             let interestAry = JSON.parse(this.temp.interest)
             this.interestSelected = interestAry.map(item=>item.id)
-            console.log(this.interestSelected);
           }
         }
       });
-      this.dialogStatus = "update";
+      this.dialogStatus = actionType;
       this.dialogFormVisible = true;
     },
   },
@@ -1011,7 +1023,8 @@ export default {
         min-height: 100px;
         display: flex;
         flex-wrap: wrap;
-        justify-content: flex-start;
+        // justify-content: flex-start;
+        justify-content: center;
         align-content: space-evenly;
         .el-button{
           margin: 0px 10px 0px 0px;
@@ -1028,9 +1041,10 @@ export default {
       }
       .notUsed,.greenText{
         color: green;
+        font-weight: 600;
       }
-      .cancel{
-        color: gray;
+      .cancel,.grayText{
+        color: darkgray;
       }
       
     }
