@@ -71,14 +71,14 @@
         </div>
       </el-dialog>
       <!--為角色分配模塊-->
-      <!-- 只有這麼寫dialog，才能正常觸發ESC關閉 -->
-      <el-dialog class="dialog-mini" ref="accessModulesDlg" title="為角色分配模塊菜單" :visible.sync="dialogAccessModules" :close-on-click-modal="false" :close-on-press-escape="false">
+        <!-- 只有這麼寫dialog，才能正常觸發ESC關閉 -->
+      <el-dialog class="dialog-mini" top="5vh" ref="accessModulesDlg" title="為角色分配模塊菜單" :visible.sync="dialogAccessModules" :close-on-click-modal="false" :close-on-press-escape="false">
         <access-modules v-if="dialogAccessModules" @close="dialogAccessModules = false" ref="accessModules" :role-id="multipleSelection[0].id"></access-modules>
         <!-- <access-modules ref="accessModules" v-if="dialogAccessModules" :role-id="multipleSelection[0].id" @change-title="changeTitle" @close="dialogAccessModules = false"></access-modules> -->
       </el-dialog>
     
       <!-- 為角色分配帳號 -->
-      <el-dialog class="dialog-mini user-dialog" :title="'為角色分配帳號'" :visible.sync="roleUsers.dialogUserResource" :close-on-click-modal="false" :close-on-press-escape="false">
+      <el-dialog width="80%" class="dialog-mini user-dialog" :title="'為角色分配帳號'" :visible.sync="roleUsers.dialogUserResource" :close-on-click-modal="false" :close-on-press-escape="false">
         <selectUsersCom v-if="roleUsers.dialogUserResource" ref="selectUser" 
           :hiddenFooter="true" 
           :loginKey="'loginUser'" 
@@ -213,7 +213,6 @@ export default {
       this.multipleSelection = val;
     },
     onBtnClicked: function (domId) {
-      console.log(domId);
       switch (domId) {
         case "btnAdd":
           this.handleCreate();
@@ -442,7 +441,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scope>
 .clearfix:before,
 .clearfix:after {
   display: table;

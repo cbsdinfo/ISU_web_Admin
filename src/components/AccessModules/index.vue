@@ -1,7 +1,7 @@
 <template>
   <div class="compent-dialog-body">
-    <div class="p-m">
-      <el-form ref="form" label-position="left" :class="step == '1' ? '' : 'hide'">
+    <div class="p-m formWrap">
+      <el-form ref="form" label-position="left" class="formContent" :class="step == '1' ? '' : 'hide'">
         <el-form-item size="small">
           <div class="block">
             <el-tree ref="tree" :data="modules" :check-strictly="true" show-checkbox node-key="id" default-expand-all :expand-on-click-node="false">
@@ -36,7 +36,8 @@
     <div slot="footer" class="el-dialog__footer">
       <el-button size="small" @click="close">取消</el-button>
       <el-button size="small" type="primary" v-show="step > 1" @click="up">上一步</el-button>
-      <el-button size="small" type="success" @click="acceRole">{{ step === 1 ? "下一步" : "儲存" }}</el-button>
+      <!-- <el-button size="small" type="success" @click="acceRole">{{ step === 1 ? "下一步" : "儲存" }}</el-button> -->
+      <el-button @click="acceRole" size="small" type="success">儲存</el-button>
     </div>
   </div>
 </template>
@@ -151,7 +152,7 @@ export default {
           }
 
           this.setProperties(checkNodes);
-          this.step = 2;
+          // this.step = 2;
           break;
         case 2:
           this.noSystemNodes.forEach((item, index) => {
@@ -192,7 +193,8 @@ export default {
               item.checkAll = item.checks.length === item.properties.length;
               item.isIndeterminate = !!(item.checks.length > 0 && item.checks.length < item.properties.length);
               this.noSystemNodes.push(item);
-              this.step = 2;
+              this.close();
+              // this.step = 2;
             });
           });
         }
@@ -249,14 +251,21 @@ export default {
 };
 </script>
 
-<style scoped>
-.custom-tree-node {
-  flex: 1;
-  display: flex;
-  align-items: left;
-  justify-content: space-between;
-  font-size: 14px;
-  padding-right: 8px;
+<style lang="scss" scoped>
+.formWrap{
+  height: 70vh;
+  .formContent{
+    overflow-y: scroll;
+    height: 100%;
+    .custom-tree-node {
+      flex: 1;
+      display: flex;
+      align-items: left;
+      justify-content: space-between;
+      font-size: 14px;
+      padding-right: 8px;
+    }
+  }
 }
 
 .p-m {

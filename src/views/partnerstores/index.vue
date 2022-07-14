@@ -71,7 +71,7 @@
           </el-col> -->
           <!-- 商店電話號碼 -->
           <el-col :span="24">
-            <el-form-item label="電話號碼" prop="telephone">
+            <el-form-item label="電話號碼">
               <el-input class="itemWidth" type="text" v-model="temp.telephone" size="small" placeholder="請輸入商店電話"></el-input>
             </el-form-item>
           </el-col>
