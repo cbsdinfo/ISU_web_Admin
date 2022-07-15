@@ -23,7 +23,7 @@
           <el-table-column min-width="120px" label="商品名稱" prop="productName" align="center"></el-table-column>
           <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center"></el-table-column>
           <el-table-column min-width="120px" label="供應商代碼" prop="vendorCode" align="center"></el-table-column>
-          <el-table-column min-width="120px" label="前台商品連結" prop="url" align="center"></el-table-column>
+          <el-table-column min-width="200px" label="前台商品連結" prop="url" align="center"></el-table-column>
           <el-table-column width="120px" label="是否為精選商品" align="center">
             <template slot-scope="scope">
               <span :class="featuredTextColor(scope.row.featured)">{{ scope.row.featured? "是" : "否" }}</span>
@@ -46,12 +46,12 @@
             </template>
           </el-table-column>
           <el-table-column width="80px" label="排序" prop="sort" align="center"></el-table-column>
-          <el-table-column width="200px" :label="'操作'" align="center" fixed="right">
+          <el-table-column min-width="250px" :label="'操作'" align="center" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handlePreview(scope.row)" type="primary" v-if="hasButton('preview')">查看</el-button>
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
-                <!-- <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button> -->
+                <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -222,11 +222,9 @@
 <script>
 import { VueEditor } from "vue2-editor/dist/vue2-editor.core.js"; //編輯器
 import pbMixins from "@/mixins/permissionBtn.js";
-import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
-import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
 import uploadImage from "@/components/UploadImage";
 
@@ -249,10 +247,6 @@ const formTemplate = {
 export default {
   name: "product",
   components: { Sticky, permissionBtn, Pagination,uploadImage,VueEditor },
-  directives: {
-    waves,
-    elDragDialog,
-  },
   mixins: [pbMixins, extend],
   data() {
     return {

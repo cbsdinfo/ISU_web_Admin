@@ -27,7 +27,7 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import Hamburger from "@/components/Hamburger";
-import logo from "@/assets/logo.png?imageView2/1/w/80/h/80";
+import logo from "@/assets/logo-v2-6ISULOGO.png";
 
 export default {
   data: function () {
@@ -86,5 +86,3 @@ export default {
 };
 </script>
 
-<style rel="stylesheet/scss" lang="scss" scoped>
-</style>

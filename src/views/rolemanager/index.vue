@@ -72,13 +72,13 @@
       </el-dialog>
       <!--為角色分配模塊-->
         <!-- 只有這麼寫dialog，才能正常觸發ESC關閉 -->
-      <el-dialog class="dialog-mini" top="5vh" ref="accessModulesDlg" title="為角色分配模塊菜單" :visible.sync="dialogAccessModules" :close-on-click-modal="false" :close-on-press-escape="false">
+      <el-dialog class="dialog-mini" ref="accessModulesDlg" title="為角色分配模塊菜單" :visible.sync="dialogAccessModules" :close-on-click-modal="false" :close-on-press-escape="false">
         <access-modules v-if="dialogAccessModules" @close="dialogAccessModules = false" ref="accessModules" :role-id="multipleSelection[0].id"></access-modules>
         <!-- <access-modules ref="accessModules" v-if="dialogAccessModules" :role-id="multipleSelection[0].id" @change-title="changeTitle" @close="dialogAccessModules = false"></access-modules> -->
       </el-dialog>
     
       <!-- 為角色分配帳號 -->
-      <el-dialog width="80%" class="dialog-mini user-dialog" :title="'為角色分配帳號'" :visible.sync="roleUsers.dialogUserResource" :close-on-click-modal="false" :close-on-press-escape="false">
+      <el-dialog class="dialog-mini user-dialog" width="80%" :title="'為角色分配帳號'" :visible.sync="roleUsers.dialogUserResource" :close-on-click-modal="false" :close-on-press-escape="false">
         <selectUsersCom v-if="roleUsers.dialogUserResource" ref="selectUser" 
           :hiddenFooter="true" 
           :loginKey="'loginUser'" 
@@ -131,9 +131,9 @@ export default {
       listLoading: true,
       showDescription: false,
       dialogAccessModules: false, // 角色分配模塊對話框
-      // dialogAccessResource: false, // 分配資源對話框
       dialogFormVisible: false,
       dialogStatus: "",
+      // dialogAccessResource: false, // 分配資源對話框
       // accessTitle: "為角色分配模塊菜單",
       /**
        * 組織已分配的用戶ID
@@ -263,6 +263,14 @@ export default {
             });
             return;
           }
+          if (this.multipleSelection[0].status === 0) {
+            this.$message({
+              message: "所選角色目前為停用狀態,無法為角色分配帳號",
+              type: "error",
+            });
+            return;
+          }
+          
           this.roleUsers.rowIndex = this.list.findIndex((item) => item.id === this.multipleSelection[0].id);
           this.assignedUserIds = this.roleUsers.list[this.roleUsers.rowIndex].map((u) => u.id);
           this.roleUsers.dialogUserResource = true;
@@ -455,10 +463,9 @@ export default {
 .el-card__header {
   padding: 12px 20px;
 }
-
 .user-dialog {
   .el-dialog {
-    height: 70%;
+    height: 80%;
     .el-icon-close {
       padding-top: 10px;
     }

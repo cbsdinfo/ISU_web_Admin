@@ -2,8 +2,7 @@
   <div class="flex-column productCategorys">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'名稱'" v-model="listQuery.key"> </el-input>
-        <el-button class="filter-item" size="mini" v-waves icon="el-icon-search" @click="handleFilter">搜索</el-button>
+        <el-input @keyup.enter.native="handleFilter" @change="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'名稱'" v-model="listQuery.key"> </el-input>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -78,11 +77,9 @@
 </template>
 <script>
 import pbMixins from "@/mixins/permissionBtn.js";
-import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
-import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
 
 const formTemplate = {
@@ -96,10 +93,6 @@ const formTemplate = {
 export default {
   name: "productCategory",
   components: { Sticky, permissionBtn, Pagination },
-  directives: {
-    waves,
-    elDragDialog,
-  },
   mixins: [pbMixins, extend],
   data() {
     return {

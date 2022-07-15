@@ -2,10 +2,10 @@
   <div class="flex-column">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入商家名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
         <el-select v-model.trim="listQuery.CategoryId" placeholder="請選擇集章類別" size="mini" @change="handleFilter">
           <el-option v-for="item in selectListCategoriesFilter" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
+        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入商家名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
         <permission-btn v-if="!hasButton('highestAuthorityRole')" size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>

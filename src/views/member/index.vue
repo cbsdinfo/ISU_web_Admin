@@ -2,8 +2,15 @@
   <div class="flex-column memberPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <!-- 列表篩選 -->
-        <el-input v-model="listQuery.key" @keyup.enter.native="handleFilter" @change="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入姓名'"> </el-input>
+        <!-- 功能按鈕 -->
+        <section>
+          <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
+          <!-- 匯出excel -->
+          <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
+            <json-excel :fetch="fetchData" :fields="json_fields" name="愛嬉遊會員資料">匯出excel</json-excel>
+          </el-button>
+        </section>
+        <!-- 篩選 -->
         <el-select v-model="listQuery.Gender" @change="handleFilter" placeholder="請選擇性別" size="mini">
           <el-option v-for="item in sexyFilterSelectLists" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
@@ -15,15 +22,7 @@
           start-placeholder="入會開始日期"
           end-placeholder="入會結束日期"
         ></el-date-picker>
-        <!-- 功能按鈕 -->
-        <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
-        <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
-          <!-- <i class="iconfont el-icon-download"></i> -->
-          <json-excel :fetch="fetchData" :fields="json_fields" name="愛嬉遊會員資料">
-            匯出excel
-          </json-excel>
-          <!-- 匯出excel -->
-        </el-button>
+        <el-input v-model="listQuery.key" @keyup.enter.native="handleFilter" @change="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入姓名'"> </el-input>
       </div>
     </sticky>
     <!-- 列表 -->
@@ -73,7 +72,7 @@
     </div>
 
     <!-- 會員新增,編輯彈窗 -->
-    <el-dialog class="dialog-mini" top="8vh" @close="closeDialog('addForm')" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" @close="closeDialog('addForm')" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
             <!-- 姓名 -->
@@ -210,7 +209,7 @@
     </el-dialog>
 
     <!-- 會員加/扣點彈窗 -->
-    <el-dialog class="dialog-mini" top="30vh" @close="closeDialog('pointForm')" width="600px" :title="textMap[dialogStatus]" :visible.sync="memberPointVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" @close="closeDialog('pointForm')" width="600px" :title="textMap[dialogStatus]" :visible.sync="memberPointVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="80px" :model="pointsTemp" :rules="pointRules" ref="pointsRuleForm" size="medium">
         <el-row :gutter="8">
           <el-col :span="24">
@@ -339,11 +338,9 @@
 </template>
 <script>
 import pbMixins from "@/mixins/permissionBtn.js";
-import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
-import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
 import JsonExcel from "vue-json-excel";
 const formTemplate = {
@@ -370,10 +367,6 @@ const pointsFormTemplate = {
 export default {
   name: "member",
   components: { Sticky, permissionBtn, Pagination,JsonExcel },
-  directives: {
-    waves,
-    elDragDialog,
-  },
   mixins: [pbMixins, extend],
   data() {
     //驗證電話號碼

@@ -343,7 +343,10 @@ table thead th {
         text-align: center;
         float: left;
         color: white;
-
+        display: flex;
+        align-items: center;
+        justify-content: center;
+            
         .user-avatar {
             width: 30px;
             height: 30px;
@@ -416,13 +419,6 @@ table thead th {
       object-fit: cover;
     }
 }
-// .el-dialog__wrapper{
-//     .el-dialog__header{
-//         .el-dialog__title{
-//             font-size: 18px;
-//         }
-//     }
-// }
 .dialogContent{
     max-height: 65vh;
     overflow-y: auto;
@@ -433,4 +429,15 @@ table thead th {
         }
        }
     }
+}
+
+
+.el-dialog{
+    // display: flex;
+    // flex-direction: column;
+    margin: 0 !important;
+    position: absolute !important;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
 }
