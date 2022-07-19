@@ -750,9 +750,24 @@ export default {
           return
         }
         handleData = data.map((item)=>{
+          let handleInterest = null;
+          let {interest} = item
+          if(interest){
+            handleInterest =[];
+            let interestAry = JSON.parse(interest)
+            interestAry.forEach((item) => {
+              handleInterest.push(item.title)
+            })
+            console.log(handleInterest);
+            interest = handleInterest.join(',')
+          }else{
+            handleInterest = '-'
+          }
+          item.address = item.address?item.address:'-';
+          item.cardLevel = item.cardLevel?item.cardLevel:'-';
           item.email = item.email?item.email:'-';
           item.birthday = this.$dayjs(item.birthday).format('YYYY-MM-DD');
-          item.interest = item.interest?item.interest:'-';
+          item.interest = handleInterest;
           item.state = item.state?'啟用':'停用';
           item.createDate = this.$dayjs(item.createDate).format('YYYY-MM-DD');
           item.openCard = item.openCard?'是':'否';
