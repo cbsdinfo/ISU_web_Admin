@@ -306,6 +306,7 @@ export default {
   computed:{
     formatImgData(){
       return (imgJsonString)=>{
+        console.log(imgJsonString);
         let firstImgPath =JSON.parse(imgJsonString)[0].path
         return this.imgUrl+firstImgPath
       }

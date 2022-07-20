@@ -338,8 +338,8 @@ export default {
     // 保存提交
     submit() {
       this.$refs["ruleForm"].validate((valid) => {
-        this.formLoading = true
         if (valid) {
+          this.formLoading = true
           //處理TAG
           this.temp.tags = this.dynamicTags.join(",");
 

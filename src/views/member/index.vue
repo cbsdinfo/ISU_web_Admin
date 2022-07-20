@@ -72,7 +72,7 @@
     </div>
 
     <!-- 會員新增,編輯彈窗 -->
-    <el-dialog class="dialog-mini" @close="closeDialog('addForm')" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini" @close="closeDialog('addForm')" width="600px" :title="textMap[dialogStatus]" :visible="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
             <!-- 姓名 -->
@@ -87,16 +87,17 @@
                   <el-input type="text" autocomplete='off' v-model.trim="temp.telephone" size="small" placeholder="請輸入電話(帳號)" :disabled="dialogStatus==='preview'"></el-input>
                 </el-form-item>
             </el-col>
-            <template v-if="dialogStatus==='add'">
-              <!-- 密碼 -->
-              <el-col :span="24">
-                <el-form-item label="密碼" prop="password">
-                  <!-- 多一個隱藏的input是為了避免瀏覽器自動帶入帳號密碼 -->
-                  <input type="password" name="txtPassword" style="display:none">
-                  <el-input v-model.trim="temp.password" type="password" name="txtPassword" autocomplete="new-password" :disabled="dialogStatus==='update'" size="small" placeholder="請輸入密碼"></el-input>
-                </el-form-item>
-              </el-col>
-            </template>
+            
+            <!-- 密碼 -->
+            <!-- 判斷不能用v-if,用resetFields()會報錯 -->
+            <el-col v-show="dialogStatus==='add'" :span="24">
+              <el-form-item label="密碼" prop="password">
+                <!-- 多一個隱藏的input是為了避免瀏覽器自動帶入帳號密碼 -->
+                <input type="password" name="txtPassword" style="display:none">
+                <el-input v-model.trim="temp.password" type="password" name="txtPassword" autocomplete="new-password" :disabled="dialogStatus==='update'" size="small" placeholder="請輸入密碼"></el-input>
+              </el-form-item>
+            </el-col>
+         
             <!-- 性別 -->
             <el-col :span="24">
               <el-form-item label="性別" prop="gender">
@@ -204,7 +205,7 @@
       </el-form>
       <div slot="footer">
         <el-button @click="closeDialog('addForm')" size="mini">取消</el-button>
-        <el-button v-if="dialogStatus==='update'" @click="submit" size="mini" type="primary">確認</el-button>
+        <el-button v-if="dialogStatus==='update' || dialogStatus==='add'" @click="submit" size="mini" type="primary">確認</el-button>
       </div>
     </el-dialog>
 
@@ -715,15 +716,11 @@ export default {
   },
   mounted() {
     this.getList();
-    console.log(this.$dayjs().isBefore(this.$dayjs('2011-01-01')));
-   
   },
   methods: {
     changeDateRange(){
-      console.log(this.filterDateRange);
       if(this.filterDateRange){
         const [startDate,endDate] = this.filterDateRange
-        console.log(startDate);
         this.listQuery.StartDate = startDate
         this.listQuery.EndDate = endDate
       }
@@ -757,8 +754,7 @@ export default {
             let interestAry = JSON.parse(interest)
             interestAry.forEach((item) => {
               handleInterest.push(item.title)
-            })
-            console.log(handleInterest);
+            });
             interest = handleInterest.join(',')
           }else{
             handleInterest = '-'
@@ -890,20 +886,21 @@ export default {
       this.recordLoad(this.dialogStatus);
     },
     closeDialog(formType) {
-      if(formType==='pointForm'){
+      if(formType === 'pointForm'){
         this.memberPointVisible = false;
       }
-      if(formType==='addForm'){
+      if(formType === 'addForm'){
         this.dialogFormVisible = false;
       }
       this.resetTemp(formType);
+      
     },
     resetTemp(formType) {
-      if(formType==='pointForm'){
+      if(formType === 'pointForm'){
         this.$refs["pointsRuleForm"].resetFields();
         this.pointsTemp = JSON.parse(JSON.stringify(pointsFormTemplate));
       }
-      if(formType==='addForm'){
+      if(formType === 'addForm'){
         this.$refs["ruleForm"].resetFields();
         this.temp = JSON.parse(JSON.stringify(formTemplate));
         this.interestSelected = []
