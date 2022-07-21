@@ -1,8 +1,9 @@
 import Vue from 'vue';
 import axios from 'axios'
 import store from '../store'
-import { setToken, getToken } from '@/utils/auth'
+import { setToken, getToken,removeToken } from '@/utils/auth'
 import $api from '../api/index.js'
+import router from '../router/index'
 
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
@@ -39,17 +40,25 @@ service.interceptors.response.use(
   (error) => {
     const { response } = error;
     if (response) {
-      errorHandle(response.status, response, error);
+      errorHandle(response.status, response);
       return Promise.reject(error);
     } else {
       return Promise.reject(error)
     }
   });
 
-const errorHandle = (status, response, error) => {
+const errorHandle = (status, response) => {
   switch (status) {
     case 401:
-      refreshNewToken(response, error);
+      removeToken()
+      Vue.prototype.$swal.fire({
+        icon: 'error',
+        title: "登入時間超時,憑證失效",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
+      router.push('/login')
       break;
     case 400:
       Vue.prototype.$swal.fire({
@@ -69,7 +78,7 @@ const errorHandle = (status, response, error) => {
       break;
   }
 }
-
+// eslint-disable-next-line
 const refreshNewToken = (response, error) => {
   const skipApiList = ['/check/getusername']
   if (skipApiList.includes(response.config.url)) return
