@@ -15,7 +15,7 @@
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
           <el-table-column width="120px" label="商品縮圖" prop="picture" align="center">
             <template slot-scope="scope">
-              <div v-if="scope.row.picture" class="imgWrap"><img :src="formatImgData(scope.row.picture)" alt="" /></div>
+              <div v-if="scope.row.picture" class="imgWrap"><img :src="formatImgData(scope.row)" alt="" /></div>
               <span v-else>無</span>
             </template>
           </el-table-column>
@@ -74,19 +74,19 @@
             <!-- 商家名稱 -->
             <el-col :span="24">
               <el-form-item label="商家名稱" prop="storeName">
-                <el-input class="itemWidth" type="text" v-model.trim="temp.storeName" placeholder="請輸入商家名稱"></el-input>
+                <el-input v-model.trim="temp.storeName" class="itemWidth" :disabled="disabled" type="text" placeholder="請輸入商家名稱"></el-input>
               </el-form-item>
             </el-col>
             <!-- 商品名稱 -->
             <el-col :span="24">
               <el-form-item label="商品名稱" prop="productName">
-                <el-input type="text" v-model.trim="temp.productName" placeholder="請輸入商品名稱"></el-input>
+                <el-input type="text" v-model.trim="temp.productName" :disabled="disabled" placeholder="請輸入商品名稱"></el-input>
               </el-form-item>
             </el-col>
             <!-- 商品ID -->
             <el-col :span="24">
               <el-form-item label="商品ID" prop="productId">
-                <el-input type="text" v-model.trim="temp.productId" placeholder="請輸入商品ID"></el-input>
+                <el-input type="text" v-model.trim="temp.productId" :disabled="disabled" placeholder="請輸入商品ID"></el-input>
               </el-form-item>
             </el-col>
             <!-- 圖片上傳 -->
@@ -99,13 +99,13 @@
             <!-- 價格 -->
             <el-col :span="24">
               <el-form-item label="價格" prop="price">
-                <el-input v-model.number="temp.price" placeholder="請輸入價格" size="small"></el-input>
+                <el-input v-model.number="temp.price" placeholder="請輸入價格" :disabled="disabled" size="small"></el-input>
               </el-form-item>
             </el-col>
             <!-- 商品連結 -->
             <el-col :span="24">
               <el-form-item label="商品前台連結" prop="url">
-                <el-input type="text" v-model.trim="temp.url" placeholder="請輸入商品連結"></el-input>
+                <el-input type="text" v-model.trim="temp.url" :disabled="disabled" placeholder="請輸入商品連結"></el-input>
               </el-form-item>
             </el-col>
             <!-- 編輯器 -->
@@ -126,7 +126,7 @@
             <!-- 供應商代碼 -->
             <el-col :span="24">
               <el-form-item label="供應商代碼" prop="vendorCode">
-                <el-input type="text" v-model.trim="temp.vendorCode" placeholder="請輸入供應商代碼"></el-input>
+                <el-input v-model.trim="temp.vendorCode" type="text" :disabled="disabled" placeholder="請輸入供應商代碼"></el-input>
               </el-form-item>
             </el-col>
             <!-- 排序 -->
@@ -161,9 +161,16 @@
                <div class="previewItem">
                 <p class="title">商品縮圖</p>
                 <div class="item imgContent">
-                  <div class="imgWrap" v-for="(item,index) in imagePathAry" :key="index">
-                    <img :src="`${imgUrl}${item.path}`">
-                  </div>
+                  <template v-if="temp.isEdit">
+                    <div class="imgWrap" v-for="(item,index) in imagePathAry" :key="index">
+                      <img :src="`${imgUrl}${item.path}`">
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="imgWrap">
+                      <img :src="temp.picture">
+                    </div>
+                  </template>
                   <!-- {{temp.storeName}} -->
                 </div>
               </div>
@@ -250,6 +257,7 @@ export default {
   mixins: [pbMixins, extend],
   data() {
     return {
+      disabled:false,
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       temp: JSON.parse(JSON.stringify(formTemplate)),
       imagePathAry:[],
@@ -305,10 +313,12 @@ export default {
   },
   computed:{
     formatImgData(){
-      return (imgJsonString)=>{
-        console.log(imgJsonString);
-        let firstImgPath =JSON.parse(imgJsonString)[0].path
-        return this.imgUrl+firstImgPath
+      return (row)=>{
+        let firstImgPath = '';
+        if(row.isEdit){
+          firstImgPath =JSON.parse(row.picture)[0].path
+        }
+        return row.isEdit?this.imgUrl+firstImgPath:row.picture
       }
     },
     statusText(){
@@ -436,7 +446,20 @@ export default {
         this.listLoading = false;
         const { code,data, count } = response;
         if(code===200){
+          data.map((item)=>{
+            try{
+              console.log(typeof JSON.parse(item.picture) === "object");
+              if(typeof JSON.parse(item.picture) === "object"){
+                return item.isEdit = true;
+              }
+            }catch(err){
+               return item.isEdit = false;
+            }
+           
+            return item
+          })
           this.list = data;
+          console.log(data);
           this.total = count;
           this.$nextTick(() => {
             this.$refs.mainTable.doLayout();
@@ -477,6 +500,7 @@ export default {
       this.temp = JSON.parse(JSON.stringify(formTemplate));
       this.imagesPropAry = [];
       this.imagePathAry = [];
+      this.disabled = false;
     },
     closeDialog() {
       this.dialogFormVisible = false;
@@ -486,8 +510,20 @@ export default {
       this.$api.products.get({ id: row.id }).then((res) => {
         const { code, result } = res;
         if (code === 200) {
+          console.log("handlePreview");
           this.temp = JSON.parse(JSON.stringify(result));
-          this.imagePathAry = JSON.parse(this.temp.picture)
+          try{
+            if(typeof JSON.parse(this.temp.picture) === "object"){
+              this.temp.isEdit = true;
+            }
+          }catch(err){
+            this.temp.isEdit = false;
+          }
+          console.log(this.temp.isEdit);
+          if(this.temp.isEdit){
+            this.imagePathAry = JSON.parse(this.temp.picture)
+            console.log(this.imagePathAry);
+          }
         }
       });
       this.dialogStatus = "preview";
@@ -527,8 +563,21 @@ export default {
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
-          this.imagesPropAry = JSON.parse(this.temp.picture)
-          this.imagePathAry = JSON.parse(this.temp.picture)
+          try{
+            if(typeof JSON.parse(this.temp.picture) === "object"){
+              this.temp.isEdit = true;
+              this.disabled = false;
+            }
+          }catch(err){
+            this.temp.isEdit = false;
+            this.disabled = true;
+          }
+          if(this.temp.isEdit){
+            this.imagesPropAry = JSON.parse(this.temp.picture)
+            this.imagePathAry = JSON.parse(this.temp.picture)
+          }else{
+            this.imagesPropAry = this.temp.picture
+          }
         }
       });
       this.dialogStatus = "update";

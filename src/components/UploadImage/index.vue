@@ -1,13 +1,6 @@
 <template>
     <div class="uploadWrap">
-        <section class="preview">
-            <div v-for="item in imageAry" :key="item.path" class="preview__wrap">
-                <img :src="`${imgUrl}${item.path}`"/>
-                <div class="deleteWrap"></div> 
-                <i class="el-icon-delete" @click="deleteImg(item.path)"></i>
-            </div>
-        </section>
-        <section v-if="uploadLimit>imageAry.length" class="addFileWrap">
+        <section v-if="uploadLimit>imageAry.length && isEdit" class="addFileWrap">
             <div class="addContent">
                 <label for="uploadInput">
                     <i class="el-icon-plus"></i>
@@ -15,31 +8,59 @@
             </div>
             <input @change="uploadFile($event)" id="uploadInput" type="file" multiple class="inputFile">
         </section>
+        <section class="preview">
+            <template v-if="isEdit">      
+                <div v-for="item in imageAry" :key="item.path" class="preview__wrap">
+                    <img :src="`${imgUrl}${item.path}`"/>
+                    <div class="deleteWrap"></div> 
+                    <i class="el-icon-delete" @click="deleteImg(item.path)"></i>
+                </div>
+            </template>
+            <template v-else>
+                <div class="preview__wrap">
+                    <img :src="imageUrl"/>
+                </div>
+            </template>
+        </section>
     </div>
 </template>
 <script>
     export default {
         props:{
             imagesPropAry:{
-                type:Array,
+                type:[Array,String],
             },
             uploadLimit:{
                 type:Number,
                 default:99
+            },
+        },
+        computed:{
+            isEdit(){
+                let state = undefined
+                if(typeof this.imagesPropAry==='object'){
+                    state = true
+                }
+                if(typeof this.imagesPropAry==='string'){
+                    state = false
+                }
+                return state   
             }
         },
         data(){
             return {
                 imgUrl: process.env.VUE_APP_BASE_IMG_URL,
-                imageAry:[]
+                imageAry:[],
+                imageUrl:''
             }
         },
         watch:{
-            imagesPropAry(imgAry){
-                // console.log("watch",imgAry);
-                console.log();
-                if(imgAry){
-                    this.imageAry = JSON.parse(JSON.stringify(imgAry))
+            imagesPropAry(val){
+                if(typeof val==='object'){
+                    this.imageAry = JSON.parse(JSON.stringify(val))
+                }
+                if(typeof val==='string'){
+                    this.imageUrl = val
                 }
             }
         },
@@ -139,6 +160,8 @@
         }
     }
     .preview{
+        display: flex;
+        flex-wrap:wrap;
         &__wrap{
             position: relative;
             margin-right: 5px;
