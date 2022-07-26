@@ -59,7 +59,7 @@
         <pagination v-show="total > 0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleCurrentChange" />
       </div>
     </div>
-     <!-- <upload-image/> -->
+    
     <el-dialog class="dialog-mini preview-dialog" v-loading="formLoading" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
@@ -217,8 +217,8 @@
         </template>
         <template v-if="dialogStatus==='preview'">
           <el-button size="mini" @click="closeDialog">取消</el-button>
-          <el-button size="mini" @click="updateState('agree')" type="primary" v-if="hasButton('agree')">上架</el-button>
-          <el-button size="mini" @click="updateState('reject')" type="danger" v-if="hasButton('reject')">未通過</el-button>
+          <el-button v-if="hasButton('agree')" @click="updateState('agree')" :disabled="temp.state===2" type="primary" size="mini">上架</el-button>
+          <el-button v-if="hasButton('reject')" @click="updateState('reject')" :disabled="temp.state===3" type="danger" size="mini">未通過</el-button>
         </template> 
       </div>
     </el-dialog>
