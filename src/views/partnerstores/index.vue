@@ -111,6 +111,12 @@
                 <el-time-picker v-model="temp.endBusinessHours" size="small"  placeholder="請選擇結束營業時間" value-format='HH:mm' format='HH:mm'> </el-time-picker>
             </el-form-item>
           </el-col>
+          <!-- 是否為合作夥伴 -->
+          <el-col :span="24">
+            <el-form-item label="合作夥伴">
+              <el-switch v-model="temp.cooperation" active-text="是" inactive-text="否"></el-switch>
+            </el-form-item>
+          </el-col>
           <!-- 排序 -->
           <el-col :span="24">
             <el-form-item label="排序" prop="sort">
@@ -119,7 +125,7 @@
           </el-col>
           <!-- 狀態(上架/下架) -->
           <el-col :span="24">
-            <el-form-item label="狀態(上架/下架)" prop="state">
+            <el-form-item label="狀態(上架/下架)">
               <el-switch v-model="temp.state" active-text="上架" inactive-text="下架"></el-switch>
             </el-form-item>
           </el-col>
@@ -160,6 +166,7 @@ const formTemplate = {
   endBusinessHours: "18:00",//結束營業時間
   sort: 0, //排序
   state: true, //預設為上架,狀態上架/下架
+  cooperation:false//是否為合作夥伴
 };
 
 export default {
@@ -242,8 +249,8 @@ export default {
         ],
         startBusinessHours: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
         endBusinessHours: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
-        sort: [{ required: true, message: "必填欄位", trigger: "blur" }],
-        state: [{ required: true, message: "必填欄位", trigger: "blur" }],
+        // sort: [{ required: true, message: "必填欄位", trigger: "blur" }],
+        // state: [{ required: true, message: "必填欄位", trigger: "blur" }],
       },
     };
   },

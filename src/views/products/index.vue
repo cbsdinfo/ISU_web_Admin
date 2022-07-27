@@ -60,8 +60,8 @@
       </div>
     </div>
     
-    <el-dialog class="dialog-mini preview-dialog" v-loading="formLoading" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
-      <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
+    <el-dialog class="dialog-mini preview-dialog" top="10vh" @close="closeDialog" width="600px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+      <el-form class="dialogContent" v-loading="formLoading" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <!-- 新增,編輯 -->
           <template v-if="dialogStatus==='add' || dialogStatus==='update'">   
@@ -162,7 +162,7 @@
                 <p class="title">商品縮圖</p>
                 <div class="item imgContent">
                   <template v-if="temp.isEdit">
-                    <div class="imgWrap" v-for="(item,index) in imagePathAry" :key="index">
+                    <div class="imgWrap" v-for="item in imagePathAry" :key="item.path">
                       <img :src="`${imgUrl}${item.path}`">
                     </div>
                   </template>
@@ -217,8 +217,8 @@
         </template>
         <template v-if="dialogStatus==='preview'">
           <el-button size="mini" @click="closeDialog">取消</el-button>
-          <el-button v-if="hasButton('agree')" @click="updateState('agree')" :disabled="temp.state===2" type="primary" size="mini">上架</el-button>
-          <el-button v-if="hasButton('reject')" @click="updateState('reject')" :disabled="temp.state===3" type="danger" size="mini">未通過</el-button>
+          <el-button v-if="hasButton('agree') && temp.state!==2" @click="updateState('agree')" type="primary" size="mini">上架</el-button>
+          <el-button v-if="hasButton('reject') && temp.state!==3" @click="updateState('reject')" type="danger" size="mini">未通過</el-button>
         </template> 
       </div>
     </el-dialog>
@@ -507,23 +507,23 @@ export default {
       this.resetTemp();
     },
     handlePreview(row) {
+      this.formLoading = true
       this.$api.products.get({ id: row.id }).then((res) => {
+        this.formLoading = false
         const { code, result } = res;
         if (code === 200) {
-          console.log("handlePreview");
           this.temp = JSON.parse(JSON.stringify(result));
           try{
             if(typeof JSON.parse(this.temp.picture) === "object"){
               this.temp.isEdit = true;
+              this.imagePathAry = JSON.parse(this.temp.picture)
             }
           }catch(err){
             this.temp.isEdit = false;
           }
-          console.log(this.temp.isEdit);
-          if(this.temp.isEdit){
-            this.imagePathAry = JSON.parse(this.temp.picture)
-            console.log(this.imagePathAry);
-          }
+          // if(this.temp.isEdit){
+          //   this.imagePathAry = JSON.parse(this.temp.picture)
+          // }
         }
       });
       this.dialogStatus = "preview";
@@ -559,7 +559,9 @@ export default {
       });
     },
     handleUpdate(row) {
+      this.formLoading = true
       this.$api.products.get({ id: row.id }).then((res) => {
+        this.formLoading = false
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
@@ -567,17 +569,20 @@ export default {
             if(typeof JSON.parse(this.temp.picture) === "object"){
               this.temp.isEdit = true;
               this.disabled = false;
+              this.imagesPropAry = JSON.parse(this.temp.picture)
+              this.imagePathAry = JSON.parse(this.temp.picture)
             }
           }catch(err){
             this.temp.isEdit = false;
             this.disabled = true;
-          }
-          if(this.temp.isEdit){
-            this.imagesPropAry = JSON.parse(this.temp.picture)
-            this.imagePathAry = JSON.parse(this.temp.picture)
-          }else{
             this.imagesPropAry = this.temp.picture
           }
+          // if(this.temp.isEdit){
+          //   this.imagesPropAry = JSON.parse(this.temp.picture)
+          //   this.imagePathAry = JSON.parse(this.temp.picture)
+          // }else{
+          //   this.imagesPropAry = this.temp.picture
+          // }
         }
       });
       this.dialogStatus = "update";

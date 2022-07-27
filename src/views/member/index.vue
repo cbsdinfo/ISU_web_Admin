@@ -6,9 +6,16 @@
         <section>
           <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
           <!-- 匯出excel -->
-          <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
+          <!-- <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
             <json-excel :fetch="fetchData" :fields="json_fields" name="愛嬉遊會員資料">匯出excel</json-excel>
-          </el-button>
+          </el-button> -->
+         
+          <json-excel :fetch="fetchData" :fields="json_fields" name="愛嬉遊會員資料" style="display: inline-block;">
+            <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
+              匯出excel
+            </el-button>
+          </json-excel>
+          
         </section>
         <!-- 篩選 -->
         <el-select v-model="listQuery.Gender" @change="handleFilter" placeholder="請選擇性別" size="mini">
@@ -72,9 +79,32 @@
     </div>
 
     <!-- 會員新增,編輯彈窗 -->
-    <el-dialog class="dialog-mini" @close="closeDialog('addForm')" width="600px" :title="textMap[dialogStatus]" :visible="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini memberDialog" @close="closeDialog('addForm')" width="600px" :title="textMap[dialogStatus]" :visible="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
+            <!-- 會員圖片 -->
+            <el-col v-if="dialogStatus==='add'||dialogStatus==='update'" :span="24">
+              <el-form-item label="會員圖片">
+                <upload-image @successUploadImg="successUploadImg" @deleteImg="deleteImg" 
+                  :uploadLimit="1" 
+                  :imagesPropAry="imagesPropAry"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col v-if="dialogStatus==='preview'" :span="24">
+              <el-form-item label="會員圖片">
+                <template v-if="temp.avatarPicture">
+                  <div class="previewImgWrap">
+                    <img :src="`${imgUrl}${imagePathAry[0].path}`" alt="">
+                  </div>
+                </template>
+                <template v-else>
+                  <img v-if="temp.gender==='男'" src="../../assets/member/man-icon.png" alt="">
+                  <img v-if="temp.gender==='女'" src="../../assets/member/feman-icon.png" alt="">
+                  <img v-if="temp.gender==='其他'" src="../../assets/member/other-icon.png" alt="">
+                </template>
+              </el-form-item>
+            </el-col>
             <!-- 姓名 -->
             <el-col :span="24">
               <el-form-item label="姓名" prop="name">
@@ -89,7 +119,7 @@
             </el-col>
             
             <!-- 密碼 -->
-            <!-- 判斷不能用v-if,用resetFields()會報錯 -->
+            <!-- 判斷不能用v-if,調用resetFields()會報錯 -->
             <el-col v-show="dialogStatus==='add'" :span="24">
               <el-form-item label="密碼" prop="password">
                 <!-- 多一個隱藏的input是為了避免瀏覽器自動帶入帳號密碼 -->
@@ -119,6 +149,12 @@
                 <el-input type="text" v-model="temp.email" size="small" placeholder="請輸入Email" :disabled="dialogStatus==='preview'"></el-input>
               </el-form-item>
             </el-col>
+            <!-- 自我介紹 -->
+            <el-col :span="24">
+              <el-form-item label="自我介紹">
+                <el-input  v-model="temp.introduction" type="textarea" :rows="3" size="small" placeholder="請輸入自我介紹" :disabled="dialogStatus==='preview'"></el-input>
+              </el-form-item>
+            </el-col>
             <!-- 生日 -->
             <el-col :span="24">
               <el-form-item label="生日" prop="birthday">
@@ -136,6 +172,12 @@
                   </el-option>
                 </el-select>
                 <!-- <el-input type="textarea" :autosize="{ minRows: 3 }" v-model="temp.interest" placeholder="請輸入興趣"></el-input> -->
+              </el-form-item>
+            </el-col>
+            <!-- 聯絡資訊 -->
+            <el-col :span="24">
+              <el-form-item label="聯絡資訊">
+                <el-input type="text" v-model="temp.contactInformation" size="small" placeholder="請輸入Line、IG等等" :disabled="dialogStatus==='preview'"></el-input>
               </el-form-item>
             </el-col>
             <!-- 地址 -->
@@ -344,8 +386,13 @@ import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
 import extend from "@/extensions/delRows.js";
 import JsonExcel from "vue-json-excel";
+import uploadImage from "@/components/UploadImage";
+
 const formTemplate = {
   id: "",
+  avatarPicture:"",//會員圖片
+  introduction:"",//自我介紹
+  contactInformation:"",//聯絡資訊
   name: "",//姓名
   telephone: "",//電話(帳號)
   password:"",
@@ -367,7 +414,7 @@ const pointsFormTemplate = {
 
 export default {
   name: "member",
-  components: { Sticky, permissionBtn, Pagination,JsonExcel },
+  components: { Sticky, permissionBtn, Pagination,JsonExcel,uploadImage },
   mixins: [pbMixins, extend],
   data() {
     //驗證電話號碼
@@ -396,6 +443,9 @@ export default {
     //   return callback(new Error("請輸入正整數或負整數"));
     // };
     return {
+      imgUrl: process.env.VUE_APP_BASE_IMG_URL,
+      imagePathAry:[],
+      imagesPropAry:[],
       filterDateRange:null,
       couponRecordList:[],
       recordList:[],
@@ -718,6 +768,23 @@ export default {
     this.getList();
   },
   methods: {
+    deleteImg(imgPath){
+      this.imagePathAry = this.imagePathAry.filter(item=>item.path !== imgPath)
+      if(this.imagePathAry.length>0){
+        this.temp.avatarPicture = JSON.stringify(this.imagePathAry)
+      }else{
+        this.temp.avatarPicture = ""
+      }
+    },
+    successUploadImg(successUploadResult){
+      successUploadResult.forEach(item => {   
+        this.imagePathAry.push({
+          path:item.filePath,
+          id:item.id
+        })
+      });
+      this.temp.avatarPicture = JSON.stringify(this.imagePathAry)
+    },
     changeDateRange(){
       if(this.filterDateRange){
         const [startDate,endDate] = this.filterDateRange
@@ -732,9 +799,12 @@ export default {
     },
     //匯出
     async fetchData(){
+      this.listLoading = true;
       let handleData = []
-      this.listQuery.limit = 9999999;
-      let result = await this.$api.members.getList(this.listQuery)
+      let requestTemp = JSON.parse(JSON.stringify(this.listQuery))
+      requestTemp.limit = 9999999;
+      //this.listQuery.limit = 9999999;
+      let result = await this.$api.members.getList(requestTemp)
       const { code,data } = result;
       if(code===200){
         if(data.length===0){
@@ -772,6 +842,7 @@ export default {
           item.sendBirthdayDate = item.sendBirthdayDate?this.$dayjs(item.sendBirthdayDate).format('YYYY-MM-DD'):'-';
           return item
         })
+        this.listLoading = false;
         return handleData
       }
     },
@@ -903,13 +974,17 @@ export default {
       if(formType === 'addForm'){
         this.$refs["ruleForm"].resetFields();
         this.temp = JSON.parse(JSON.stringify(formTemplate));
-        this.interestSelected = []
+        this.interestSelected = [];
+        this.imagePathAry=[];
+        this.imagesPropAry=[];
+        this.dialogStatus=''
       }
     },
     // 新增(談窗)
     handleCreate() {
       this.dialogStatus = "add";
       this.dialogFormVisible = true;
+      this.rules.password[0].required = true
     },
     //點數加/扣點
     pointsSubmit(){
@@ -995,10 +1070,15 @@ export default {
       this.$api.members.get({ id: row.id }).then((res) => {
         const { code, result } = res;
         if (code === 200) {
+          this.rules.password[0].required = false
           this.temp = JSON.parse(JSON.stringify(result));
           if(this.temp.interest){
             let interestAry = JSON.parse(this.temp.interest)
             this.interestSelected = interestAry.map(item=>item.id)
+          }
+          if(this.temp.avatarPicture){
+            this.imagePathAry = JSON.parse(this.temp.avatarPicture);
+            this.imagesPropAry = JSON.parse(this.temp.avatarPicture);
           }
         }
       });
@@ -1052,6 +1132,15 @@ export default {
         color: darkgray;
       }
       
+    }
+  }
+  ::v-deep .memberDialog{
+    .previewImgWrap{
+      width: 150px;
+      height: 150px;
+      img{
+        width: 100%;
+      }
     }
   }
 }
