@@ -226,7 +226,7 @@ export default {
           id:item.id
         })
       });
-      this.temp.picture = JSON.stringify(this.logoImagePathAry)
+      this.temp.picture = JSON.stringify(this.imagePathAry)
     },
     getList(){
       this.listLoading = true;
