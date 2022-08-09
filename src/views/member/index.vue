@@ -277,7 +277,7 @@
           <el-option v-for="item in pointsStateSelect" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select>
         <el-table :key="tableKey" :data="recordList" v-loading="recordListLoading" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
-
+          
           <el-table-column min-width="120px" label="商家名稱" prop="storeName" align="center">
             <template slot-scope="scope">
               <span>{{scope.row.storeName?scope.row.storeName:'-'}}</span>
@@ -300,6 +300,12 @@
           </el-table-column>
 
           <el-table-column width="180px" label="點數異動時間" prop="createDate" align="center"></el-table-column>
+
+          <el-table-column width="180px" label="點數來源" prop="sourceStoreName" align="center">
+            <template slot-scope="scope">
+              <span>{{scope.row.sourceStoreName?scope.row.sourceStoreName:"後台管理員"}}</span>
+            </template>
+          </el-table-column>
 
         </el-table>
       </template>
