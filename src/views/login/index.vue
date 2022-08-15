@@ -57,8 +57,8 @@ export default {
 
     return {
       loginForm: {
-        username: "System",
-        password: "123456",
+        username: "",
+        password: "",
         appkey: "",
       },
       /* account data */
