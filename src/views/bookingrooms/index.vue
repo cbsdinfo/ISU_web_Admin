@@ -63,10 +63,16 @@
             </el-form-item>
           </el-col>
 
-          <!-- 飯店名稱 -->
+          <!-- 飯店連結 -->
           <el-col :span="24">
             <el-form-item label="飯店連結" prop="url">
               <el-input type="text" v-model="temp.url" placeholder="請輸入飯店連結"></el-input>
+            </el-form-item>
+          </el-col>
+          <!-- 訂房網址 -->
+          <el-col :span="24">
+            <el-form-item label="訂房網址">
+              <el-input type="text" v-model="temp.bookingUrl" placeholder="請輸入訂房網址"></el-input>
             </el-form-item>
           </el-col>
           <!-- 飯店Logo -->
@@ -128,6 +134,7 @@ const formTemplate = {
   logo: "",//飯店logo
   picture: "",//房間圖片
   url: "",//連結
+  bookingUrl:"",//訂房連結
   sort: 0,//排序
   state: true//狀態(上/下架)
 };
