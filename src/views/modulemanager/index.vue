@@ -77,8 +77,8 @@
         </el-col>
       </el-row>
 
-      <!--菜單dialog-->
-      <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :close-on-press-escape="false">
+      <!--新增,編輯路由-->
+      <el-dialog width="500px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
         <el-form :rules="rules" ref="dataForm" :model="temp" label-position="right" label-width="100px">
           <el-form-item size="small" :label="'Id'" prop="id" v-show="dialogStatus == 'update'">
             <span>{{ temp.id }}</span>
@@ -124,7 +124,7 @@
       </el-dialog>
 
       <!--功能dialog-->
-      <el-dialog v-el-drag-dialog class="dialog-mini" width="500px" :title="textMap[dialogMenuStatus]" :visible.sync="dialogMenuVisible" :close-on-click-modal="false" :close-on-press-escape="false">
+      <el-dialog class="dialog-mini" width="500px" :title="textMap[dialogMenuStatus]" :visible.sync="dialogMenuVisible" :close-on-click-modal="false" :lock-scroll="true">
         <el-form :rules="rules" ref="menuForm" :model="menuTemp" label-position="right" label-width="100px">
           <el-form-item size="small" :label="'Id'" prop="id" v-show="dialogMenuStatus == 'update'">
             <span>{{ menuTemp.id }}</span>

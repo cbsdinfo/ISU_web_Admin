@@ -433,11 +433,9 @@ table thead th {
 
 
 .el-dialog{
-    // display: flex;
-    // flex-direction: column;
     margin: 0 !important;
     position: absolute !important;
-    top: 50%;
+    top: 50% !important;
     left: 50%;
     transform: translate(-50%,-50%);
 }
