@@ -25,8 +25,8 @@
           <el-table-column width="250px" :label="'操作'" align="center" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
-                <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
-                <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
+                <el-button v-if="hasButton('btnEdit')" size="mini" @click="handleUpdate(scope.row)" type="primary">編輯</el-button>
+                <el-button v-if="hasButton('btnDel') && isShowDelBtn(scope.row.id)" size="mini" @click="handleDelete([scope.row])" type="danger">刪除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -124,6 +124,18 @@ export default {
     this.getList()
   },
   computed:{
+    //天后宮(302220787155014),香客大樓(302220914290758),補給站(301997438111814)不能被刪除,否則在好康任務頁面補給站類別的商家無法被判斷並篩選出來
+    isShowDelBtn(){
+      return (id)=>{
+        let isShowDelBtn
+        if(id==='301997438111814'||id==='302220914290758'||id==='302220787155014'){
+          isShowDelBtn = false
+        }else{
+          isShowDelBtn = true
+        }
+        return isShowDelBtn
+      }
+    },
     stateTextColor(){
       return (state)=>{
         return state ? "greenText" : "redText";

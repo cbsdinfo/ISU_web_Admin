@@ -2,7 +2,7 @@
   <div class="flex-column">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入類別名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
+        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸任務名稱'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -10,9 +10,13 @@
     <div class="app-container flex-item">
       <div class="bg-white" style="height: 100%">
         <el-table ref="mainTable" :key="tableKey" :data="list" v-loading="listLoading" border fit highlight-current-row style="width: 100%" height="calc(100% - 60px)">
-          <el-table-column min-width="50px" label="店家名稱" prop="name" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="店家名稱" prop="name" align="center"></el-table-column>
-          <el-table-column min-width="50px" label="店家名稱" prop="name" align="center"></el-table-column>
+          <el-table-column min-width="50px" label="店家名稱" prop="partnerStoreName" align="center"></el-table-column>
+          <el-table-column min-width="50px" label="任務標題" prop="missionName" align="center"></el-table-column>
+          <el-table-column width="80px" label="任務狀態" align="center" >
+            <template slot-scope="scope">
+              <span :class="stateTextColor(scope.row.state)">{{ scope.row.state ? "上架" : "下架" }}</span>
+            </template>
+          </el-table-column>
           <el-table-column width="250px" :label="'操作'" align="center" fixed="right">
             <template slot-scope="scope">
               <div class="buttonFlexBox">
@@ -30,8 +34,11 @@
       <el-form class="dialogContent" label-width="120px" :model="temp" :rules="rules" ref="ruleForm" size="medium">
         <el-row :gutter="8">
           <!-- 店家名稱(必填)-->
-          <el-form-item :label="'店家名稱'" prop="name">
-            <el-input type="text" v-model="temp.name" placeholder="請輸入店家名稱"></el-input>
+          <el-form-item :label="'店家名稱'" prop="partnerStoreId">
+            <el-select  @blur="validateBlurSelect" v-model="temp.partnerStoreId" class="filter-item" placeholder="請選擇店家">
+              <el-option v-for="item in partnerStoreOptions" :key="item.id" :label="item.name" :value="item.id" :disabled="!item.state"> </el-option>
+            </el-select>
+            <!-- <el-input type="text" v-model="temp.name" placeholder="請輸入店家名稱"></el-input> -->
           </el-form-item>
           
           <!-- 任務名稱(必填) -->
@@ -90,11 +97,10 @@
 
 <script>
 import pbMixins from "@/mixins/permissionBtn.js";
-import waves from "@/directive/waves"; // 水波紋指令
 import Sticky from "@/components/Sticky";
 import permissionBtn from "@/components/PermissionBtn";
 import Pagination from "@/components/Pagination";
-import elDragDialog from "@/directive/el-dragDialog";
+// import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
 
 const formTemplate = {
@@ -105,7 +111,7 @@ const formTemplate = {
   missionIntroduction: "",//任務簡介
   subMission:"",//子任務名稱+簡介
   state: true,//狀態(上/下架)
-  subtasksMissionAry:[
+  subtasksMissionAry:[//此變數API不需要,但套件驗證規則,需在此寫此物件
     {
       name:"",
       introduction:""
@@ -116,10 +122,9 @@ const formTemplate = {
 export default {
   name: "partnerStoreMission",
   components: { Sticky, permissionBtn, Pagination },
-  directives: {
-    waves,
-    elDragDialog,
-  },
+  // directives: {
+  //   elDragDialog,
+  // },
   mixins: [pbMixins, extend],
   data() {
     return {
@@ -131,21 +136,20 @@ export default {
       listLoading: true,
       dialogFormVisible: false,
       dialogStatus: "",
+      partnerStoreOptions:[],
       listQuery: { // 查詢條件
         page: 1,
-        limit: 20,
-        key: undefined,
+        limit: 10,
+        key: null,
       },
       textMap: {
         update: "編輯",
         add: "新增",
       },
       rules: {
-        name: [{ required: true, message: "必填欄位", trigger:  ["blur", "change"] }],
+        partnerStoreId: [{ required: true, message: "必填欄位", trigger:  ["blur", "change"] }],me: [{ required: true, message: "必填欄位", trigger:  ["blur", "change"] }],
         missionName: [{ required: true, message: "必填欄位", trigger:  ["blur", "change"] }],
         missionIntroduction: [{ required: true, message: "必填欄位", trigger:  ["blur", "change"] }],
-        // subtasksMissionName: [{ required: true, message: "必填欄位", trigger:  ["blur", "change"] }],
-        //subtasksMissionIntroduction: [{ required: true, message: "必填欄位", trigger:  ["blur", "change"] }],
       },
     };
   },
@@ -158,15 +162,13 @@ export default {
       return (state)=>{
         return state ? "greenText" : "redText";
       }
-    },
-    formatImgData(){
-      return (imgJsonString)=>{
-        let firstImgPath = JSON.parse(imgJsonString)[0].path
-        return this.imgUrl+firstImgPath
-      }
-    },
+    }
   },
   methods: {
+    //rule驗證select的blur事件會無法正常觸發,所以這邊額外自己寫blur事件來驗證
+    validateBlurSelect() {
+      this.$refs.ruleForm.validateField("partnerStoreId");
+    },
     getPartnerStoreCategory(){
       let categoryTemp = {
         page: 1,
@@ -175,7 +177,11 @@ export default {
         CategoryId: "", //商家ID
       }
       this.$api.partnerStores.getList(categoryTemp).then((res)=>{
-        console.log(res);
+        const {code,data} = res
+        if(code===200){
+          this.partnerStoreOptions = data
+          this.partnerStoreOptions = this.partnerStoreOptions.filter(item=>item.categoryId==="301997438111814")
+        }
       })
     },
     delSubtasksMission(index){
@@ -192,21 +198,10 @@ export default {
         name:"",
         introduction:""
       })
-      // if(type==="name"){
-      //   this.temp.subtasksMissionName.push({
-      //     name:"",
-      //   })
-      // }
-      // if(type==="introduction"){
-      //   console.log(type);
-      // }
     },
-    // ------------------//
-    
-    
     getList(){
       this.listLoading = true;
-      this.$api.partnerStoreCategorys.getList(this.listQuery).then((response) => {
+      this.$api.partnerStoreMissions.getList(this.listQuery).then((response) => {
         this.listLoading = false;
         const { data, count,code } = response;
         if(code===200){
@@ -270,22 +265,26 @@ export default {
     submit() {
       this.$refs["ruleForm"].validate((valid) => {
         if(valid){
-          console.log("submit");
-          // this.formLoading = true
-          // this.$api.partnerStoreCategorys[this.dialogStatus](this.temp).then((res) => {
-          // this.formLoading = false
-          // const {code} = res;
-          // if(code===200){
-          //   this.$swal.fire({
-          //     title: "成功",
-          //     icon: "success",
-          //     timer: 2000,
-          //     showConfirmButton: false,
-          //   });
-          //   this.closeDialog();
-          //   this.getList();
-          // }
-          // });
+          this.formLoading = true
+          this.temp.subMission = JSON.stringify(this.temp.subtasksMissionAry);
+
+          this.temp.partnerStoreName = this.partnerStoreOptions.filter(item=>item.id===this.temp.partnerStoreId)[0]?.name;
+          console.log(this.temp);
+          
+          this.$api.partnerStoreMissions[this.dialogStatus](this.temp).then((res) => {
+            this.formLoading = false
+            const {code} = res;
+            if(code===200){
+              this.$swal.fire({
+                title: "成功",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              });
+              this.closeDialog();
+              this.getList();
+            }
+          });
         }else{
           console.log("驗證沒過");
         }
@@ -293,10 +292,13 @@ export default {
     },
     //編輯彈窗
     handleUpdate(row) {
-      this.$api.partnerStoreCategorys.get({ id: row.id }).then((res) => {
+      this.formLoading = true
+      this.$api.partnerStoreMissions.get({ id: row.id }).then((res) => {
+        this.formLoading = false
         const { code, result } = res;
         if (code === 200) {
           this.temp = JSON.parse(JSON.stringify(result));
+          this.$set( this.temp, 'subtasksMissionAry', JSON.parse(result.subMission) )
         }
       });
       this.dialogStatus = "update";
@@ -304,7 +306,7 @@ export default {
     },
     //列表刪除
     handleDelete(rows) {
-      this.delrows("partnerStoreCategorys", rows, this.getList);
+      this.delrows("partnerStoreMissions", rows, this.getList);
     },
     closeDialog() {
       this.dialogFormVisible = false;

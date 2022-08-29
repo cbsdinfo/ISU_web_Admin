@@ -111,6 +111,12 @@
                 <el-time-picker v-model="temp.endBusinessHours" size="small"  placeholder="請選擇結束營業時間" value-format='HH:mm' format='HH:mm'> </el-time-picker>
             </el-form-item>
           </el-col>
+          <!-- 商家的統一編號 -->
+          <el-col :span="24">
+            <el-form-item label="統一編號">
+              <el-input class="itemWidth" type="text" v-model="temp.storeSn" size="small" placeholder="請輸入商店統一編號"></el-input>
+            </el-form-item>
+          </el-col>
           <!-- 是否為合作夥伴 -->
           <el-col :span="24">
             <el-form-item label="合作夥伴">
@@ -166,7 +172,8 @@ const formTemplate = {
   endBusinessHours: "18:00",//結束營業時間
   sort: 0, //排序
   state: true, //預設為上架,狀態上架/下架
-  cooperation:false//是否為合作夥伴
+  cooperation:false,//是否為合作夥伴
+  storeSn:""//商家的統一編號
 };
 
 export default {

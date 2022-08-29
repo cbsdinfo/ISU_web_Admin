@@ -27,6 +27,7 @@ import partnerStoreCategorys from "./allApi/partnerStoreCategorys";
 import partnerStores from "./allApi/partnerStores";
 import members from "./allApi/members";
 import bookingRooms from "./allApi/bookingRooms";
+import partnerStoreMissions from "./allApi/partnerStoreMissions";
 
 export default {
     accessObjs,
@@ -57,5 +58,6 @@ export default {
     partnerStoreCategorys,
     partnerStores,
     members,
-    bookingRooms
+    bookingRooms,
+    partnerStoreMissions
 }
