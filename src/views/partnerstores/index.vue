@@ -56,6 +56,12 @@
               <el-input class="itemWidth" type="text" v-model="temp.name" size="small" placeholder="請輸入商店名稱"></el-input>
             </el-form-item>
           </el-col>
+          <!-- 商店密碼 -->
+          <el-col :span="24">
+            <el-form-item label="商店密碼">
+              <el-input class="itemWidth" type="text" v-model="temp.storePassword" size="small" placeholder="請輸入商店密碼"></el-input>
+            </el-form-item>
+          </el-col>
           <!-- 商店簡介 -->
           <el-col :span="24">
             <el-form-item label="簡介">
@@ -173,7 +179,8 @@ const formTemplate = {
   sort: 0, //排序
   state: true, //預設為上架,狀態上架/下架
   cooperation:false,//是否為合作夥伴
-  storeSn:""//商家的統一編號
+  storeSn:"",//商家的統一編號
+  storePassword:""//店家密碼
 };
 
 export default {
