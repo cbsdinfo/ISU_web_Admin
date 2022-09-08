@@ -78,31 +78,31 @@
           <!-- 商店電話號碼 -->
           <el-col :span="24">
             <el-form-item label="電話號碼">
-              <el-input class="itemWidth" type="text" v-model="temp.telephone" size="small" placeholder="請輸入商店電話"></el-input>
+              <el-input class="itemWidth" type="text" v-model.trim="temp.telephone" size="small" placeholder="請輸入商店電話"></el-input>
             </el-form-item>
           </el-col>
           <!-- 商店地址 -->
           <el-col :span="24">
             <el-form-item label="商店地址" prop="address">
-              <el-input class="itemWidth" type="text" v-model="temp.address" size="small" placeholder="請輸入商店地址"></el-input>
+              <el-input class="itemWidth" type="text" v-model.trim="temp.address" size="small" placeholder="請輸入商店地址"></el-input>
             </el-form-item>
           </el-col>
           <!-- 商店網址 -->
           <el-col :span="24">
             <el-form-item label="網址">
-              <el-input class="itemWidth" type="text" v-model="temp.url" size="small" placeholder="請輸入網址"></el-input>
+              <el-input class="itemWidth" type="text" v-model.trim="temp.url" size="small" placeholder="請輸入網址"></el-input>
             </el-form-item>
           </el-col>
           <!-- 商店經度 -->
           <el-col :span="24">
             <el-form-item label="商店位置經度" prop="long">
-              <el-input class="itemWidth" type="text" v-model="temp.long" size="small" placeholder="請輸入商店位置經度"></el-input>
+              <el-input class="itemWidth" type="text" v-model.trim="temp.long" size="small" placeholder="請輸入商店位置經度"></el-input>
             </el-form-item>
           </el-col>
           <!-- 商店緯度 -->
           <el-col :span="24">
             <el-form-item label="商店位置緯度" prop="lat">
-              <el-input class="itemWidth" type="text" v-model="temp.lat" size="small" placeholder="請輸入商店位置緯度"></el-input>
+              <el-input class="itemWidth" type="text" v-model.trim="temp.lat" size="small" placeholder="請輸入商店位置緯度"></el-input>
             </el-form-item>
           </el-col>
           <!-- 開始營業時間 -->
@@ -120,7 +120,7 @@
           <!-- 商家的統一編號 -->
           <el-col :span="24">
             <el-form-item label="統一編號">
-              <el-input class="itemWidth" type="text" v-model="temp.storeSn" size="small" placeholder="請輸入商店統一編號"></el-input>
+              <el-input class="itemWidth" type="text" v-model.trim="temp.storeSn" size="small" placeholder="請輸入商店統一編號"></el-input>
             </el-form-item>
           </el-col>
           <!-- 是否為合作夥伴 -->

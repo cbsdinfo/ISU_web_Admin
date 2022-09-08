@@ -9,10 +9,16 @@
           <!-- <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
             <json-excel :fetch="fetchData" :fields="json_fields" name="愛嬉遊會員資料">匯出excel</json-excel>
           </el-button> -->
-         
-          <json-excel :fetch="fetchData" :fields="json_fields" name="愛嬉遊會員資料" style="display: inline-block;">
+
+          <!-- <json-excel :fetch="pointUsageRecordFetchData" :fields="pointUsage_json_fields" name="會員使用紀錄" style="display: inline-block;">
+            <el-button v-if="hasButton('pointUsageRecord')" class="exportBtn" type="primary" size="mini">
+              匯出點數使用紀錄
+            </el-button>
+          </json-excel> -->
+
+          <json-excel :fetch="exportTest" :fields="exportTest_json_fields" name="會員列表" style="display: inline-block;">
             <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
-              匯出excel
+              匯出列表
             </el-button>
           </json-excel>
           
@@ -77,6 +83,38 @@
         <pagination v-show="total > 0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleCurrentChange" />
       </div>
     </div>
+
+    <!-- 匯出點數已使用及取消紀錄 -->
+    <el-dialog class="dialog-mini memberDialog" @close="closeDialog('exportPointUsedAndCancel')" width="600px" :title="textMap[dialogStatus]" :visible="exportPointUsedAndCancelVisible" :close-on-click-modal="false" :lock-scroll="true">
+      
+      <el-date-picker v-model="exportPointUsedAndCancelDateRange" type="daterange" value-format = "yyyy-MM-dd" size="mini"
+        range-separator="至"
+        start-placeholder="入會開始日期"
+        end-placeholder="入會結束日期"
+      ></el-date-picker>
+
+      <json-excel :fetch="pointUsageRecordFetchData" :fields="pointUsedAndCancel_json_fields" name="會員點數已使用及取消紀錄" style="display: inline-block;">
+        <el-button v-if="hasButton('exportPointGet')" class="exportBtn" type="primary" size="mini">
+          匯出
+        </el-button>
+      </json-excel>
+    </el-dialog>
+
+    <!-- 匯出點數取得紀錄 -->
+    <el-dialog class="dialog-mini memberDialog" @close="closeDialog('exportPointGet')" width="600px" :title="textMap[dialogStatus]" :visible="exportPointGetVisible" :close-on-click-modal="false" :lock-scroll="true">
+      
+      <el-date-picker v-model="exportPointGetDateRange" type="daterange" value-format = "yyyy-MM-dd" size="mini"
+        range-separator="至"
+        start-placeholder="入會開始日期"
+        end-placeholder="入會結束日期"
+      ></el-date-picker>
+
+      <json-excel :fetch="pointGetRecordFetchData" :fields="pointGet_json_fields" name="會員點數取得紀錄" style="display: inline-block;">
+        <el-button v-if="hasButton('exportPointGet')" class="exportBtn" type="primary" size="mini">
+          匯出
+        </el-button>
+      </json-excel>
+    </el-dialog>
 
     <!-- 會員新增,編輯彈窗 -->
     <el-dialog class="dialog-mini memberDialog" @close="closeDialog('addForm')" width="600px" :title="textMap[dialogStatus]" :visible="dialogFormVisible" :close-on-click-modal="false" :lock-scroll="true">
@@ -449,6 +487,8 @@ export default {
     //   return callback(new Error("請輸入正整數或負整數"));
     // };
     return {
+      exportPointUsedAndCancelDateRange:[],
+      exportPointGetDateRange:[],
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       imagePathAry:[],
       imagesPropAry:[],
@@ -457,8 +497,26 @@ export default {
       recordList:[],
       memberPointVisible:false,
       recordPointVisible:false,
+      exportPointUsedAndCancelVisible:false,
+      exportPointGetVisible:false,
       isValidateEmail:"",
-      json_fields: {
+      pointUsedAndCancel_json_fields: {
+        '會員id': 'memberId',
+        '會員名稱':'memberName',
+        '時間': 'createDate',
+        '飯店':'storeName',
+        '集章數量':'point',
+        '狀態':'state'
+      },
+      pointGet_json_fields: {
+        '會員id': 'memberId',
+        '會員名稱':'memberName',
+        '發放時間': 'createDate',
+        '發放飯店':'storeName',
+        '發放集章數量':'getPoint',
+      },
+      exportTest_json_fields:{
+        '會員ID': 'id',
         '名稱': 'name',
         '電話(帳號)':'telephone',
         '信箱': 'email',
@@ -691,7 +749,7 @@ export default {
         page:1,
         limit:20,
         State:undefined,
-        //點數狀態,0=>全部;1=>未使用;2=>已使用;3=>取消
+        //點數狀態,0=>全部 ; 1=>已使用 ; 2=>取消
         //優惠券狀態,null=>全部;false=>未使用;true=>已使用
         key:""
       },
@@ -716,6 +774,8 @@ export default {
         pointsUsedOrCancelRecord:"使用/取消點數紀錄",
         pointsGetRecord:"獲取店數紀錄",
         couponRecord:"優惠券紀錄",
+        exportPointGet:"匯出會員點數取得紀錄",
+        exportPointUsedAndCancel:'匯出點數已使用及取消紀錄'
       },
     };
   },
@@ -803,38 +863,27 @@ export default {
       }
       this.handleFilter()
     },
-    //匯出
-    async fetchData(){
+    //匯出,測試
+    async exportTest(){
       this.listLoading = true;
       let handleData = []
       let requestTemp = JSON.parse(JSON.stringify(this.listQuery))
-      requestTemp.limit = 9999999;
+      requestTemp.limit = 999;
       //this.listQuery.limit = 9999999;
       let result = await this.$api.members.getList(requestTemp)
       const { code,data } = result;
       if(code===200){
-        if(data.length===0){
-          this.$swal.fire({
-            title: "沒有符合的資料可匯出",
-            icon: "warning",
-            timer: 2000,
-            showConfirmButton: false,
-          });
-          return
-        }
+        // if(data.length===0){
+        //   this.$swal.fire({
+        //     title: "沒有符合的資料可匯出",
+        //     icon: "warning",
+        //     timer: 2000,
+        //     showConfirmButton: false,
+        //   });
+        //   return
+        // }
         handleData = data.map((item)=>{
           let handleInterest = null;
-          let {interest} = item
-          if(interest){
-            handleInterest =[];
-            let interestAry = JSON.parse(interest)
-            interestAry.forEach((item) => {
-              handleInterest.push(item.title)
-            });
-            interest = handleInterest.join(',')
-          }else{
-            handleInterest = '-'
-          }
           item.address = item.address?item.address:'-';
           item.cardLevel = item.cardLevel?item.cardLevel:'-';
           item.email = item.email?item.email:'-';
@@ -850,6 +899,98 @@ export default {
         })
         this.listLoading = false;
         return handleData
+      }
+    },
+    //匯出,取得所有會員使用或取消資料
+    async pointUsageRecordFetchData(){
+      if(this.exportPointUsedAndCancelDateRange.length===0){
+        this.$swal.fire({
+          title: "請選擇匯出資料區間",
+          icon: "warning",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        return
+      }else{
+        this.listLoading = true;
+        let handleData = [];
+        const [startDate,endDate] = this.exportPointUsedAndCancelDateRange
+        let requestTemp ={
+          state:0,
+          startDate,
+          endDate
+        }
+        let result = await this.$api.members.memberPointsUseOrCancelAll(requestTemp)
+        const { code,data } = result;
+
+        if(code === 200){
+          if(data.length===0){
+            this.$swal.fire({
+              title: "區間內無資料可匯出",
+              icon: "warning",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            return
+          }
+          handleData = data.map((item)=>{
+            item.memberId = String(item.memberId);
+            item.createDate = this.$dayjs(item.createDate).format('YYYY-MM-DD');
+            item.storeName = item.storeName?item.storeName:'後台';
+            item.state = item.state===1?'已使用':'取消'
+            return item
+          })
+          this.listLoading = false;
+          return handleData
+        }
+      
+      }
+    },
+    //匯出,取得所有會員點數紀錄
+    async pointGetRecordFetchData(){
+
+      if(this.exportPointGetDateRange.length===0){
+        this.$swal.fire({
+          title: "請選擇匯出資料區間",
+          icon: "warning",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        return
+      }else{
+        this.listLoading = true;
+        let handleData = [];
+        const [startDate,endDate] = this.exportPointGetDateRange
+        let requestTemp ={
+          startDate,
+          endDate
+        }
+
+        let result = await this.$api.members.memberPointsAll(requestTemp)
+        const { code,data } = result;
+
+        if(code === 200){
+          if(data.length===0){
+            this.$swal.fire({
+              title: "區間內無資料可匯出",
+              icon: "warning",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            return
+          }
+          console.log(JSON.stringify(data[0].memberId));
+          handleData = data.map((item)=>{
+            // item.memberId = String(item.memberId);
+            // item.memberId = JSON.parse(JSON.stringify(item.memberId));
+            item.createDate = this.$dayjs(item.createDate).format('YYYY-MM-DD');
+            item.storeName = item.storeName?item.storeName:'後台';
+            return item
+          })
+          this.listLoading = false;
+          return handleData
+        }
+      
       }
     },
     closeRecordDialog(){
@@ -886,6 +1027,15 @@ export default {
           this.recordTotal = count
         }
       })
+    },
+    openExportDialog(type){
+      this.dialogStatus = type
+      if(type==='exportPointGet'){
+        this.exportPointGetVisible = true
+      }
+      if(type==='exportPointUsedAndCancel'){
+        this.exportPointUsedAndCancelVisible = true
+      }
     },
     openPointsDialog(row){
       this.pointsTemp.memberId = row.id;
@@ -933,7 +1083,11 @@ export default {
           }
           this.handleDelete(this.multipleSelection);
           break;
-        default:
+        case "exportPointGet":
+          this.openExportDialog('exportPointGet')
+          break;
+        case "exportPointUsedAndCancel":
+          this.openExportDialog('exportPointUsedAndCancel')
           break;
       }
     },
@@ -965,11 +1119,21 @@ export default {
     closeDialog(formType) {
       if(formType === 'pointForm'){
         this.memberPointVisible = false;
+        this.resetTemp(formType);
       }
       if(formType === 'addForm'){
         this.dialogFormVisible = false;
+        this.resetTemp(formType);
       }
-      this.resetTemp(formType);
+      if (formType === 'exportPointGet'){
+        this.exportPointGetVisible = false;
+        this.exportPointGetDateRange = []
+      }
+      if (formType === 'exportPointUsedAndCancel'){
+        this.exportPointUsedAndCancelVisible = false;
+        this.exportPointUsedAndCancelDateRange = []
+      }
+      
       
     },
     resetTemp(formType) {

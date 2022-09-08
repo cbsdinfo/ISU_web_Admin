@@ -36,12 +36,20 @@ const api = {
       data
     })
   },
-  //取得會員點數使用或取消列表 (Auth)
+  //取得會員點數使用或取消資料 (Auth)
   memberPointsUseOrCancelLoad(params) {
     return request({
       url: '/member/MemberPointsUseOrCancelLoad',
       method: 'get',
       params
+    })
+  },
+   //取得「所有」會員點數使用或取消資料 (Auth)
+   memberPointsUseOrCancelAll(data) {
+    return request({
+      url: '/member/memberPointsUseOrCancelAll',
+      method: 'post',
+      data
     })
   },
   memberCouponLoad(params) {
@@ -51,11 +59,20 @@ const api = {
       params
     })
   },
+  //獲取點數紀錄
   memberPointsLoad(params) {
     return request({
-      url: '/member/MemberPointsLoad',
+      url: '/Member/MemberPointsLoad',
       method: 'get',
       params
+    })
+  },
+  //獲取所有會員點數紀錄
+  memberPointsAll(data) {
+    return request({
+      url: '/member/MemberPointsAll',
+      method: 'post',
+      data
     })
   },
   update(data) {

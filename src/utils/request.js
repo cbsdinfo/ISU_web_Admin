@@ -7,7 +7,7 @@ import router from '../router/index'
 
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
-  timeout: 50000
+  timeout: 100000
 })
 
 service.interceptors.request.use(config => {
