@@ -74,7 +74,7 @@
     </div>
 
     <!-- 匯出點數已使用及取消紀錄 -->
-    <el-dialog class="dialog-mini memberDialog" @close="closeDialog('exportPointUsedAndCancel')" width="600px" :title="textMap[dialogStatus]" :visible="exportPointUsedAndCancelVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini memberDialog exportDialog" @close="closeDialog('exportPointUsedAndCancel')" width="600px" :title="textMap[dialogStatus]" :visible="exportPointUsedAndCancelVisible" :close-on-click-modal="false" :lock-scroll="true">
       
       <el-date-picker v-model="exportPointUsedAndCancelDateRange" type="daterange" value-format = "yyyy-MM-dd" size="mini"
         range-separator="至"
@@ -90,7 +90,7 @@
     </el-dialog>
 
     <!-- 匯出點數取得紀錄 -->
-    <el-dialog class="dialog-mini memberDialog" @close="closeDialog('exportPointGet')" width="600px" :title="textMap[dialogStatus]" :visible="exportPointGetVisible" :close-on-click-modal="false" :lock-scroll="true">
+    <el-dialog class="dialog-mini memberDialog exportDialog" @close="closeDialog('exportPointGet')" width="600px" :title="textMap[dialogStatus]" :visible="exportPointGetVisible" :close-on-click-modal="false" :lock-scroll="true">
       
       <el-date-picker v-model="exportPointGetDateRange" type="daterange" value-format = "yyyy-MM-dd" size="mini"
         range-separator="至"
@@ -1293,6 +1293,12 @@ export default {
         width: 100%;
         height: 100%;
       }
+    }
+  }
+  ::v-deep .exportDialog{
+    .el-dialog__body{
+      display: flex;
+      align-items: center;
     }
   }
 }
