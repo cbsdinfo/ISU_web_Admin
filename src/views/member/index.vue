@@ -5,22 +5,11 @@
         <!-- 功能按鈕 -->
         <section>
           <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
-          <!-- 匯出excel -->
-          <!-- <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
-            <json-excel :fetch="fetchData" :fields="json_fields" name="愛嬉遊會員資料">匯出excel</json-excel>
-          </el-button> -->
-
-          <!-- <json-excel :fetch="pointUsageRecordFetchData" :fields="pointUsage_json_fields" name="會員使用紀錄" style="display: inline-block;">
-            <el-button v-if="hasButton('pointUsageRecord')" class="exportBtn" type="primary" size="mini">
-              匯出點數使用紀錄
-            </el-button>
-          </json-excel> -->
-
-          <json-excel :fetch="exportTest" :fields="exportTest_json_fields" name="會員列表" style="display: inline-block;">
+          <!-- <json-excel :fetch="exportTest" :fields="exportTest_json_fields" name="會員列表" style="display: inline-block;">
             <el-button v-if="hasButton('btnExportFile')" class="exportBtn" type="primary" size="mini">
               匯出列表
             </el-button>
-          </json-excel>
+          </json-excel> -->
           
         </section>
         <!-- 篩選 -->
@@ -478,14 +467,6 @@ export default {
       }
       return callback(new Error("信箱格式不正確"));
     };
-    //驗證正負整數
-    // const positiveAndNegativeIntegersValidate = (rule,value,callback) => {
-    //   var reg = new RegExp("^-?[0-9]*.?[0-9]*$");
-    //   if (reg.test(this.temp[rule.field]) ) {
-    //     return callback();
-    //   }
-    //   return callback(new Error("請輸入正整數或負整數"));
-    // };
     return {
       exportPointUsedAndCancelDateRange:[],
       exportPointGetDateRange:[],
@@ -554,7 +535,6 @@ export default {
       pointRules:{
         pointNumber: [
           { required: true, message: "必填欄位", trigger: ["blur","change"] },
-          // { validator: positiveAndNegativeIntegersValidate, trigger: ["blur", "change"] },
           { type:'number', message: "必填是數字"}
         ]
       },
@@ -743,14 +723,11 @@ export default {
       total: 0,
       recordListLoading:true,
       listLoading: true,
-      recordListQuery: {
-        // 點數,優惠券共用
+      recordListQuery: {// 點數,優惠券共用
         MemberId:"",
         page:1,
         limit:20,
-        State:undefined,
-        //點數狀態,0=>全部 ; 1=>已使用 ; 2=>取消
-        //優惠券狀態,null=>全部;false=>未使用;true=>已使用
+        State:undefined, //點數狀態,0=>全部 ; 1=>已使用 ; 2=>取消, //優惠券狀態,null=>全部;false=>未使用;true=>已使用
         key:""
       },
       listQuery: { // 查詢條件
@@ -864,43 +841,43 @@ export default {
       this.handleFilter()
     },
     //匯出,測試
-    async exportTest(){
-      this.listLoading = true;
-      let handleData = []
-      let requestTemp = JSON.parse(JSON.stringify(this.listQuery))
-      requestTemp.limit = 999;
-      //this.listQuery.limit = 9999999;
-      let result = await this.$api.members.getList(requestTemp)
-      const { code,data } = result;
-      if(code===200){
-        // if(data.length===0){
-        //   this.$swal.fire({
-        //     title: "沒有符合的資料可匯出",
-        //     icon: "warning",
-        //     timer: 2000,
-        //     showConfirmButton: false,
-        //   });
-        //   return
-        // }
-        handleData = data.map((item)=>{
-          let handleInterest = null;
-          item.address = item.address?item.address:'-';
-          item.cardLevel = item.cardLevel?item.cardLevel:'-';
-          item.email = item.email?item.email:'-';
-          item.birthday = this.$dayjs(item.birthday).format('YYYY-MM-DD');
-          item.interest = handleInterest;
-          item.state = item.state?'啟用':'停用';
-          item.createDate = this.$dayjs(item.createDate).format('YYYY-MM-DD');
-          item.openCard = item.openCard?'是':'否';
-          item.openCardDate = item.openCardDate?item.openCardDate:'-';
-          item.openCardHotel = item.openCardHotel?item.openCardHotel:'-';
-          item.sendBirthdayDate = item.sendBirthdayDate?this.$dayjs(item.sendBirthdayDate).format('YYYY-MM-DD'):'-';
-          return item
-        })
-        this.listLoading = false;
-        return handleData
-      }
-    },
+    // async exportTest(){
+    //   this.listLoading = true;
+    //   let handleData = []
+    //   let requestTemp = JSON.parse(JSON.stringify(this.listQuery))
+    //   requestTemp.limit = 999;
+    //   //this.listQuery.limit = 9999999;
+    //   let result = await this.$api.members.getList(requestTemp)
+    //   const { code,data } = result;
+    //   if(code===200){
+    //     // if(data.length===0){
+    //     //   this.$swal.fire({
+    //     //     title: "沒有符合的資料可匯出",
+    //     //     icon: "warning",
+    //     //     timer: 2000,
+    //     //     showConfirmButton: false,
+    //     //   });
+    //     //   return
+    //     // }
+    //     handleData = data.map((item)=>{
+    //       let handleInterest = null;
+    //       item.address = item.address?item.address:'-';
+    //       item.cardLevel = item.cardLevel?item.cardLevel:'-';
+    //       item.email = item.email?item.email:'-';
+    //       item.birthday = this.$dayjs(item.birthday).format('YYYY-MM-DD');
+    //       item.interest = handleInterest;
+    //       item.state = item.state?'啟用':'停用';
+    //       item.createDate = this.$dayjs(item.createDate).format('YYYY-MM-DD');
+    //       item.openCard = item.openCard?'是':'否';
+    //       item.openCardDate = item.openCardDate?item.openCardDate:'-';
+    //       item.openCardHotel = item.openCardHotel?item.openCardHotel:'-';
+    //       item.sendBirthdayDate = item.sendBirthdayDate?this.$dayjs(item.sendBirthdayDate).format('YYYY-MM-DD'):'-';
+    //       return item
+    //     })
+    //     this.listLoading = false;
+    //     return handleData
+    //   }
+    // },
     //匯出,取得所有會員使用或取消資料
     async pointUsageRecordFetchData(){
       if(this.exportPointUsedAndCancelDateRange.length===0){
@@ -931,10 +908,12 @@ export default {
               timer: 2000,
               showConfirmButton: false,
             });
+            this.listLoading = false;
             return
           }
           handleData = data.map((item)=>{
-            item.memberId = String(item.memberId);
+            item.memberId = '`'+item.memberId;
+            item.point = `${'-'}${item.point}`
             item.createDate = this.$dayjs(item.createDate).format('YYYY-MM-DD');
             item.storeName = item.storeName?item.storeName:'後台';
             item.state = item.state===1?'已使用':'取消'
@@ -977,11 +956,11 @@ export default {
               timer: 2000,
               showConfirmButton: false,
             });
+            this.listLoading = false;
             return
           }
-          console.log(JSON.stringify(data[0].memberId));
           handleData = data.map((item)=>{
-            // item.memberId = String(item.memberId);
+            item.memberId = '`'+item.memberId;
             // item.memberId = JSON.parse(JSON.stringify(item.memberId));
             item.createDate = this.$dayjs(item.createDate).format('YYYY-MM-DD');
             item.storeName = item.storeName?item.storeName:'後台';
@@ -1259,6 +1238,7 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+
 .memberPage{
   ::v-deep .filter-container{
     .exportBtn{
