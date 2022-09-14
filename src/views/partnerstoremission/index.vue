@@ -180,7 +180,7 @@ export default {
         const {code,data} = res
         if(code===200){
           this.partnerStoreOptions = data
-          this.partnerStoreOptions = this.partnerStoreOptions.filter(item=>item.categoryId==="301997438111814")
+          this.partnerStoreOptions = this.partnerStoreOptions.filter(item=>item.categoryId==="301997438111814" || item.categoryId==="302220914290758")
         }
       })
     },
