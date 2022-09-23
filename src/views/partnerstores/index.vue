@@ -31,6 +31,10 @@
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
                 <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
+                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_password'}`,'password')" v-if="hasButton('QRcode_password')" :disabled="!scope.row.storePassword" type="danger">商家密碼QR Code</el-button>
+                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_id'}`,'id')" v-if="hasButton('QRcode_ID')" :disabled="!scope.row.id" type="danger">商家ID QR Code</el-button>
+                <vue-qr class="QRcode" :ref="`${scope.row.id}${'_password'}`" :text="scope.row.storePassword" :size="200"></vue-qr>
+                <vue-qr class="QRcode" :ref="`${scope.row.id}${'_id'}`" :text="scope.row.id" :size="200"></vue-qr>
               </div>
             </template>
           </el-table-column>
@@ -59,7 +63,7 @@
           <!-- 商店密碼 -->
           <el-col :span="24">
             <el-form-item label="商店密碼">
-              <el-input class="itemWidth" type="text" v-model="temp.storePassword" size="small" placeholder="請輸入商店密碼"></el-input>
+              <el-input class="itemWidth" type="text" v-model.trim="temp.storePassword" size="small" placeholder="請輸入商店密碼"></el-input>
             </el-form-item>
           </el-col>
           <!-- 商店簡介 -->
@@ -161,6 +165,7 @@ import Pagination from "@/components/Pagination";
 import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
 import uploadImage from "@/components/UploadImage";
+import vueQr from 'vue-qr';//QR code套件
 
 const formTemplate = {
   id: "",
@@ -185,7 +190,7 @@ const formTemplate = {
 
 export default {
   name: "partnerstores",
-  components: { Sticky, permissionBtn, Pagination,uploadImage},
+  components: { Sticky, permissionBtn, Pagination,uploadImage, vueQr},
   directives: {
     waves,
     elDragDialog,
@@ -286,6 +291,22 @@ export default {
     }
   },
   methods: {
+    downloadQR(refId,QRcodeType) {
+  
+      let a = document.createElement('a');
+     
+      if(QRcodeType==='id'){
+        a.download = "商家ID_QRcode"; // 下载图名字
+      }
+      if (QRcodeType==='password') {
+        a.download = "商家密碼_QRcode"; // 下载图名字
+      }
+     
+      
+      a.href = this.$refs[refId].$el.src; //url
+      
+      a.dispatchEvent(new MouseEvent('click'))//合成函数，执行下载
+    },
     deleteImg(imgPath){
       this.imagePathAry = this.imagePathAry.filter(item=>item.path !== imgPath)
       if(this.imagePathAry.length>0){
@@ -453,6 +474,16 @@ export default {
 @import "~quill/dist/quill.bubble.css";
 @import "~quill/dist/quill.snow.css";
 .newsPage {
+  .QRcode{
+    display: none !important;
+
+  }
+  .buttonFlexBox{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 4px; 
+  }
   .dialogContent {
     max-height: 70vh;
     overflow-y: auto;
