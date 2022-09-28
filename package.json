@@ -18,6 +18,7 @@
     "element-ui": "^2.15.7",
     "image-conversion": "^2.1.1",
     "jquery": "^2.2.3",
+    "js-base64": "^3.7.2",
     "js-cookie": "2.2.0",
     "jsplumb": "^2.12.8",
     "normalize.css": "7.0.0",

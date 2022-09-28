@@ -31,10 +31,10 @@
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
                 <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
-                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_password'}`,'password')" v-if="hasButton('QRcode_password')" :disabled="!scope.row.storePassword" type="danger">商家密碼QR Code</el-button>
-                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_id'}`,'id')" v-if="hasButton('QRcode_ID')" :disabled="!scope.row.id" type="danger">商家ID QR Code</el-button>
-                <vue-qr class="QRcode" :ref="`${scope.row.id}${'_password'}`" :text="scope.row.storePassword" :size="200"></vue-qr>
-                <vue-qr class="QRcode" :ref="`${scope.row.id}${'_id'}`" :text="scope.row.id" :size="200"></vue-qr>
+                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_password'}`,'password')" v-if="hasButton('QRcode_password')" :disabled="!scope.row.storePassword" type="success">消費確認QR Code</el-button>
+                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_id'}`,'id')" v-if="hasButton('QRcode_ID')" :disabled="!scope.row.id" type="success">媽祖保幣QR Code</el-button>
+                <vue-qr v-if="scope.row.storePassword_base64" class="QRcode" :ref="`${scope.row.id}${'_password'}`" :text="scope.row.storePassword_base64" :size="200"></vue-qr>
+                <vue-qr v-if="scope.row.id_base64" class="QRcode" :ref="`${scope.row.id}${'_id'}`" :text="scope.row.id_base64" :size="200"></vue-qr>
               </div>
             </template>
           </el-table-column>
@@ -166,6 +166,7 @@ import elDragDialog from "@/directive/el-dragDialog";
 import extend from "@/extensions/delRows.js";
 import uploadImage from "@/components/UploadImage";
 import vueQr from 'vue-qr';//QR code套件
+import {Base64} from 'js-base64';//字串轉base64
 
 const formTemplate = {
   id: "",
@@ -190,7 +191,7 @@ const formTemplate = {
 
 export default {
   name: "partnerstores",
-  components: { Sticky, permissionBtn, Pagination,uploadImage, vueQr},
+  components: { Sticky, permissionBtn, Pagination,uploadImage,vueQr},
   directives: {
     waves,
     elDragDialog,
@@ -302,7 +303,6 @@ export default {
         a.download = "商家密碼_QRcode"; // 下载图名字
       }
      
-      
       a.href = this.$refs[refId].$el.src; //url
       
       a.dispatchEvent(new MouseEvent('click'))//合成函数，执行下载
@@ -333,8 +333,18 @@ export default {
         this.listLoading = false;
         const { data, count,code } = response;
         if(code===200){
-          this.list = data;
-          this.total = count; 
+          let handleData = JSON.parse(JSON.stringify(data))
+          handleData.map(item=>{
+            item.id_base64 = Base64.encode(item.id)
+            if(item.storePassword){
+              item.storePassword_base64 = Base64.encode(item.storePassword) 
+            }
+            return item
+          })
+
+          this.list = handleData;
+          this.total = count;
+           
           this.$nextTick(() => {
             this.$refs.mainTable.doLayout();
           });
@@ -476,7 +486,6 @@ export default {
 .newsPage {
   .QRcode{
     display: none !important;
-
   }
   .buttonFlexBox{
     display: flex;
