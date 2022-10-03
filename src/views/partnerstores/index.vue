@@ -2,7 +2,10 @@
   <div class="flex-column newsPage">
     <sticky :className="'sub-navbar'">
       <div class="filter-container">
-        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入標題'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
+        <el-select v-model="listQuery.CategoryId" @change="handleFilter" placeholder="請選商家類別" size="mini">
+          <el-option v-for="item in categoryIdFilterList" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+        </el-select>
+        <el-input prefix-icon="el-icon-search" @keyup.enter.native="handleFilter" size="mini" style="width: 200px" class="filter-item" :placeholder="'請輸入標題/地址'" v-model="listQuery.key" @change="handleFilter()" clearable></el-input>
         <permission-btn size="mini" v-on:btn-event="onBtnClicked"></permission-btn>
       </div>
     </sticky>
@@ -227,6 +230,7 @@ export default {
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
       imagePathAry:[],
       imagesPropAry:[],
+      categoryIdFilterList:[],
       selectLists: [],
       multipleSelection: [], // 列表checkbox選中的值
       dialogFormVisible: false,
@@ -360,6 +364,12 @@ export default {
       this.$api.partnerStoreCategorys.getList(temp).then((res) => {
         const { code, data } = res;
         if (code === 200) {
+
+          this.categoryIdFilterList = data.map((item) => ({
+            label: item.name,
+            value: item.id,
+          }));
+
           this.selectLists = data.map((item) => ({
             label: item.name,
             value: item.id,
