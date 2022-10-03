@@ -370,6 +370,11 @@ export default {
             value: item.id,
           }));
 
+          this.categoryIdFilterList.unshift({
+            label: '全部商家類別',
+            value: "",
+          })
+
           this.selectLists = data.map((item) => ({
             label: item.name,
             value: item.id,
