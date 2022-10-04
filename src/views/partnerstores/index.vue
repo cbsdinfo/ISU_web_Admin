@@ -94,10 +94,16 @@
               <el-input class="itemWidth" type="text" v-model.trim="temp.address" size="small" placeholder="請輸入商店地址"></el-input>
             </el-form-item>
           </el-col>
-          <!-- 商店網址 -->
+          <!-- 網址 -->
           <el-col :span="24">
             <el-form-item label="網址">
               <el-input class="itemWidth" type="text" v-model.trim="temp.url" size="small" placeholder="請輸入網址"></el-input>
+            </el-form-item>
+          </el-col>
+          <!-- 商家網址 -->
+          <el-col :span="24">
+            <el-form-item label="商家網址">
+              <el-input class="itemWidth" type="text" v-model.trim="temp.mallUrl" size="small" placeholder="請輸入商家網址"></el-input>
             </el-form-item>
           </el-col>
           <!-- 商店經度 -->
@@ -182,7 +188,8 @@ const formTemplate = {
   address: "", //商店地址
   long: "",//經度
   lat: "",//緯度
-  url:"",
+  url:"",//網址
+  mallUrl:"",//商家網址
   startBusinessHours: "08:00",//開始營業時間
   endBusinessHours: "18:00",//結束營業時間
   sort: 0, //排序
