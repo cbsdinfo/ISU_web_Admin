@@ -459,7 +459,6 @@ export default {
             return item
           })
           this.list = data;
-          console.log(data);
           this.total = count;
           this.$nextTick(() => {
             this.$refs.mainTable.doLayout();
@@ -540,7 +539,7 @@ export default {
 
           this.formLoading = true
           this.temp.categoryName = this.selectListCategories.filter((item) => item.value === this.temp.categoryId)[0]?.label;
-
+          console.log(this.temp);
           this.$api.products[this.dialogStatus](this.temp).then((res) => {
             this.formLoading = false
             const{code} = res;
