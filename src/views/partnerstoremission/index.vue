@@ -180,18 +180,14 @@ export default {
         const {code,data} = res
         if(code===200){
           this.partnerStoreOptions = data
-          this.partnerStoreOptions = this.partnerStoreOptions.filter(item=>item.categoryId==="301997438111814" || item.categoryId==="302220914290758")
+
+          //只篩出屬於"香客大樓"類別的商家
+          this.partnerStoreOptions = this.partnerStoreOptions.filter(item=>item.categoryId==="302220914290758")
         }
       })
     },
     delSubtasksMission(index){
       this.temp.subtasksMissionAry.splice(index,1)
-      // if(type==="name"){
-      //   this.temp.subtasksMissionName.splice(index,1)
-      // }
-      // if(type==="introduction"){
-      //   console.log(type,index);
-      // }
     },
     addSubtasksMission(){
       this.temp.subtasksMissionAry.push({
