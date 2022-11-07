@@ -44,7 +44,7 @@
         if(Ary2[0]==='storeID'){
           storeID = Ary2[1]
         }
-        if(Ary2[0]==='pwdId'){
+        if(Ary2[0]==='storePwd'){
           storePwd = Ary2[1]
         }
         window.alert(storeID)
