@@ -38,7 +38,9 @@
         let Ary2 = Ary1[1].split('=')//把 key value拆出來
         let storeID = "" ;
         let storePwd = "" ;
-
+        window.alert(getUrlString)
+        window.alert(Ary1)
+        window.alert(Ary2)
         if(Ary2[0]==='storeID'){
           storeID = Ary2[1]
         }
