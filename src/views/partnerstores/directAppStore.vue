@@ -18,7 +18,9 @@
       
       //let getUrlString = new URL('https://github.com/search?storeID=347942604415045');//測試用
       let getUrlString = new URL(location.href);//正式站
+      window.alert(getUrlString)
       let urlQuery = getUrlString.searchParams.toString()
+      window.alert(urlQuery)
       
       if(android|| iOS){
         // let getUrlString = location.href;
