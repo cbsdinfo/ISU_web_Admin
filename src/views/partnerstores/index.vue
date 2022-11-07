@@ -34,10 +34,17 @@
               <div class="buttonFlexBox">
                 <el-button size="mini" @click="handleUpdate(scope.row)" type="primary" v-if="hasButton('btnEdit')">編輯</el-button>
                 <el-button size="mini" @click="handleDelete([scope.row])" type="danger" v-if="hasButton('btnDel')">刪除</el-button>
-                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_password'}`,'password')" v-if="hasButton('QRcode_password')" :disabled="!scope.row.storePassword" type="success">消費確認QR Code</el-button>
-                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_id'}`,'id')" v-if="hasButton('QRcode_ID')" :disabled="!scope.row.id" type="success">媽祖保幣QR Code</el-button>
+                <!-- <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_password'}`,'password')" v-if="hasButton('QRcode_password')" :disabled="!scope.row.storePassword" type="success">消費確認QR Code</el-button>
+                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_id'}`,'id')" v-if="hasButton('QRcode_ID')" :disabled="!scope.row.id" type="success">媽祖保幣QR Code</el-button> -->
+                <!-- APP下載QR Code包含店家ID -->
+                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_urlStoreID'}`,'urlStoreID')" type="success">媽祖保幣QR Code</el-button>
+                <!-- APP下載QR Code包含店家密碼 -->
+                <el-button size="mini" @click="downloadQR(`${scope.row.id}${'_urlStorePwd'}`,'urlStorePwd')" type="success" :disabled="!scope.row.qrcodeUrlQueryPwd">消費確認QR Code</el-button>
+                
                 <vue-qr v-if="scope.row.storePassword_base64" class="QRcode" :ref="`${scope.row.id}${'_password'}`" :text="scope.row.storePassword_base64" :size="200"></vue-qr>
                 <vue-qr v-if="scope.row.id_base64" class="QRcode" :ref="`${scope.row.id}${'_id'}`" :text="scope.row.id_base64" :size="200"></vue-qr>
+                <vue-qr class="QRcode" :ref="`${scope.row.id}${'_urlStoreID'}`" :text="scope.row.qrcodeUrlQueryStoreID" :size="200"></vue-qr>
+                <vue-qr class="QRcode" :ref="`${scope.row.id}${'_urlStorePwd'}`" :text="scope.row.qrcodeUrlQueryPwd" :size="200"></vue-qr>
               </div>
             </template>
           </el-table-column>
@@ -313,6 +320,12 @@ export default {
       if (QRcodeType==='password') {
         a.download = "商家密碼_QRcode"; // 下载图名字
       }
+      if (QRcodeType==='urlStoreID') {
+        a.download = "商家ID_QRcode"; // 愛嬉遊App網址 + 商家ID
+      }
+      if (QRcodeType==='urlStorePwd') {
+        a.download = "商家密碼_QRcode"; // 愛嬉遊App網址 + 商家密碼
+      }
      
       a.href = this.$refs[refId].$el.src; //url
       
@@ -346,9 +359,13 @@ export default {
         if(code===200){
           let handleData = JSON.parse(JSON.stringify(data))
           handleData.map(item=>{
+            item.qrcodeUrlQueryStoreID = `${'https://portal.isu-shop.com/backStage/index.html#/directAppStore'}${`?storeID=`}${item.id}`
+            //item.qrcodeUrlQueryStoreID = `${'http://192.168.0.180:1803/backStage/#/directAppStore'}${`?storeID=`}${item.id}` //本機測試
             item.id_base64 = Base64.encode(item.id)
             if(item.storePassword){
-              item.storePassword_base64 = Base64.encode(item.storePassword) 
+              item.storePassword_base64 = Base64.encode(item.storePassword)
+              item.qrcodeUrlQueryPwd = `${'https://portal.isu-shop.com/backStage/index.html#/directAppStore'}${`?storePwd=`}${item.storePassword}`
+              //item.qrcodeUrlQueryPwd = `${'http://192.168.0.180:1803/backStage/#/directAppStore'}${`?storePwd=`}${item.storePassword}`//本機測試  
             }
             return item
           })
@@ -356,9 +373,9 @@ export default {
           this.list = handleData;
           this.total = count;
            
-          this.$nextTick(() => {
-            this.$refs.mainTable.doLayout();
-          });
+          // this.$nextTick(() => {
+          // this.$refs.mainTable.doLayout();
+          // });
         }
       });
     },

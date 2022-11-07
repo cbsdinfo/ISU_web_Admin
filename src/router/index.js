@@ -24,7 +24,16 @@ import Layout from '../views/layout/Layout'
     icon: 'svg-name'             the icon show in the sidebar,
   }
 **/
-export const constantRouterMap = [{
+export const constantRouterMap = [
+  {
+    path: '/directAppStore',
+    component: () => import('@/views/partnerstores/directAppStore'),
+    meta: {
+      sortNo: 0
+    },
+    hidden: true
+  },
+  {
     path: '/login',
     component: () => import('@/views/login/index'),
     meta: {

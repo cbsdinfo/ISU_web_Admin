@@ -7,7 +7,7 @@ import { Message } from 'element-ui'
 import { getToken, setToken } from '@/utils/auth' // 驗權
 import Layout from "@/views/layout/Layout";
 
-const whiteList = ['/login', '/oidc-callback', '/swagger', '/usermanager/profile'] // 不重定向白名單
+const whiteList = ['/login', '/oidc-callback', '/swagger', '/usermanager/profile','/directAppStore'] // 不重定向白名單
 /* 自動生成分頁 */
 const autoAddPageList = [
   // { path: "/despatchs/index", title: "託運單管理", pageArr: [{ path: "add", title: "新增"}] }
@@ -102,7 +102,7 @@ router.beforeEach((to, from, next) => {
     return
   }
   if (whiteList.indexOf(to.path) !== -1) { // 沒登入情況下過濾白名單
-        next()
+    next()
   } else {
     console.log('go back login page', to);
     next('/login')
