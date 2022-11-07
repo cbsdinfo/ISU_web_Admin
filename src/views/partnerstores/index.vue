@@ -44,7 +44,7 @@
                 <vue-qr v-if="scope.row.storePassword_base64" class="QRcode" :ref="`${scope.row.id}${'_password'}`" :text="scope.row.storePassword_base64" :size="200"></vue-qr>
                 <vue-qr v-if="scope.row.id_base64" class="QRcode" :ref="`${scope.row.id}${'_id'}`" :text="scope.row.id_base64" :size="200"></vue-qr>
                 <vue-qr class="QRcode" :ref="`${scope.row.id}${'_urlStoreID'}`" :text="scope.row.qrcodeUrlQueryStoreID" :size="200"></vue-qr>
-                <vue-qr class="QRcode" :ref="`${scope.row.id}${'_urlStorePwd'}`" :text="scope.row.qrcodeUrlQueryPwd" :size="200"></vue-qr>
+                <vue-qr v-if="scope.row.qrcodeUrlQueryPwd" class="QRcode" :ref="`${scope.row.id}${'_urlStorePwd'}`" :text="scope.row.qrcodeUrlQueryPwd" :size="200"></vue-qr>
               </div>
             </template>
           </el-table-column>
