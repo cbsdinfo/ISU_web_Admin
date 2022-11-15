@@ -16,7 +16,6 @@
             <div slot="header" class="clearfix">
               <el-button type="text" style="padding: 0 11px" @click="getAllUsers">全部用戶>></el-button>
             </div>
-
             <el-tree :data="orgsTree" :expand-on-click-node="false" default-expand-all :props="defaultProps" @node-click="handleNodeClick"></el-tree>
           </el-card>
         </el-col>
@@ -39,20 +38,21 @@
 
               <el-table-column min-width="80px" :label="'姓名'" align="center">
                 <template slot-scope="scope">
-                  <span>{{ scope.row.name }}</span>
+                  <span>{{ showName(scope.row.name) }}</span>
                 </template>
               </el-table-column>
-
+              
               <el-table-column min-width="120px" :label="'所屬部門'" align="center">
                 <template slot-scope="scope">
                   <span>{{ scope.row.organizations }}</span>
                 </template>
               </el-table-column>
-              <el-table-column min-width="150px" v-if="showDescription" :label="'描述'">
+              
+              <!-- <el-table-column min-width="150px" v-if="showDescription" :label="'描述'">
                 <template slot-scope="scope">
                   <span style="color: red">{{ scope.row.description }}</span>
                 </template>
-              </el-table-column>
+              </el-table-column> -->
 
               <el-table-column class-name="status-col" :label="'狀態'" width="100">
                 <template slot-scope="scope">
@@ -78,32 +78,47 @@
           <el-form-item size="small" :label="'Id'" prop="id" v-show="dialogStatus == 'update'">
             <el-input v-model="temp.id" :disabled="true" size="small" placeholder="系統自動處理"></el-input>
           </el-form-item>
+          <!-- 帳號 -->
           <el-form-item size="small" :label="'帳號'" prop="account">
             <el-input v-model="temp.account"></el-input>
           </el-form-item>
+          <!-- 姓名 -->
           <el-form-item size="small" :label="'姓名'">
             <el-input v-model="temp.name"></el-input>
           </el-form-item>
+          <!-- 密碼 -->
           <el-form-item size="small" :label="'密碼'">
             <el-input v-model="temp.password" :placeholder="dialogStatus == 'update' ? '如果為空則不修改密碼' : '如果為空則預設與帳號相同'"></el-input>
           </el-form-item>
+          <!-- 狀態 -->
           <el-form-item size="small" :label="'狀態'">
             <el-select class="filter-item" v-model="temp.status" placeholder="Please select">
               <el-option v-for="item in statusOptions" :key="item.key" :label="item.display_name" :value="item.key"> </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item size="small" :label="'所屬機構'">
-            <treeselect v-if="dialogFormVisible" :options="orgsTree" :default-expand-level="3" :multiple="true" :flat="true" :open-on-click="true" :open-on-focus="true" :clear-on-select="true" v-model="selectOrgs"></treeselect>
+          <!-- 所屬機構 -->
+          <el-form-item size="small" :label="'所屬機構'" prop="organizationIds">
+            <treeselect v-if="dialogFormVisible" v-model="selectOrgs" :options="orgsTree" :default-expand-level="3" :multiple="true" :flat="true" :open-on-click="true" :open-on-focus="true" :clear-on-select="true"></treeselect>
           </el-form-item>
-          <el-form-item size="small" :label="'描述'">
+          <!-- 店家ID -->
+          <el-form-item size="small" :label="'店家ID'" prop="parentStoreId">
+            <el-select class="filter-item" v-model="temp.parentStoreId" placeholder="Please select">
+              <el-option v-for="item in partnerStoresList" :key="item.id" :label="item.name+'('+item.categoryName+')'" :value="item.id"></el-option>
+            </el-select>
+          </el-form-item>
+
+          <!-- <el-form-item size="small" :label="'描述'">
             <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" placeholder="Please input" v-model="temp.description"> </el-input>
-          </el-form-item>
+          </el-form-item> -->
+
         </el-form>
+
         <div slot="footer">
           <el-button size="mini" @click="dialogFormVisible = false">取消</el-button>
           <el-button size="mini" v-if="dialogStatus == 'create'" type="primary" @click="createData">確認</el-button>
           <el-button size="mini" v-else type="primary" @click="updateData">確認</el-button>
         </div>
+        
       </el-dialog>
       <!-- 第一層分配角色(優化版) -->
       <el-dialog width="50%" class="dialog-mini body-small" :title="'分配角色'" :visible.sync="dialogRoleVisible" :close-on-click-modal="false" :lock-scroll="true">
@@ -162,6 +177,7 @@ export default {
   directives: {waves,elDragDialog,},
   data() {
     return {
+      partnerStoresList:[],
       multipleSelection: [], // 列表checkbox選中的值
       tableKey: 0,
       list: null,
@@ -196,31 +212,51 @@ export default {
         },
       ],
       temp: {
+        // Users/AddOrUpdate
         id: undefined,
-        description: "",
-        organizations: "",
+        description: "",//資料庫無此欄位
+        organizations: "",//資料庫無此欄位
         organizationIds: "",
-        account: "",
-        name: "",
-        password: "",
+        account: "",//帳號
+        name: "",//該帳號的名稱
+        password: "",//密碼
         status: 1,
+        parentStoreId:'',//資料庫無此欄位,打add新增表單API時加在organizations欄位裡
+        // Users/AddOrUpdate
+          // "id": "string",
+          // "account": "string",
+          // "password": "string",
+          // "name": "string",
+          // "sex": 0,
+          // "status": 0,
+          // "organizationIds": "string"
       },
       textMap: {
         update: "編輯",
         create: "新增",
       },
       rules: {
-        account: [
-          {
-            required: true,
-            message: "帳號不能為空",
-            trigger: "blur",
-          },
-        ],
+        organizationIds: [{ required: true,message: "必填欄位",trigger: ["blur", "change"]}],
+        name: [{ required: true,message: "必填欄位",trigger: "blur",}],
+        parentStoreId: [{ required: true, message: "必填欄位", trigger: ["blur", "change"] }],
+        account: [{ required: true,message: "帳號不能為空",trigger: "blur",}],
       },
     };
   },
   computed: {
+    showName(){
+      return(name)=>{
+        let nameResult = ''
+        let handleName = name.split(",")
+        if( handleName.length > 1 ){
+          nameResult = handleName[1]
+        }
+        if( handleName.length === 1){
+          nameResult = name
+        }
+        return nameResult
+      }
+    },
     selectOrgs: {
       get: function () {
         if (this.dialogStatus === "update") {
@@ -258,7 +294,9 @@ export default {
   created() {
     this.getList();
   },
-  mounted() {
+  async mounted() {
+    await this.getLukangPartnerStoreIdList();
+    await this.getSupplyStationPartnerStoreIdList()
     var _this = this; // 記錄vuecomponent
     this.$api.login.getOrgs().then((response) => {
       _this.orgs = response.result.map(function (item) {
@@ -273,6 +311,40 @@ export default {
     });
   },
   methods: {
+    //取得香客大樓類別的商家
+    getLukangPartnerStoreIdList(){
+      return new Promise((resolve)=>{
+        let partnerStoreIdTemp = {
+          CategoryId : "302220914290758",
+          page : 1,
+          limit : 99999,
+        }
+        this.$api.partnerStores.getList(partnerStoreIdTemp).then((res)=>{
+          const { code , data } = res
+          if(code===200){
+            this.partnerStoresList.push(...data)
+            resolve()
+          }
+        })
+      })
+    },
+     //取得補給站類別的商家
+    getSupplyStationPartnerStoreIdList(){
+      return new Promise((resolve)=>{
+        let partnerStoreIdTemp = {
+          CategoryId : "301997438111814",
+          page : 1,
+          limit : 99999,
+        }
+        this.$api.partnerStores.getList(partnerStoreIdTemp).then((res)=>{
+          const { code , data } = res
+          if(code===200){
+            this.partnerStoresList.push(...data)
+            resolve()
+          }
+        })
+      })
+    },
     rowClick(row) {
       this.$refs.mainTable.clearSelection();
       this.$refs.mainTable.toggleRowSelection(row);
@@ -395,39 +467,65 @@ export default {
         this.$refs["dataForm"].clearValidate();
       });
     },
+    //把parentStoreId跟organizationIds組在一起
+    handleTempName(){
+      let handleTempName = this.temp.name.split(",");
+      handleTempName.unshift(this.temp.parentStoreId);
+      this.temp.name = handleTempName.join(",")
+    },
     // 保存提交
     createData() {
+      
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          this.$api.users.add(this.temp).then((response) => {
-            this.temp.id = response.result;
-            this.list.unshift(this.temp);
-            this.dialogFormVisible = false;
-            this.$swal.fire({
-              icon: "success",
-              title: "創建成功",
-              timer: 1500,
-              showConfirmButton: false,
-            });
+          this.handleTempName()
+          
+          this.$api.users.add(this.temp).then((res) => {
+            const{ code } = res;
+            if(code === 200){
+              this.$swal.fire({
+                icon: "success",
+                title: "創建成功",
+                timer: 1500,
+                showConfirmButton: false,
+              });
+              this.dialogFormVisible = false;
+              this.getList()
+            }
           });
         }
       });
     },
+    handleUpdateDialogTempName(){
+      if(this.temp.name){
+
+        let handleTempName = this.temp.name.split(',');
+      
+        if(handleTempName.length>1){
+          this.$set(this.temp,"parentStoreId", handleTempName[0])
+          this.temp.name = handleTempName[1]
+         
+        }
+      }
+    },
     // 彈出編輯框
     handleUpdate(row) {
-      this.temp = Object.assign({}, row); // copy obj
-      this.dialogStatus = "update";
-      this.dialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs["dataForm"].clearValidate();
-      });
+        this.temp = Object.assign({}, row); // copy obj
+        this.handleUpdateDialogTempName()
+        this.dialogStatus = "update";
+        this.dialogFormVisible = true;
+        this.$nextTick(() => {
+          this.$refs["dataForm"].clearValidate();
+        });
     },
     // 更新提交
     updateData() {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp);
-          this.$api.users.update(tempData).then(() => {
+
+          this.handleTempName()
+         
+          this.$api.users.update(this.temp).then(() => {
             for (const v of this.list) {
               if (v.id === this.temp.id) {
                 const index = this.list.indexOf(v);
@@ -436,6 +534,7 @@ export default {
               }
             }
             this.dialogFormVisible = false;
+            this.resetTemp()
             this.$swal.fire({
               icon: "success",
               title: "更新成功",

@@ -1,6 +1,13 @@
 import request from '@/utils/request'
 
 const api = {
+  consumptionRecordLoad(params) {
+    return request({
+      url: '/PartnerStore/ConsumptionRecordLoad',
+      method: 'get',
+      params
+    })
+  },
   getList(params) {
     return request({
       url: '/partnerStore/load',

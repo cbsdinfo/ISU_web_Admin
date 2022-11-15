@@ -1,6 +1,13 @@
 import request from '@/utils/request'
 
 const api = {
+  memberBluePointsLoad(data) {
+    return request({
+      url: '/member/MemberBluePointsLoad',
+      method: 'post',
+      data
+    })
+  },
   getList(params) {
     return request({
       url: '/member/load',
@@ -45,7 +52,7 @@ const api = {
     })
   },
    //取得「所有」會員點數使用或取消資料 (Auth)
-   memberPointsUseOrCancelAll(data) {
+  memberPointsUseOrCancelAll(data) {
     return request({
       url: '/member/memberPointsUseOrCancelAll',
       method: 'post',

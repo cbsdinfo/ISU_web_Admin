@@ -65,6 +65,7 @@
                 <el-button v-if="hasButton('pointsUsedOrCancelRecord') && hasButton('highestAuthorityRole')" @click="openRecord(scope.row,'memberPointsUseOrCancelLoad')" size="mini" type="white">使用/取消點數紀錄</el-button>
                 <el-button v-if="hasButton('pointsGetRecord') && hasButton('highestAuthorityRole')" @click="openRecord(scope.row,'memberPointsLoad')" size="mini" type="white">獲得點數紀錄</el-button>
                 <el-button v-if="hasButton('couponRecord') && hasButton('highestAuthorityRole')" @click="openRecord(scope.row,'memberCouponLoad')" size="mini" type="white">優惠券紀錄</el-button>
+                <el-button v-if="hasButton('redAyaRecord') && hasButton('highestAuthorityRole')" @click="openRedAyaRecord(scope.row,'redAyaRecord')" size="mini" type="white">紅綾紀錄</el-button>
               </div>
             </template>
           </el-table-column>
@@ -408,7 +409,39 @@
          
         </el-table>
       </template>
+
       <pagination v-show="recordTotal > 0" :total="recordTotal" :page.sync="recordListQuery.page" :limit.sync="recordListQuery.limit" @pagination="handleRecordCurrentChange"/>
+    </el-dialog>
+
+    <!-- 紅綾紀錄 -->
+     <el-dialog @close="closeRecordDialog" :title="textMap[dialogStatus]" :visible.sync="recordRedAyaVisible" :close-on-click-modal="false" :lock-scroll="true" top="10vh" width="80%"
+      class="dialog-mini pointRecordDialog"
+     >
+       <el-table :data="redAyaList" border fit highlight-current-row style="width:100%" height="calc(100% - 84px)">
+          
+          <el-table-column min-width="120px" label="紅綾類型" prop="pointType" align="center"></el-table-column>
+          
+          <el-table-column min-width="120px" label="動作" prop="createUserName" align="center">
+            <template slot-scope="scope">
+              <span>{{scope.row.state===1?'取得':'使用'}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column min-width="120px" label="數量" prop="point" align="center"></el-table-column>
+
+          <el-table-column min-width="120px" label="店家名稱" prop="storeName" align="center"></el-table-column>
+          <el-table-column min-width="120px" label="操作人員" prop="createUserName" align="center">
+            <template slot-scope="scope">
+              <span>  {{splitCreateUserName(scope.row.createUserName)}}</span>
+            </template>
+          
+          </el-table-column>
+          <el-table-column min-width="120px" label="操作時間" prop="createDate" align="center"></el-table-column>
+
+        </el-table>
+        <pagination :total="redAyaTotal" :page="redAyaQuery.page" :limit="redAyaQuery.limit" 
+          @pagination="changeRedAyaPage"
+        />     
     </el-dialog>
   </div>
 </template>
@@ -468,6 +501,16 @@ export default {
       return callback(new Error("信箱格式不正確"));
     };
     return {
+      redAyaQuery:{
+        memberId: "",
+        pointType: "",
+        state: 0,
+        page: 1,
+        limit: 10,
+        key: ""
+      },
+      redAyaTotal:0,
+      redAyaList:[],
       exportPointUsedAndCancelDateRange:[],
       exportPointGetDateRange:[],
       imgUrl: process.env.VUE_APP_BASE_IMG_URL,
@@ -476,6 +519,7 @@ export default {
       filterDateRange:null,
       couponRecordList:[],
       recordList:[],
+      recordRedAyaVisible:false,
       memberPointVisible:false,
       recordPointVisible:false,
       exportPointUsedAndCancelVisible:false,
@@ -732,7 +776,7 @@ export default {
       },
       listQuery: { // 查詢條件
         page: 1,
-        limit: 20,
+        limit: 10,
         key: undefined,
         State:null,
         Gender:"",
@@ -752,11 +796,26 @@ export default {
         pointsGetRecord:"獲取店數紀錄",
         couponRecord:"優惠券紀錄",
         exportPointGet:"匯出會員點數取得紀錄",
-        exportPointUsedAndCancel:'匯出點數已使用及取消紀錄'
+        exportPointUsedAndCancel:'匯出點數已使用及取消紀錄',
+        redAyaRecord:'紅綾使用紀錄'
       },
     };
   },
   computed:{
+    splitCreateUserName(){
+      return(createUserName)=>{
+        let name = ""
+        let arrayName = createUserName.split(',')
+        if(arrayName.length===1){
+          name = createUserName
+        }
+        if(arrayName.length>1){
+          name = arrayName[1]
+        }
+        return name
+        
+      }
+    },
     memberState(){
       return ((state)=>{
         let className = "greenText"
@@ -840,44 +899,6 @@ export default {
       }
       this.handleFilter()
     },
-    //匯出,測試
-    // async exportTest(){
-    //   this.listLoading = true;
-    //   let handleData = []
-    //   let requestTemp = JSON.parse(JSON.stringify(this.listQuery))
-    //   requestTemp.limit = 999;
-    //   //this.listQuery.limit = 9999999;
-    //   let result = await this.$api.members.getList(requestTemp)
-    //   const { code,data } = result;
-    //   if(code===200){
-    //     // if(data.length===0){
-    //     //   this.$swal.fire({
-    //     //     title: "沒有符合的資料可匯出",
-    //     //     icon: "warning",
-    //     //     timer: 2000,
-    //     //     showConfirmButton: false,
-    //     //   });
-    //     //   return
-    //     // }
-    //     handleData = data.map((item)=>{
-    //       let handleInterest = null;
-    //       item.address = item.address?item.address:'-';
-    //       item.cardLevel = item.cardLevel?item.cardLevel:'-';
-    //       item.email = item.email?item.email:'-';
-    //       item.birthday = this.$dayjs(item.birthday).format('YYYY-MM-DD');
-    //       item.interest = handleInterest;
-    //       item.state = item.state?'啟用':'停用';
-    //       item.createDate = this.$dayjs(item.createDate).format('YYYY-MM-DD');
-    //       item.openCard = item.openCard?'是':'否';
-    //       item.openCardDate = item.openCardDate?item.openCardDate:'-';
-    //       item.openCardHotel = item.openCardHotel?item.openCardHotel:'-';
-    //       item.sendBirthdayDate = item.sendBirthdayDate?this.$dayjs(item.sendBirthdayDate).format('YYYY-MM-DD'):'-';
-    //       return item
-    //     })
-    //     this.listLoading = false;
-    //     return handleData
-    //   }
-    // },
     //匯出,取得所有會員使用或取消資料
     async pointUsageRecordFetchData(){
       if(this.exportPointUsedAndCancelDateRange.length===0){
@@ -982,6 +1003,29 @@ export default {
         key:""
       }
       this.recordTotal = 0
+    },
+    closeRedAyaRecordDialog(){
+      this.recordRedAyaVisible = false;
+    },
+    openRedAyaRecord(row,type){
+      console.log(row.id);
+      this.recordRedAyaVisible = true;
+      this.dialogStatus = type;
+      this.redAyaQuery.memberId = row.id;
+      this.getListRedAya()
+    },
+    //取得紅綾使用紀錄list
+    getListRedAya(){
+      //TODO:取得紅綾使用紀錄list API
+      
+      this.$api.members.memberBluePointsLoad(this.redAyaQuery).then((res)=>{
+        console.log(res);
+        const {code,data,count} = res;
+        if( code === 200 ){
+          this.redAyaList = data
+          this.redAyaTotal = count
+        }
+      })
     },
     openRecord(row,type){
       this.recordPointVisible = true;
@@ -1090,6 +1134,11 @@ export default {
       this.listQuery.limit = val.limit;
       this.getList();
     },
+    changeRedAyaPage(val){
+      this.redAyaQuery.page = val.page;
+      this.redAyaQuery.limit = val.limit;
+      this.getListRedAya();
+    },
     handleRecordCurrentChange(val) {
       this.recordListQuery.page = val.page;
       this.recordListQuery.limit = val.limit;
@@ -1154,7 +1203,8 @@ export default {
               const integersResult  = Math.sign(this.pointsTemp.pointNumber)
     
               if( integersResult === 1 ){ //新增點數
-                apiName = "addPoints"
+                apiName = "addPoints";
+                this.pointsTemp.partnerStoreId = ''
               }
               if( integersResult === -1 ){ //扣點
                 apiName = "cancelPoints"
