@@ -174,7 +174,6 @@ export default {
   },
   async mounted() {
     if(this.hasButton("highestAuthorityRole")){//判斷此帳號
-    console.log('highestAuthorityRole');
       this.listQuery.StoreId = ""
       //有最高權限,可以取得所有機構新增的集章類別
       this.selectDataQuery.StoreId = ""
@@ -182,7 +181,6 @@ export default {
       this.getList();
     }else{
       //一般權限,只能取得該機構新增過的集章類別
-      console.log('只能看自己商店的物品');
       await this.getOrgs()
       this.selectData()
       this.getList();
@@ -272,7 +270,6 @@ export default {
       }
     },
     getList() {
-      console.log(this.listQuery);
       this.listLoading = true;
       this.$api.stampStoreProducts.getList(this.listQuery).then((response) => {
         this.listLoading = false;
